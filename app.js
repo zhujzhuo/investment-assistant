@@ -145,14 +145,16 @@
       if (nav) nav.className = (nav.id === "nav-detail") ? "nav-btn active" : (tabs[i] === t ? "nav-btn active" : "nav-btn");
     }
     $("nav-detail").style.display = (t === "detail") ? "" : "none";
-    if (t === "plan") renderPlan();
-    if (t === "divcmp") renderDivCmp();
-    if (t === "fund") renderFund();
-    if (t === "ah") renderAH();
-    if (t === "us") renderUS();
-    if (t === "backtest") renderBacktest();
-    if (t === "report") buildReport();
-    if (t === "history") renderHistory();
+    // 每个 tab 的渲染独立 try/catch：单页渲染异常不应中断导航态更新，也不应把整页置空
+    function safe(fn) { try { fn(); } catch (e) { console.error("[ia] 渲染 " + t + " 失败", e); } }
+    if (t === "plan") safe(renderPlan);
+    if (t === "divcmp") safe(renderDivCmp);
+    if (t === "fund") safe(renderFund);
+    if (t === "ah") safe(renderAH);
+    if (t === "us") safe(renderUS);
+    if (t === "backtest") safe(renderBacktest);
+    if (t === "report") safe(buildReport);
+    if (t === "history") safe(renderHistory);
     // 移动端底部 tab 栏可横向滚动：把当前项滚到可见位置
     var nb = $("nav-" + t);
     if (nb && nb.scrollIntoView) { try { nb.scrollIntoView({ block: "nearest", inline: "center" }); } catch (e) { } }
@@ -3288,8 +3290,21 @@
 
   // 初始化
   $("disc-line").textContent = window.DISCLAIMER;
-  showTab("plan");
+  // 首屏：同步渲染默认 tab（整体投顾）。用 try/catch 包裹，避免单个渲染 helper 异常把整页置空。
+  try { showTab("plan"); } catch (e) { console.error("[ia] 首屏渲染失败", e); }
   setAsOf();
   setupPWA();
   try { loadLive(false); } catch (e) { LIVE.pending = false; LIVE.err = "不支持"; setAsOf(); }
+
+  // 兜底（修复「整体投顾默认空白，切到其他 tab 再回来才有数据」）：
+  // 部分浏览器在首屏脚本时序 / 后台恢复标签 / SW 控制的旧外壳等情况下，默认 tab 可能未及时渲染。
+  // 这里在 DOMContentLoaded、window.load、以及下一帧再渲染一次当前 tab —— 一定能拿到数据。
+  function safeRenderActive() { try { rerender(); } catch (e) { console.error("[ia] 兜底再渲染失败", e); } }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", safeRenderActive);
+  }
+  if (window.addEventListener) {
+    window.addEventListener("load", safeRenderActive);
+  }
+  if (window.requestAnimationFrame) requestAnimationFrame(safeRenderActive);
 })();
