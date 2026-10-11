@@ -4,6 +4,10 @@
 # 云端环境没有 westock CLI：refresh-data.js 会经 provider.js 自动使用腾讯公开行情接口（qt.gtimg.cn），
 # 前瞻 PE / 港股 PB·股息 / 美债十年期 / 披露日这几项云端数据源拿不到，一律保留旧值（慢变数据，冻结旧值安全）。
 #
+# 智能发版：仅当「对外数据内容真正变化」（工作日、行情/名单/快照有更新）时才 commit + 重新部署 Pages；
+# 周末或数据无变化则跳过部署，线上已是最新，无需每日发版。页面数据文件走 Service Worker 的 no-store 网络优先，
+# 刷新即取最新，纯数据更新无需 bump sw.js 版本（sw.js 仅在应用外壳 html/css/app.js 变更时才需升 CACHE 版本）。
+#
 # ── 首次启用步骤 ─────────────────────────────────────────────
 # 1. 在 GitHub 建一个仓库（私有即可），把本目录推上去：
 #      git init && git add -A && git commit -m "init"
@@ -56,14 +60,22 @@ jobs:
       - name: 构建单文件版
         run: node build-single.js
 
+      # 数据是否变化 = 是否产生了 commit；只有变化时（交易日）才重新部署 Pages，避免每日发版
       - name: 提交数据更新（git 历史即每日数据档案）
+        id: commit
         run: |
           git config user.name "ia-bot"
           git config user.email "ia-bot@users.noreply.github.com"
           git add -A data.js data/
-          git diff --cached --quiet || (git commit -m "data: refresh $(date -u +'%Y-%m-%d %H:%M') UTC" && git push origin HEAD:main)
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "data: refresh $(date -u +'%Y-%m-%d %H:%M') UTC" && git push origin HEAD:main
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: 组装静态站点目录
+        if: steps.commit.outputs.changed == 'true'
         run: |
           mkdir -p site
           cp -r index.html style.css app.js sw.js manifest.json icons dist site/
@@ -71,7 +83,10 @@ jobs:
           mkdir -p site/data && cp data/*.js site/data/
 
       - uses: actions/configure-pages@v5
+        if: steps.commit.outputs.changed == 'true'
       - uses: actions/upload-pages-artifact@v3
+        if: steps.commit.outputs.changed == 'true'
         with:
           path: site
       - uses: actions/deploy-pages@v4
+        if: steps.commit.outputs.changed == 'true'

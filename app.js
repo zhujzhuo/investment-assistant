@@ -3266,6 +3266,26 @@
     }
   }
 
+  // 数据刷新提示：服务端已部署的 data.js 比本页加载的更新时，提示刷新查看最新行情与名单
+  // （数据文件走 SW 的 no-store 网络优先，刷新即取最新；此轮询仅做「有新数据」的友好提醒）
+  (function watchDataRefresh() {
+    if (!window.MKT || !MKT.generatedAt) return;
+    // 仅在浏览器且已注册 Service Worker 时启动（node 测试环境无 SW，跳过，避免挂起事件循环）
+    if (typeof navigator === "undefined" || !navigator.serviceWorker) return;
+    var loadedAt = MKT.generatedAt;
+    var prompted = false;
+    setInterval(function () {
+      if (prompted) return;
+      fetch("data.js", { cache: "no-store" }).then(function (r) { return r.text(); }).then(function (t) {
+        var m = t.match(/generatedAt:\s*["']([^"']+)["']/);
+        if (m && m[1] !== loadedAt) {
+          prompted = true;
+          flash("📡 检测到新数据（" + m[1] + "），刷新页面查看最新行情与名单");
+        }
+      }).catch(function () {});
+    }, 5 * 60 * 1000);
+  })();
+
   // 初始化
   $("disc-line").textContent = window.DISCLAIMER;
   showTab("plan");
