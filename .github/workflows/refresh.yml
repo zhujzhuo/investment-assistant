@@ -1,0 +1,77 @@
+# 个人投资助理 · 云端执行模板（GitHub Actions + GitHub Pages）
+#
+# 功能：每个交易日 18:00（北京时间）自动刷新行情 → 归档名单与当日快照 → 构建单文件版 → commit 数据更新 → 发布 GitHub Pages。
+# 云端环境没有 westock CLI：refresh-data.js 会经 provider.js 自动使用腾讯公开行情接口（qt.gtimg.cn），
+# 前瞻 PE / 港股 PB·股息 / 美债十年期 / 披露日这几项云端数据源拿不到，一律保留旧值（慢变数据，冻结旧值安全）。
+#
+# ── 首次启用步骤 ─────────────────────────────────────────────
+# 1. 在 GitHub 建一个仓库（私有即可），把本目录推上去：
+#      git init && git add -A && git commit -m "init"
+#      git remote add origin git@github.com:<你的用户名>/<仓库名>.git
+#      git push -u origin main
+# 2. 仓库 Settings → Pages → Source 选「GitHub Actions」。
+# 3. Actions 页可看到本 workflow；每天自动跑，也可手动 Run workflow 立即验证一次。
+# 4. 跑通后站点地址：https://<用户名>.github.io/<仓库名>/
+#
+# ── 与本地 WorkBuddy 方案的差异 ───────────────────────────────
+# · 本方案价值：不依赖本地电脑开机，云端 7×24 定时执行 + 免费托管 + git 历史天然保存每日数据快照；
+# · 机构一致预期（fetch-lt）/ 财报历史与月K（fetch-finance / fetch-kline / calc-valuation）仍依赖
+#   本地技能（NeoData / westock），云端不跑——这些是月度任务，本地每月跑一次后 push 即可同步；
+#   全量原始副本目录（../investment-assistant-archive/）在云端是临时目录、不进 git——
+#   按日回看数据由 data/snap-all.js 承载（随仓库提交，git 历史即长期档案）。
+# · 飞书日报上传不在云端做（lark-cli 凭证在本地）；如需云端上传可自行加 lark-cli 步骤。
+name: 每日数据刷新与站点发布
+on:
+  schedule:
+    - cron: "0 10 * * 1-5"    # UTC 10:00 = 北京 18:00，周一~周五（周末休市不跑；GitHub 定时有±几分钟漂移，无碍）
+  workflow_dispatch: {}       # 支持手动触发
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 刷新行情快照（腾讯公开接口）
+        run: node refresh-data.js
+        env:
+          IA_PROVIDER: qt          # 显式指定 qt 数据源（云端无 westock CLI）
+
+      - name: 归档名单基线 + 当日数据快照
+        run: |
+          node gen-baseline.js     # 末尾自动执行 archive-snap.js（data/snap-all.js + archive 目录）
+          node archive-snap.js      # 幂等兜底
+
+      - name: 构建单文件版
+        run: node build-single.js
+
+      - name: 提交数据更新（git 历史即每日数据档案）
+        run: |
+          git config user.name "ia-bot"
+          git config user.email "ia-bot@users.noreply.github.com"
+          git add -A data.js data/ dist/
+          git diff --cached --quiet || (git commit -m "data: refresh $(date -u +'%Y-%m-%d %H:%M') UTC" && git push)
+
+      - name: 组装静态站点目录
+        run: |
+          mkdir -p site
+          cp -r index.html style.css app.js sw.js manifest.json icons dist site/
+          cp data.js site/
+          mkdir -p site/data && cp data/*.js site/data/
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>个人投资智能助理 · 整体投顾 + Buffett 选股</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="theme-color" content="#1d4ed8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="投资助理">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap topbar">
+    <div class="brand"><span class="logo">投</span><div><b>个人投资智能助理</b><div class="muted small">整体资产配置 + 巴菲特·芒格式选股<span class="hide-sm"> | A股 + 港股 + 美股 | 数据源：腾讯自选股</span></div></div></div>
+    <div class="muted small" id="asof-line"></div>
+  </div>
+  <nav class="wrap nav" id="main-nav">
+    <button class="nav-btn active" id="nav-plan" onclick="showTab('plan')"><span class="ic">🧭</span><span class="lb">整体投顾</span></button>
+    <button class="nav-btn" id="nav-divcmp" onclick="showTab('divcmp')"><span class="ic">⚖️</span><span class="lb">红利对比</span></button>
+    <button class="nav-btn" id="nav-fund" onclick="showTab('fund')"><span class="ic">💰</span><span class="lb">建仓节奏</span></button>
+    <button class="nav-btn" id="nav-ah" onclick="showTab('ah')"><span class="ic">🧺</span><span class="lb">A股港股</span></button>
+    <button class="nav-btn" id="nav-detail" onclick="showTab('detail')" style="display:none"><span class="ic">📄</span><span class="lb">标的调研</span></button>
+    <button class="nav-btn" id="nav-us" onclick="showTab('us')"><span class="ic">🇺🇸</span><span class="lb">美股组合</span></button>
+    <button class="nav-btn" id="nav-backtest" onclick="showTab('backtest')"><span class="ic">📈</span><span class="lb">策略回测</span></button>
+    <button class="nav-btn" id="nav-report" onclick="showTab('report')"><span class="ic">📝</span><span class="lb">每日总结</span></button>
+    <button class="nav-btn" id="nav-history" onclick="showTab('history')"><span class="ic">🗂</span><span class="lb">历史留档</span></button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section id="tab-plan"><div id="plan-body"></div></section>
+  <section id="tab-divcmp" style="display:none"><div id="divcmp-body"></div></section>
+  <section id="tab-fund" style="display:none"><div id="fund-body"></div></section>
+  <section id="tab-ah" style="display:none"><div id="ah-body"></div></section>
+  <section id="tab-detail" style="display:none"><div id="detail-sel" class="detail-selbar"></div><div id="detail-body"></div></section>
+  <section id="tab-us" style="display:none"><div id="us-body"></div></section>
+  <section id="tab-backtest" style="display:none"><div id="backtest-body"></div></section>
+  <section id="tab-report" style="display:none">
+    <div class="card">
+      <b>每日投资总结</b> <span class="muted small">自动汇总市场概况、当日推荐与组合建议；每日 18:00 由定时任务自动生成并上传飞书「个人投顾」文件夹，本页同步排版展示（可一键切回 Markdown 原文）</span>
+      <div class="btnrow">
+        <button class="btn" onclick="copyReport()">复制报告</button>
+        <button class="btn" onclick="downloadReport()">下载 .md</button>
+        <button class="btn" onclick="window.hSaveReport()">保存到历史留档</button>
+        <button class="btn" id="rpt-toggle" onclick="window.rptToggleView()">查看原文 Markdown</button>
+      </div>
+      <div id="report-view" class="report-view"></div>
+      <textarea id="report-out" rows="26" spellcheck="false" style="display:none"></textarea>
+    </div>
+  </section>
+  <section id="tab-history" style="display:none"><div id="history-body"></div></section>
+</main>
+
+<div id="flash" class="flash"></div>
+
+<footer class="wrap foot">
+  <div class="muted small" id="disc-line"></div>
+</footer>
+
+<script src="data.js"></script>
+<script src="data/lt.js"></script>
+<script src="data/valuation.js"></script>
+<script src="data/us.js"></script>
+<script src="data/asset.js"></script>
+<script src="data/divbt.js"></script>
+<script src="data/divbt-sell.js"></script>
+<script src="data/etf.js"></script>
+<script src="data/baseline.js"></script>
+<script src="data/reports.js"></script>
+<script src="data/snap-all.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

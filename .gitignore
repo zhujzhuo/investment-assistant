@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# 本地备份与构建产物（workflow 每次云端重建 dist/，不需要进 git）
+data.js.bak-*
+dist/
+
+# 每日投资总结 markdown（含个人持仓信息，仅本地与飞书留档；数据回看走 data/snap-all.js）
+reports/
+
+# 运行时
+node_modules/
