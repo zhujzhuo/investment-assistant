@@ -3194,6 +3194,14 @@
     }
   }
   function loadLive(manual) {
+    // 本地单文件（file://）下无法可靠刷新实时行情，且发起的跨域请求会造成「首屏空白、等远程脚本加载完才出数据」的时序空窗。
+    // 直接以 data.js 内嵌快照渲染 —— 默认 tab 首屏即有数据，点击其他 tab 也不会再出现空白。
+    if (typeof location !== "undefined" && location.protocol === "file:") {
+      LIVE.on = false; LIVE.err = "本地单文件以内嵌快照展示，不支持实时刷新";
+      setAsOf();
+      if (manual) flash("本地单文件以内嵌快照展示，不支持实时刷新（请改用托管版查看实时行情）");
+      return;
+    }
     LIVE.pending = true; LIVE.err = "";
     setAsOf();
     var codes = [];
@@ -3298,7 +3306,7 @@
 
   // 兜底（修复「整体投顾默认空白，切到其他 tab 再回来才有数据」）：
   // 部分浏览器在首屏脚本时序 / 后台恢复标签 / SW 控制的旧外壳等情况下，默认 tab 可能未及时渲染。
-  // 这里在 DOMContentLoaded、window.load、以及下一帧再渲染一次当前 tab —— 一定能拿到数据。
+  // 这里在 DOMContentLoaded、window.load、下一帧、以及 setTimeout 安全网再渲染一次当前 tab —— 一定能拿到数据。
   function safeRenderActive() { try { rerender(); } catch (e) { console.error("[ia] 兜底再渲染失败", e); } }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", safeRenderActive);
@@ -3307,4 +3315,6 @@
     window.addEventListener("load", safeRenderActive);
   }
   if (window.requestAnimationFrame) requestAnimationFrame(safeRenderActive);
+  // 终极安全网：下一拍与 150ms 后再渲染一次，覆盖 DOMContentLoaded 早于本脚本执行等极端时序（本地单文件 file:// 尤为常见）
+  if (window.setTimeout) { setTimeout(safeRenderActive, 0); setTimeout(safeRenderActive, 150); }
 })();
