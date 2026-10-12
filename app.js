@@ -194,7 +194,7 @@
   // ---------- 市场雷达（已并入「🧺 A股港股」页，作为首屏板块） ----------
   function radarHTML() {
     var h = "";
-    h += '<div class="sectitle"><b>市场雷达 · A股三大指数</b> <span class="muted small">' + mktAsOf("A") + '</span></div>';
+    h += '<div class="sectitle"><b>市场雷达 · A股指数（三大宽基 + 红利策略）</b> <span class="muted small">' + mktAsOf("A") + '</span></div>';
     h += '<div class="grid3">';
     for (var i = 0; i < M.indices.length; i++) {
       var ix = M.indices[i];
@@ -202,6 +202,35 @@
         '<div class="muted small">60日 ' + pct(ix.chg60d) + ' · 250日 ' + pct(ix.chg250d) + ' · 52周 ' + num(ix.lo52, 0) + '~' + num(ix.hi52, 0) + '</div></div>';
     }
     h += '</div>';
+    // ---------- 红利策略指数（中证红利 / 红利低波） ----------
+    // 现价与今日涨跌已随 loadLive→applyLive 实时刷新（sh000922 指数点位 + sh512890 ETF 价，与「⚖️ 红利对比」页同源）；
+    // 股息率 / 估值 / 技术信号（年线·RSI·BOLL）仍按日级快照，避免加仓信号盘中抖动。
+    var dvList = [];
+    if (A && A.dividend && A.codes) {
+      var dvSrc = [
+        { k: "csi", tag: "指数 " + String(A.codes.csiIdx || "sh000922").replace("sh", "") },
+        { k: "lowvol", tag: "ETF " + String(A.codes.lowvolEtf || "sh512890").replace("sh", "") }
+      ];
+      for (var d = 0; d < dvSrc.length; d++) {
+        var dd = A.dividend[dvSrc[d].k];
+        if (!dd || dd.px == null) continue;
+        dvList.push({ d: dd, tag: dvSrc[d].tag });
+      }
+    }
+    if (dvList.length) {
+      h += '<div class="sectitle" style="margin-top:12px"><b>红利策略指数</b> <span class="muted small">现价 / 今日涨跌随「↻ 刷新行情」实时更新 · 股息率 / 技术信号按日级快照（' + esc(A.asOfA || "—") + '）</span></div>';
+      h += '<div class="grid2">';
+      for (var e = 0; e < dvList.length; e++) {
+        var dv = dvList[e].d, dtag = dvList[e].tag;
+        h += '<div class="card center"><div class="muted">' + esc(dv.name) + ' <span class="muted small">' + esc(dtag) + '</span></div>' +
+          '<div class="big">' + num(dv.px, dv.px < 10 ? 3 : 2) + '</div>' +
+          '<div class="' + cls(dv.chg) + '">' + (dv.chg > 0 ? "+" : "") + pct(dv.chg) + '</div>' +
+          '<div class="muted small">52周 ' + num(dv.lo52, dv.px < 10 ? 3 : 0) + '~' + num(dv.hi52, dv.px < 10 ? 3 : 0) +
+          ' · 股息率 ' + (dv.dy == null ? "—" : pct(dv.dy, 2)) +
+          ' · 距年线 ' + (dv.distMA250 == null ? "—" : (dv.distMA250 > 0 ? "+" : "") + pct(dv.distMA250, 1)) + '</div></div>';
+      }
+      h += '</div>';
+    }
     h += renderGlobalIndices();
     h += '<div class="card"><b>市场画像</b> <span class="muted small">（来源：腾讯自选股 · ' + mktAsOf("A") + '）</span><div class="grid2 tags">';
     for (var j = 0; j < M.profile.length; j++) {
