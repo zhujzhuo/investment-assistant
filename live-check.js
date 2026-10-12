@@ -23,7 +23,9 @@ const FIXTURE = {
   v_hk00700: mkQuote("100", "腾讯控股", "00700", "450.000", "421.200", "430.000", "2026/10/04 16:00:00", ["28.80", "6.84", "455.000", "425.000"]),
   v_sh000001: mkQuote("1", "上证指数", "000001", "3900.00", "3842.19", "3850.00", "20261004153000", ["57.81", "1.50", "3910.00", "3840.00"]),
   v_sz399001: mkQuote("1", "深证成指", "399001", "13000.00", "12887.62", "12900.00", "20261004153000", ["112.38", "0.87", "13050.00", "12800.00"]),
-  v_sz399006: mkQuote("1", "创业板指", "399006", "3200.00", "3135.28", "3150.00", "20261004153000", ["64.72", "2.06", "3210.00", "3130.00"])
+  v_sz399006: mkQuote("1", "创业板指", "399006", "3200.00", "3135.28", "3150.00", "20261004153000", ["64.72", "2.06", "3210.00", "3130.00"]),
+  v_sh000922: mkQuote("1", "中证红利", "000922", "5608.72", "5601.34", "5612.23", "20261012120545", ["7.38", "0.13", "5656.61", "5600.30"]),
+  v_sh512890: mkQuote("1", "红利低波ETF华泰柏瑞", "512890", "1.224", "1.208", "1.208", "20261012120535", ["0.016", "1.32", "1.228", "1.207"])
 };
 let scriptMode = "ok"; // ok | fail | empty
 
@@ -55,6 +57,8 @@ eval(fs.readFileSync(path.join(dir, "data/asset.js"), "utf8"));
 const snap = {};
 window.STOCKS.forEach(s => { snap[s.code] = { px: s.px, pe: s.pe, pb: s.pb, div: s.div }; });
 eval(fs.readFileSync(path.join(dir, "app.js"), "utf8"));
+// 记录红利刷新前的快照值，用于验证「现价/今日涨跌」被实时行情覆盖（loadLive 为异步，此刻尚未执行 applyLive）
+const snapDiv = { csiPx: window.ASSET.dividend.csi.px, csiChg: window.ASSET.dividend.csi.chg, lvPx: window.ASSET.dividend.lowvol.px, lvChg: window.ASSET.dividend.lowvol.chg };
 
 function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -74,6 +78,13 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
     ["PB 等比缩放", Math.abs(moutai.pb - snap.sh600519.pb * f) < 0.01],
     ["股息率反向", Math.abs(moutai.div - snap.sh600519.div / f) < 0.01],
     ["指数更新", Math.abs(window.MKT.indices[0].close - 3900) < 0.01],
+    // 红利实时刷新：现价/今日涨跌被行情覆盖（股息率 dy / 技术信号仍按日级快照，不在本断言范围）
+    ["红利·中证现价刷新", Math.abs(window.ASSET.dividend.csi.px - 5608.72) < 0.01],
+    ["红利·中证涨跌刷新", Math.abs(window.ASSET.dividend.csi.chg - (5608.72 / 5601.34 - 1) * 100) < 0.01],
+    ["红利·中证确已变更", window.ASSET.dividend.csi.px !== snapDiv.csiPx],
+    ["红利·低波现价刷新", Math.abs(window.ASSET.dividend.lowvol.px - 1.224) < 0.001],
+    ["红利·低波涨跌刷新", Math.abs(window.ASSET.dividend.lowvol.chg - (1.224 / 1.208 - 1) * 100) < 0.01],
+    ["红利·低波确已变更", window.ASSET.dividend.lowvol.px !== snapDiv.lvPx],
     ["状态显示实时", (store["asof-line"].textContent || "").includes("实时行情")],
     // 行情时间归一化：A股 20261004153000 → 2026-10-04 15:30；港股 2026/10/04 16:00:00 → 2026-10-04 16:00
     ["A股行情时间归一", window.MKT.asOfA === "2026-10-04"],

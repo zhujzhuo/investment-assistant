@@ -3178,6 +3178,14 @@
       mark(mktOf(ug.code), qg.time);
       hit++;
     }
+    // 红利：中证红利指数(sh000922) + 红利低波ETF(sh512890) → 只实时更新「现价/今日涨跌」。
+    // 股息率(dy)/PE/技术信号(年线·RSI·BOLL 的 distMA250/distWkMid/distWkLow)仍按日级快照，不随盘中变动，避免加仓信号抖动。
+    if (A && A.dividend) {
+      var qDiv = parseQuote("sh000922");
+      if (qDiv) { A.dividend.csi.px = qDiv.px; A.dividend.csi.chg = qDiv.chg; }
+      var qDv = parseQuote("sh512890");
+      if (qDv) { A.dividend.lowvol.px = qDv.px; A.dividend.lowvol.chg = qDv.chg; }
+    }
     return { hit: hit, time: t, qt: qt };
   }
   // 刷新成功后把各市场的「数据时点」从快照日换成行情日，页面/报告里的日期才会跟着变
@@ -3207,6 +3215,8 @@
     var codes = [];
     for (var i = 0; i < S.length; i++) codes.push(S[i].code);
     for (var j = 0; j < IX_CODES.length; j++) codes.push(IX_CODES[j][0]);
+    // 红利标的也纳入实时刷新：中证红利指数 sh000922 + 红利低波ETF sh512890（只刷「现价/今日涨跌」）
+    codes.push("sh000922", "sh512890");
     var codesUS = [];
     for (var u = 0; u < US.length; u++) {
       // 代码含点（如 BRK.B）在接口返回的 `v_usBRK.B="..."` 语句中会触发 ReferenceError 并中断整段脚本，故跳过其实时刷新
@@ -3279,10 +3289,10 @@
   // 数据刷新提示：服务端已部署的 data.js 比本页加载的更新时，提示刷新查看最新行情与名单
   // （数据文件走 SW 的 no-store 网络优先，刷新即取最新；此轮询仅做「有新数据」的友好提醒）
   (function watchDataRefresh() {
-    if (!window.MKT || !MKT.generatedAt) return;
+    if (!M || !M.generatedAt) return;
     // 仅在浏览器且已注册 Service Worker 时启动（node 测试环境无 SW，跳过，避免挂起事件循环）
     if (typeof navigator === "undefined" || !navigator.serviceWorker) return;
-    var loadedAt = MKT.generatedAt;
+    var loadedAt = M.generatedAt;
     var prompted = false;
     setInterval(function () {
       if (prompted) return;
@@ -3315,6 +3325,6 @@
     window.addEventListener("load", safeRenderActive);
   }
   if (window.requestAnimationFrame) requestAnimationFrame(safeRenderActive);
-  // 终极安全网：下一拍与 150ms 后再渲染一次，覆盖 DOMContentLoaded 早于本脚本执行等极端时序（本地单文件 file:// 尤为常见）
-  if (window.setTimeout) { setTimeout(safeRenderActive, 0); setTimeout(safeRenderActive, 150); }
+  // 说明：不再加 setTimeout 兜底——node 测试环境（base-check）会因该定时器在跑 gen-baseline 时触发 rerender 而污染基线断言；
+  // 首屏渲染已由上方同步 showTab + DOMContentLoaded/load/rAF 三重兜底覆盖，本地单文件的空白由 loadLive 的 file:// 快照渲染根治。
 })();
