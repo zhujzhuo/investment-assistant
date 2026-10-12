@@ -218,7 +218,7 @@
       }
     }
     if (dvList.length) {
-      h += '<div class="sectitle" style="margin-top:12px"><b>红利策略指数</b> <span class="muted small">现价 / 今日涨跌随「↻ 刷新行情」实时更新 · 股息率 / 技术信号按日级快照（' + esc(A.asOfA || "—") + '）</span></div>';
+      h += '<div class="sectitle" style="margin-top:12px"><b>红利策略指数</b> <span class="muted small">现价 / 涨跌 / 股息率 / 利差 / 分位 / 技术距离随「↻ 刷新行情」实时重算 · 年线与 BOLL 轨道等基准值按日级快照（' + esc(A.asOfA || "—") + '）</span></div>';
       h += '<div class="grid2">';
       for (var e = 0; e < dvList.length; e++) {
         var dv = dvList[e].d, dtag = dvList[e].tag;
@@ -1363,6 +1363,7 @@
   window._TRIM_RULE = TRIM_RULE;
   window._TRIM_ADOPTED = TRIM_ADOPTED;
   window._DIV_ADD = DIV_ADD;
+  window._divLevel = divLevel;
   window._addPlanRows = addPlanRows;
   window._TRIM_STATE = TRIM_STATE;
   window._trimLevel = trimLevel;
@@ -1561,7 +1562,7 @@
       '低波用更小的波动/回撤换到了相近的收益，适合当压舱石；' + firstPick + '的股息率分位更高（相对自己更便宜），是这一轮加仓的第一顺位。<br>' +
       '④ <b>分开加仓：</b>谁的利差更宽、分位更低，就把红利内部的倾斜给它（当前 ' + P.tilt.csi + '% / ' + P.tilt.lowvol + '%，' + (P.tilt.csi === P.tilt.lowvol ? "两者同档 → 各一半" : "档位更高的一边多配 10pp") + '）。' +
       '两者<b>各自的买入触发价、加仓金额与减仓触发价见「🧭 整体投顾 → 红利资产」</b>（红利是重仓，提示放首页）。</div>';
-    h += '<div class="muted small" style="margin-top:6px">✓较优 = 该维度上两个标的里更占优的一侧（年化/利差/分位越高越好；波动/回撤深度/PE/52周位置越低越好）。表现指标为近 3 年（36 个月）月 K 前复权口径、含分红再投，与长期持有的真实体感仍有差异（未扣费、未计税）。</div>';
+    h += '<div class="muted small" style="margin-top:6px">✓较优 = 该维度上两个标的里更占优的一侧（年化/利差/分位越高越好；波动/回撤深度/PE/52周位置越低越好）。表现指标为近 3 年（36 个月）月 K 前复权口径、含分红再投，与长期持有的真实体感仍有差异（未扣费、未计税）。<br>本页现价 / 涨跌 / 股息率 / 分位 / 利差 / 估值 / 技术距离均随「↻ 刷新行情」按实时价重算（DPS、EPS 锚定法）；年线值、BOLL 轨道值、RSI(14)、周 K 方向等需日线序列的基准值按日级快照。</div>';
     h += '</div>';
     return h;
   }
@@ -1654,7 +1655,7 @@
     var rows = addPlanRows(key, d, lv, tech), addRow = null;
     for (var i = 0; i < rows.length; i++) { if (rows[i]._dist != null) { addRow = rows[i]; break; } }
     var trim = divTrimRow(key, d, lv);
-    var h = '<div class="muted small" style="margin-top:6px"><b>可投工具（ETF 加减仓参考价）</b> —— 现价为最近收盘，加/减仓参考价按「需再跌 / 涨的百分比」从指数点位折算：</div>';
+    var h = '<div class="muted small" style="margin-top:6px"><b>可投工具（ETF 加减仓参考价）</b> —— 现价随「↻ 刷新行情」实时更新，加/减仓参考价按「需再跌 / 涨的百分比」从指数点位折算：</div>';
     h += '<div class="tbl-scroll"><table class="tbl tbl-stack" style="margin-top:4px"><thead><tr>' +
       '<th>ETF</th><th>现价</th><th>加仓参考价（最近一条触发）</th><th>减仓参考价（利差收窄到下一档）</th></tr></thead><tbody>';
     for (var j = 0; j < list.length; j++) {
@@ -1774,7 +1775,9 @@
       '<div style="margin-top:4px">· <b>加仓方向</b>：' + nearestAdd("csi", P.csi, P.lc, P.tc) + '；' + nearestAdd("lowvol", P.lowvol, P.ll, P.tl) + '。</div>' +
       '<div style="margin-top:3px">· <b>减仓方向</b>（利差收窄 → 档位降 → 仓位降）：' + trimHintText("csi", P.csi, P.lc) + '；' + trimHintText("lowvol", P.lowvol, P.ll) + '。</div>' +
       '<div class="muted small" style="margin-top:4px">不做额外技术止盈（回测年化反而 −0.1~−1.5pp，研究保留在「📈 回测」页）；' +
-      '两个标的表现与利差不同，<b>分开看、分开配</b> —— 横向对比表与内部倾斜见「⚖️ 红利对比」页。</div></div>';
+      '两个标的表现与利差不同，<b>分开看、分开配</b> —— 横向对比表与内部倾斜见「⚖️ 红利对比」页。<br>' +
+      '<b>实时口径：</b>现价 / 涨跌 / 股息率 / 利差 / 分位 / 距年线 / BOLL 距离 / 加仓参考均随「↻ 刷新行情」按实时价重算（DPS、EPS 锚定法：股息率与价格反向、PE 随价格缩放）；' +
+      '年线值、BOLL 轨道值、RSI(14)、周 K 方向等需要日线序列的基准值仍按日级快照（' + esc(A.asOfA || "—") + '）。</div></div>';
     // ④b 红利标的：买入条件 + 加仓触发表（重仓配置，必须在首页看到买入与仓位调整提示）
     h += '<div class="sectitle"><b>红利标的（低估买入 · 利差档位减仓）</b> <span class="muted small">仓位 30%~50%，底仓 30% 永不空仓；利差越宽越便宜</span></div>';
     h += '<div class="grid2">';
@@ -3152,6 +3155,41 @@
     var chg = (isFinite(prev) && prev > 0) ? (px / prev - 1) * 100 : 0;
     return { name: f[1], px: px, chg: chg, time: normTime(f[30]) };
   }
+  // 红利标的实时重算（中证红利 sh000922 指数点位 / 红利低波 sh512890 ETF 价）：
+  // 以「快照锚定 + 实时价」推导所有随价格日变的派生指标，渲染端（首页/红利对比/加仓表）读同一批字段，自动全链路实时。
+  //  - 可实时：现价、今日涨跌、股息率（DPS 不变 → 与价反向）、PE（EPS 不变 → 随价缩放）、股息率分位（在 dyHist 中按实时值重算，
+  //            与 fetch-asset.js 的 pctRank 同口径：严格小于计数）、利差（= 股息率 − 国债）、距年线 / 周线 BOLL 距离、52 周位置、
+  //            RSI 经验触发价距离、加仓信号与利差档位仓（由上述字段在渲染时算出）。
+  //  - 仍按日级快照（需要日线序列，单点价格无法重算）：年线值、BOLL 轨道值、RSI(14)、周 K 方向、52 周极值、dyHist / dyStats。
+  // 幂等：首次进入保存快照锚（px0/dy0/pe0），之后每次刷新都从锚重算，重复 applyLive 结果一致。
+  function liveDiv(kind, code) {
+    var d = (A && A.dividend) ? A.dividend[kind] : null;
+    var q = parseQuote(code);
+    if (!d || !q || q.px == null) return false;
+    if (d.px0 == null) { d.px0 = d.px; d.dy0 = d.dy; d.pe0 = d.pe; }
+    var f = (d.px0 && d.px0 > 0) ? q.px / d.px0 : 1;
+    d.px = q.px;
+    d.chg = q.chg;
+    if (d.dy0 != null) {
+      d.dy = d.dy0 / f;
+      if (d.dyHist && d.dyHist.length) {
+        var below = 0;
+        for (var i = 0; i < d.dyHist.length; i++) if (d.dyHist[i] < d.dy) below++;
+        d.dyPct = below / d.dyHist.length * 100;
+      }
+    }
+    if (d.pe0 != null) d.pe = d.pe0 * f;
+    if (d.ma250) d.distMA250 = (q.px / d.ma250 - 1) * 100;
+    if (d.wk) {
+      if (d.wk.mid) d.distWkMid = (q.px / d.wk.mid - 1) * 100;
+      if (d.wk.lower) d.distWkLow = (q.px / d.wk.lower - 1) * 100;
+    }
+    if (d.lo52 != null && d.hi52 != null && d.hi52 > d.lo52) {
+      d.pos52 = Math.max(0, Math.min(100, (q.px - d.lo52) / (d.hi52 - d.lo52) * 100));
+    }
+    if (d.rsi30 && d.rsi30.price) d.rsi30.distPct = (d.rsi30.price / q.px - 1) * 100;
+    return true;
+  }
   function applyLive() {
     var hit = 0, t = "", qt = { A: "", HK: "", US: "" };
     function mark(mkt, tm) { if (tm && tm > qt[mkt]) qt[mkt] = tm; }   // 取该市场最新的一条时间
@@ -3207,13 +3245,20 @@
       mark(mktOf(ug.code), qg.time);
       hit++;
     }
-    // 红利：中证红利指数(sh000922) + 红利低波ETF(sh512890) → 只实时更新「现价/今日涨跌」。
-    // 股息率(dy)/PE/技术信号(年线·RSI·BOLL 的 distMA250/distWkMid/distWkLow)仍按日级快照，不随盘中变动，避免加仓信号抖动。
+    // 红利：中证红利指数(sh000922) + 红利低波ETF(sh512890) → 现价/涨跌/股息率/分位/利差/PE/技术距离/加仓参考全部按实时价重算（见 liveDiv 注释）
     if (A && A.dividend) {
-      var qDiv = parseQuote("sh000922");
-      if (qDiv) { A.dividend.csi.px = qDiv.px; A.dividend.csi.chg = qDiv.chg; }
-      var qDv = parseQuote("sh512890");
-      if (qDv) { A.dividend.lowvol.px = qDv.px; A.dividend.lowvol.chg = qDv.chg; }
+      if (liveDiv("csi", "sh000922")) hit++;
+      if (liveDiv("lowvol", "sh512890")) hit++;
+    }
+    // 可投工具 4 只 ETF：现价/涨跌也实时刷新 → 首页「ETF 加/减仓参考价」表的现价列与触发表里逐行标注的 ETF 参考价全部跟着实时走
+    if (window.DIV_ETF) {
+      ["csi", "lowvol"].forEach(function (k) {
+        var lst = window.DIV_ETF[k] || [];
+        for (var j = 0; j < lst.length; j++) {
+          var qe = parseQuote((lst[j].mkt || "sh") + lst[j].code);
+          if (qe && qe.px != null) { lst[j].px = qe.px; lst[j].chg = qe.chg; lst[j].chgPct = qe.chg; hit++; }
+        }
+      });
     }
     return { hit: hit, time: t, qt: qt };
   }
@@ -3244,8 +3289,15 @@
     var codes = [];
     for (var i = 0; i < S.length; i++) codes.push(S[i].code);
     for (var j = 0; j < IX_CODES.length; j++) codes.push(IX_CODES[j][0]);
-    // 红利标的也纳入实时刷新：中证红利指数 sh000922 + 红利低波ETF sh512890（只刷「现价/今日涨跌」）
+    // 红利标的也纳入实时刷新：中证红利指数 sh000922 + 红利低波ETF sh512890，
+    // 以及可投工具 4 只 ETF（sh515180 / sh515080 / sh563020 / sh512890）——首页「ETF 加/减仓参考价」由它们的现价折算
     codes.push("sh000922", "sh512890");
+    if (window.DIV_ETF) {
+      ["csi", "lowvol"].forEach(function (k) {
+        var lst = window.DIV_ETF[k] || [];
+        for (var e = 0; e < lst.length; e++) codes.push((lst[e].mkt || "sh") + lst[e].code);
+      });
+    }
     var codesUS = [];
     for (var u = 0; u < US.length; u++) {
       // 代码含点（如 BRK.B）在接口返回的 `v_usBRK.B="..."` 语句中会触发 ReferenceError 并中断整段脚本，故跳过其实时刷新
