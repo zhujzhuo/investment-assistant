@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>策略评估：三花智控 · 药明康德 · 兆易创新（2026-10-14）</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --ink:#1c2330; --muted:#6b7684; --line:#e6e9ef;
+    --red:#d0342c; --green:#0a8f4d; --blue:#2f6fed; --amber:#b7791f; --violet:#7048ba;
+    --ok:#e8f5ec; --okink:#0a8f4d; --warn:#fdf3e3; --warnink:#b7791f; --bad:#fbeae9; --badink:#d0342c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.65 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px}
+  header h1{font-size:22px;margin:0 0 6px}
+  header .sub{color:var(--muted);font-size:12.5px}
+  .tl{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0 8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .verdict{font-size:15px;font-weight:700;margin-bottom:6px}
+  .v-ok{color:var(--okink)} .v-warn{color:var(--warnink)} .v-bad{color:var(--badink)}
+  .card .big{font-size:26px;font-weight:700;margin:4px 0}
+  .card .row{font-size:12.5px;color:var(--muted)}
+  .tagline{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:6px}
+  .t-ok{background:var(--ok);color:var(--okink)} .t-warn{background:var(--warn);color:var(--warnink)} .t-bad{background:var(--bad);color:var(--badink)}
+  .up{color:var(--red)} .dn{color:var(--green)}
+  h2{font-size:17px;margin:34px 0 10px;border-left:4px solid var(--blue);padding-left:10px}
+  h3{font-size:15px;margin:18px 0 8px}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px;margin:10px 0}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+  th{background:#f0f3f8;font-size:12.5px;color:#3c4657}
+  tr:last-child td{border-bottom:none}
+  td.num{font-variant-numeric:tabular-nums}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .chart{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px 6px;margin:12px 0}
+  .chart .cap{font-size:12.5px;color:var(--muted);padding:0 4px 6px}
+  .note{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-size:12.5px;color:var(--muted);margin:10px 0}
+  .note b{color:var(--ink)}
+  .concl{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:10px;padding:12px 16px;margin:8px 0;font-size:13.5px}
+  .src{font-size:11.5px;color:var(--muted);margin-top:6px}
+  footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted)}
+  @media (max-width:760px){.tl,.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>策略评估：三花智控（002050）· 药明康德（603259）· 兆易创新（603986）</h1>
+  <div class="sub">按现行框架：合理 PE 带法（默认）+ 老唐估值法对照 · 估值基准 PE 19.1（rf = 美债 10Y 5.24%，2026-10-09）· 距 band 买点 &gt;30% 不入池</div>
+  <div class="sub">数据来源：westock CLI（行情 2026-10-14 收盘；财报截至 2026-06-30 中报；一致预期 2026E–2028E）；药明康德池内快照为 10-13 收盘</div>
+</header>
+
+<div class="tl">
+  <div class="card">
+    <span class="tagline t-warn">👀 观察池（不入）</span>
+    <div class="verdict v-warn">三花智控：质量高，价格贵</div>
+    <div class="big">31.29<span style="font-size:13px"> 元</span> <span class="dn" style="font-size:13px">-3.52%</span></div>
+    <div class="row">PE(TTM) 32.9 · 2026E 28.7×，对 +12.7% 增速 PEG&gt;2</div>
+    <div class="row">band 买点 ≈ <b>18.5 元</b>（现价 +69%）；老唐买点 13~15.5 元</div>
+    <div class="row">机器人期权退潮中，等业绩下修落地 + 估值回归</div>
+  </div>
+  <div class="card">
+    <span class="tagline t-ok">✅ 已在池 · 持有</span>
+    <div class="verdict v-ok">药明康德：band 带内下沿</div>
+    <div class="big">154.18<span style="font-size:13px"> 元</span> <span class="dn" style="font-size:13px">-2.01%</span></div>
+    <div class="row">PE(TTM) 21.6 · 2026E 21.0×，H1 净利 +29.4% 兑现强</div>
+    <div class="row">band [20,28]×2026E EPS = <b>147~206 元</b>，现价距下沿仅 +5%</div>
+    <div class="row">持有不追高；&lt;147 元按纪律加仓</div>
+  </div>
+  <div class="card">
+    <span class="tagline t-bad">❌ 不入池（周期顶）</span>
+    <div class="verdict v-bad">兆易创新：低 PE 陷阱区</div>
+    <div class="big">292.56<span style="font-size:13px"> 元</span> <span class="dn" style="font-size:13px">-4.46%</span></div>
+    <div class="row">2026E PE 14.5× 看似便宜，实为周期暴利期（净利 +760%）</div>
+    <div class="row">机构 2028 增速预期已降至 +10.3%；60 日股价 -50% 抢跑见顶</div>
+    <div class="row">周期股低 PE 是卖出特征，观察池：买点参考 214~242 元</div>
+  </div>
+</div>
+
+<h2>一、一致预期净利润轨迹（2025A → 2028E）</h2>
+<div class="chart">
+  <div class="cap">兆易创新的「冰球杆」形态是典型的周期爆发而非复利增长；三花 2026H1 已失速（-3.1%），全年 +12.7% 需 H2 同比 +30% 才能完成；药明是唯一「增速稳、基数实」的复利形态。来源：westock 一致预期（2026-10-14），2025A 为年报实际值</div>
+  <div id="chart1" style="width:100%;height:340px;"></div>
+</div>
+
+<h2>二、估值对比：PE 与距买点空间</h2>
+<div class="grid2">
+  <div class="chart">
+    <div class="cap">PE（TTM 与一致预期年度口径）</div>
+    <div id="chart2" style="width:100%;height:320px;"></div>
+  </div>
+  <div class="chart">
+    <div class="cap">现价高于买点的空间（%），虚线为 30% 入池纪律线</div>
+    <div id="chart3" style="width:100%;height:320px;"></div>
+  </div>
+</div>
+
+<h2>三、逐家评估</h2>
+
+<h3>1. 三花智控（002050）—— 全球热管理龙头，期权价未出清</h3>
+<table>
+  <tr><th>维度</th><th>数据 / 判断</th></tr>
+  <tr><td>现价 / 市值</td><td class="num">31.29 元（10-14，-3.52%）/ 1316.7 亿；52 周 29.19~60.37，现价仅处区间 6.7% 分位（贴着年内低点）</td></tr>
+  <tr><td>业绩现状</td><td class="num">2026H1 营收 169.0 亿（+6.2%），归母净利 20.44 亿（<span class="dn">-3.1%</span>），Q2 单季 <span class="dn">-7.5%</span>——增利拐点暂停；一致预期全年 +12.7% 需 H2 同比 +30%，下修概率大</td></tr>
+  <tr><td>一致预期</td><td class="num">净利 2026E 45.8 亿（+12.7%）→ 2028E 65.4 亿，3 年 CAGR ≈ 17%；目标价 47.17 元（卖方口径，本框架更严）</td></tr>
+  <tr><td>质量</td><td class="num">经营现金流 TTM 63.1 亿 = 净利 TTM 40.0 亿的 <b>158%</b> ✅；ROE(TTM) 12.3%，毛利率 28.1%，股息率 1.28%</td></tr>
+  <tr><td>护城河</td><td>制冷空调元器件全球市占率第一 + 汽车热管理龙头（特斯拉/比亚迪核心供应商）+ 人形机器人执行器「总成方案」期权（Optimus 链）→ moat 8</td></tr>
+  <tr><td>框架计算</td><td class="num">fairPE <b>[17, 24]</b>（基准 19.1 × 龙头质量，制造业略折、机器人期权略溢价）：band 买点 = 2026E EPS 1.09 × 17 ≈ <b>18.5 元</b>，现价 <b>+69%</b> ❌；老唐买点 = 2028E 65.4 亿 × PE17 × 50% ≈ 13.2 元（宽松 PE20：15.5 元），现价 +102%~137% ❌</td></tr>
+</table>
+<div class="concl"><b>预期差</b>：市场从 60.37 杀到 31.29 杀的是机器人期权预期（60 日 -24.7%），但「期权归零」后的本体估值仍不便宜——28.7× 2026E PE 对 12.7% 增速 PEG&gt;2。真正该做的不是抄底，而是等一致预期下修后重新锚定：若 2026E 净利下修到 ~41 亿（H2 同比 0%），band 买点上移至 ~19.6 元（用 2027E EPS 1.31 × 17 = 22.3 元对应右侧确认）。<b>一句话本质：买三花买的是「汽车热管理第二曲线 + 机器人执行器期权」，当前价仍为期权付了高溢价。</b></div>
+<div class="concl"><b>结论</b>：❌ 不入池（距 band 买点 +69% &gt; 30% 红线）。👀 观察池，跟踪：①Q3/Q4 业绩下修幅度；②Optimus 定点/订单实质落地；③18.5~22 元区间重估。催化剂兑现前，纪律优先。</div>
+
+<h3>2. 药明康德（603259）—— 已在池，band 口径正接近加仓区</h3>
+<table>
+  <tr><th>维度</th><th>数据 / 判断</th></tr>
+  <tr><td>现价 / 市值</td><td class="num">154.18 元（10-14，-2.01%）/ 4679 亿；52 周 85~173.09，现价处区间 78.6% 分位，YTD +74.1%</td></tr>
+  <tr><td>业绩现状</td><td class="num">2026H1 营收 289.0 亿（<span class="up">+38.9%</span>），归母净利 110.8 亿（<span class="up">+29.4%</span>），扣非 105.7 亿——已完成全年一致预期的 49.8%，下限有保障 ✅</td></tr>
+  <tr><td>基数说明</td><td class="num">2025A 表观净利 191.5 亿（+102.6%）含约 59 亿一次性收益（扣非 132.4 亿）；本框架 band 用 2026E、老唐用 2028E，已消化该水分</td></tr>
+  <tr><td>一致预期</td><td class="num">净利 2026E 222.8 亿（+16.4%）→ 2028E 323.2 亿，3 年 CAGR ≈ 19%；EPS 7.34 / 8.91 / 10.65</td></tr>
+  <tr><td>质量</td><td class="num">ROE(TTM) 26%，毛利率 53.9%，经营现金流 TTM 194.7 亿 = 净利 <b>90%</b> ✅——CXO 产能稀缺 + 订单向头部集中</td></tr>
+  <tr><td>框架计算</td><td class="num">池内 fairPE <b>[20, 28]</b>（moat 6.5，质量 7.5，地缘折价已计入）：band = 2026E EPS 7.34 × [20,28] = <b>147~206 元</b>，现价 154.18 处带内下沿，距 band 买点仅 <b>+5%</b> ✅；老唐买点 = 2028E 323.2 亿 × PE20 × 50% ≈ 106.5 元，现价 +45%（老唐口径仍贵，因其对 2025 高基数要求「三年翻倍再对折」）</td></tr>
+</table>
+<div class="concl"><b>预期差</b>：市场定价了生物安全法案等地缘尾部（moat 只给 6.5），但 H1 +29.4% 的兑现说明「恐惧折价 &gt; 基本面现实」；band 已落到带内下沿，是三家里唯一「框架内可持有」的标的。<b>双口径分歧的处理：band 用 2026E（消化 2026 正常增长），老唐用 2028E+对折（对 2025 含水分基数过严）——按默认 band 法执行，老唐作为保守下界参考。</b></div>
+<div class="concl"><b>结论</b>：✅ 维持池内持有（growth 象限）。当前 21× 2026E 处带内下沿，<b>不追高、不加仓也不减仓</b>；若回踩 147 以下按纪律加仓；老唐口径的 106 元大概率等不到（盈利在涨），作为压力测试下界。风险：地缘政策是尾部，单一客户敞口与汇率次之。</div>
+
+<h3>3. 兆易创新（603986）—— 周期暴利期的「低 PE 陷阱」</h3>
+<table>
+  <tr><th>维度</th><th>数据 / 判断</th></tr>
+  <tr><td>现价 / 市值</td><td class="num">292.56 元（10-14，-4.46%）/ 2059.5 亿；52 周 175.25~846.66，距高点 -65%，60 日 -49.9%，YTD +37%——高点崩塌式回撤</td></tr>
+  <tr><td>业绩现状</td><td class="num">2026H1 营收 115.7 亿（<span class="up">+229%</span>），归母净利 68.57 亿（<span class="up">+1091%</span>），扣非 48.83 亿（+791%）——存储涨价超级周期直接受益者</td></tr>
+  <tr><td>盈利质量</td><td class="num">表观净利中 <b>19.7 亿（28.8%）为非经常项</b>；毛利率 63.1%（2025 全年 40.2%、2024 约 37%）处历史极值 = 周期高位特征；ROE(TTM) 21.3%；经营现金流 TTM 72.2 亿 = 净利 91% ✅；另 H1 筹资净流入 +41.4 亿（备产/理财，关注用途）</td></tr>
+  <tr><td>一致预期</td><td class="num">净利 2026E 141.8 亿（+760%）→ 2027E 182.2 亿（+28.5%）→ <b>2028E 200.9 亿（+10.3%，明显减速）</b>——机构自己已在给周期见顶定价</td></tr>
+  <tr><td>护城河</td><td>NOR Flash 全球前三（无定价权）+ 利基 DRAM（价格接受者）+ MCU 国内第一 → moat 6：是「周期的乘客」不是「定价的主人」</td></tr>
+  <tr><td>框架计算</td><td class="num">周期股口径 fairPE <b>[12, 18]</b>（对齐池内紫金矿业 [12,18]）：band 买点 = 2026E EPS 20.14 × 12 ≈ <b>242 元</b>，现价 +21%；老唐周期口径 = 2028E 200.9 亿 × PE15 × 50% ≈ <b>214 元</b>，现价 +37%（超 30% 红线）</td></tr>
+</table>
+<div class="concl"><b>预期差</b>：股价 60 日腰斩是市场抢跑「存储合约价见顶」，而非已发生的业绩恶化（H1 业绩预告/快报无 Q3 预警，Q3 财报 10 月下旬披露是验证点）。14.5× 2026E PE 的「便宜」建立在 760% 增速的暴利基数上——周期股的估值规律是「PE 最便宜的时候正是该卖的时候，PE 最贵（微利）的时候才是该买的时候」。<b>一句话本质：买兆易买的不是复利，是存储价格周期的贝塔；当前处于周期的「利润最肥、股价最脆」象限。</b></div>
+<div class="concl"><b>结论</b>：❌ 不入池（周期顶位置 + 老唐距买点 +37% 超红线）。👀 观察池：买点参考 214~242 元；真正的买点在存储合约价环比转负之后的周期下行末段（届时 PE 会「变贵」，那才是机会），或在 2027 涨价持续性被证实后以 2027E 口径重估。Q3 财报（10 月下旬）与 DRAM/NOR 合约价月度环比是跟踪锚。</div>
+
+<h2>四、综合对照表</h2>
+<table>
+  <tr><th>指标</th><th>三花智控 002050</th><th>药明康德 603259（已入池）</th><th>兆易创新 603986</th></tr>
+  <tr><td>现价（10-14 收盘）</td><td class="num">31.29 元</td><td class="num">154.18 元</td><td class="num">292.56 元</td></tr>
+  <tr><td>PE（TTM / 2026E / 2028E）</td><td class="num">32.9 / 28.7 / 20.2</td><td class="num">21.6 / 21.0 / 14.5</td><td class="num">26.0 / 14.5 / 10.2</td></tr>
+  <tr><td>3 年净利 CAGR（2025A→2028E）</td><td class="num">≈17%（H1 已失速）</td><td class="num">≈19%（H1 超预期）</td><td class="num">周期爆发（2028E 已减速至 +10.3%）</td></tr>
+  <tr><td>ROE(TTM) / 经营现金流净现比</td><td class="num">12.3% / 158% ✅</td><td class="num">26% / 90% ✅</td><td class="num">21.3% / 91% ✅（含 29% 非经常）</td></tr>
+  <tr><td>52 周区间分位</td><td class="num">6.7%（贴地板）</td><td class="num">78.6%（贴天花板）</td><td class="num">17.5%（崩塌后）</td></tr>
+  <tr><td>fairPE 带（本框架）</td><td class="num">[17, 24]</td><td class="num">[20, 28]（池内既有）</td><td class="num">[12, 18]（周期口径）</td></tr>
+  <tr><td>band 买点 / 现价距买点</td><td class="num">18.5 元 / <b>+69%</b> ❌</td><td class="num">146.8 元 / <b>+5%</b> ✅</td><td class="num">241.7 元 / <b>+21%</b> ⚠️</td></tr>
+  <tr><td>老唐买点 / 现价距买点</td><td class="num">13.2~15.5 元 / +102%~137% ❌</td><td class="num">106.5 元 / +45% ❌</td><td class="num">214 元 / +37% ❌</td></tr>
+  <tr><td><b>结论</b></td><td><b>👀 观察池</b>（等下修+回归 18.5~22）</td><td><b>✅ 持有</b>（&lt;147 加仓线）</td><td><b>❌ 观察池</b>（周期顶，买点 214~242）</td></tr>
+</table>
+
+<div class="note"><b>口径备注</b>：① 估值基准 PE 19.1 = 100 / rf（美债 10Y 5.24%，2026-10-09）；band 买点 = 2026E EPS × fairPE 下沿；老唐买点 = 3 年后（2028E）归母净利 × min(25, 3 年 CAGR) × 50%；② 周期股 fairPE 参照池内紫金矿业 [12,18]；③ 当前全市场环境（项目快照）：全指 PE 分位约 71% 偏高、情绪偏热——支持保持严格纪律；④ 距 band 买点 &gt;30% 不入池、股票端总仓位 10%、4~8 只集中持有的既有规则不变；⑤ 卖方目标价（三花 47.17 / 药明 193.34 / 兆易 545.89）显著高于本框架买点，属口径差异，不作为决策依据。</div>
+
+<footer>
+  数据来源：westock CLI（实时行情 2026-10-14 收盘；财务三表截至 2026-06-30 中报；机构一致预期 2026E–2028E；业绩预告/快报截至 2026-10-14 查询）。药明康德池内字段引自本项目 data 快照（10-13 收盘口径）。<br>
+  <b>免责声明</b>：以上内容基于公开数据和量化分析，仅供参考，不构成投资建议。市场有风险，投资需谨慎。任何投资决策应结合个人风险承受能力、资金状况和投资目标独立判断，必要时咨询持牌专业机构。过往表现不预示未来收益。
+</footer>
+</div>
+
+<script>
+var c1 = echarts.init(document.getElementById('chart1'));
+c1.setOption({
+  tooltip: { trigger: 'axis' },
+  legend: { data: ['三花智控', '药明康德', '兆易创新'] },
+  grid: { left: 50, right: 20, bottom: 40, top: 40 },
+  xAxis: { type: 'category', data: ['2025A', '2026E', '2027E', '2028E'] },
+  yAxis: { type: 'value', name: '归母净利(亿)' },
+  series: [
+    { name: '三花智控', type: 'line', data: [40.6, 45.8, 55.0, 65.4], itemStyle: { color: '#2f6fed' }, label: { show: true } },
+    { name: '药明康德', type: 'line', data: [191.5, 222.8, 270.4, 323.2], itemStyle: { color: '#b7791f' }, label: { show: true } },
+    { name: '兆易创新', type: 'line', data: [16.5, 141.8, 182.2, 200.9], itemStyle: { color: '#7048ba' }, label: { show: true } }
+  ]
+});
+
+var c2 = echarts.init(document.getElementById('chart2'));
+c2.setOption({
+  tooltip: { trigger: 'axis' },
+  legend: { data: ['三花智控', '药明康德', '兆易创新'] },
+  grid: { left: 50, right: 20, bottom: 40, top: 40 },
+  xAxis: { type: 'category', data: ['PE(TTM)', '2026E', '2027E', '2028E'] },
+  yAxis: { type: 'value', name: 'PE(倍)' },
+  series: [
+    { name: '三花智控', type: 'bar', data: [32.9, 28.7, 23.9, 20.2], itemStyle: { color: '#2f6fed' } },
+    { name: '药明康德', type: 'bar', data: [21.6, 21.0, 17.3, 14.5], itemStyle: { color: '#b7791f' } },
+    { name: '兆易创新', type: 'bar', data: [26.0, 14.5, 11.3, 10.2], itemStyle: { color: '#7048ba' } }
+  ]
+});
+
+var c3 = echarts.init(document.getElementById('chart3'));
+c3.setOption({
+  tooltip: { trigger: 'axis' },
+  legend: { data: ['距 band 买点', '距老唐买点'] },
+  grid: { left: 90, right: 30, bottom: 40, top: 40 },
+  xAxis: { type: 'value', name: '(现价-买点)/买点 %' },
+  yAxis: { type: 'category', data: ['三花智控', '药明康德', '兆易创新'] },
+  series: [
+    {
+      name: '距 band 买点', type: 'bar',
+      data: [69, 5, 21],
+      itemStyle: { color: '#2f6fed' },
+      label: { show: true, position: 'right', formatter: '+{c}%' },
+      markLine: { symbol: 'none', lineStyle: { type: 'dashed', color: '#d0342c' }, data: [{ xAxis: 30 }], label: { formatter: '30% 入池红线', position: 'insideEndTop' } }
+    },
+    {
+      name: '距老唐买点', type: 'bar',
+      data: [137, 45, 37],
+      itemStyle: { color: '#8aa0bd' },
+      label: { show: true, position: 'right', formatter: '+{c}%' }
+    }
+  ]
+});
+</script>
+</body>
+</html>

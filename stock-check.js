@@ -68,7 +68,8 @@ assert("总标的 = 选股结果（" + (SPL ? SPL.picks.length : "?") + " 只）
 // 入选表（不含备选段）：美债5.24%口径（2026-10-10）——正式名单 4 只：宁德●已达 + 海康/泸州/伊利 在 30% 观察窗内
 const tblSeg = tblLT;
 assert("宁德时代已入选且为核心", tblSeg.indexOf("宁德时代") >= 0 && tblSeg.indexOf("★核心") >= 0);
-assert("海康威视/泸州老窖/伊利股份入选（距买点 ≤30%）", tblSeg.indexOf("海康威视") >= 0 && tblSeg.indexOf("泸州老窖") >= 0 && tblSeg.indexOf("伊利股份") >= 0);
+// 注：老唐法名单随机构一致预期（fetch-lt.js 每周刷新）变化；2026-10-12 刷新后为 宁德/海康/泸州，伊利距买点升至 +31.3% 出窗
+assert("海康威视/泸州老窖入选（距买点 ≤30%）、伊利股份已出窗（+31%）", tblSeg.indexOf("海康威视") >= 0 && tblSeg.indexOf("泸州老窖") >= 0 && tblSeg.indexOf("伊利股份") < 0);
 assert("茅台/腾讯距买点 >90%（美债5.24% → 买点 653/306），退出观察窗不再入选", tblSeg.indexOf("贵州茅台") < 0 && tblSeg.indexOf("腾讯控股") < 0);
 assert("药明康德/比亚迪距买点 >30%，同样退出观察窗", tblSeg.indexOf("药明康德") < 0 && tblSeg.indexOf("比亚迪") < 0);
 assert("阳光电源退出正式名单（H1 净利 -32%，机构复苏预期不采信）", tblSeg.indexOf("阳光电源") < 0);

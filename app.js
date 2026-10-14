@@ -5,6 +5,8 @@
   var CAT = window.CAT_META, DEF = window.PORTFOLIO_DEFAULT;
   var US = window.US_STOCKS || [], UM = window.US_MKT || { indices: [], asOfUS: "" };
   var UDEF = window.US_PORTFOLIO_DEFAULT || { steady: 40, growth: 35, rotate: 20, tenx: 5 };
+  // 观察池：与主池同结构但 watch 标记（不进推荐/建仓/组合），行情同样实时刷新；去重防呆
+  var WATCH = (window.WATCH || []).filter(function (w) { return w && w.code && !S.some(function (s) { return s.code === w.code; }); });
 
   // ---------- 工具 ----------
   function $(id) { return document.getElementById(id); }
@@ -881,13 +883,51 @@
     h += '<div id="portfolio-body"></div>';
     h += '<div class="sectitle"><b>好公司筛选 · 五维评分与全池清单</b> <span class="muted small">池子成员每月 1 日复核</span></div>';
     h += '<div id="screen-body"></div>';
+    if (WATCH.length) {
+      h += '<div class="sectitle"><b>观察池 · 评分与试仓点（' + WATCH.length + ' 只）</b> <span class="muted small">不入正式名单，到试仓点先复核再动手</span></div>';
+      h += '<div id="watch-body"></div>';
+    }
     h += '<div class="muted small" style="margin:8px 0">' + window.DISCLAIMER + '</div>';
     $("ah-body").innerHTML = h;
     $("radar-body").innerHTML = radarHTML();
     $("pick-body").innerHTML = picksHTML();
     $("portfolio-body").innerHTML = portfolioHTML();
     $("screen-body").innerHTML = screenHTML();
+    if (WATCH.length && $("watch-body")) $("watch-body").innerHTML = watchHTML();
     drawAlloc();
+  }
+
+  // ---------- 观察池：五维评分 + 试仓点（trial） ----------
+  // 试仓点 = 第一笔试探仓的触发价（trial/tryNote 人工核定）：到价 ≠ 直接买——先复核「下修后的盈利、行业周期位置、距买点距离」，
+  // 仓位建议 ≤ 股票端单只上限的一半（正式名单里它是候选，不是持仓）。到价提示按 3% 误差带宽松判断（与建仓「wait」档同思路）。
+  function watchHTML() {
+    var h = '<div class="card note"><b>观察池纪律</b>：这里的标的 <b>不进</b>每日推荐、建仓名单与组合配比（距 30% 安全边际买点还远，或质量/周期有瑕疵）。每行给「试仓点」= 第一笔试探仓触发价；到价后先人工复核（当期增速是否下修、周期位置、三大前提），再以 ≤ 股票端单只上限一半的仓位介入，跌出试仓点 8% 以内仍可视为有效触发。</div>';
+    h += '<table class="tbl"><thead><tr><th>公司</th><th>行业</th><th>现价</th><th>涨跌</th><th>PE(静/前)</th><th>综合分</th><th>评级</th><th>五维简评</th><th>试仓点</th><th>距试仓点</th><th>状态</th></tr></thead><tbody>';
+    for (var i = 0; i < WATCH.length; i++) {
+      var w = WATCH[i];
+      var cv = composite(w, W), gr = grade(cv);
+      var dist = (w.trial && w.px) ? (w.px / w.trial - 1) * 100 : null;   // 正 = 还需跌多少到试仓点
+      // 状态：到价带（±3%）= 已触发可复核；<15% = 逼近；否则 = 等待
+      var st = (dist == null) ? { t: "—", c: "v-na" }
+        : (dist <= 3) ? { t: "已到试仓带", c: "v1" }
+        : (dist <= 15) ? { t: "逼近中", c: "v2" } : { t: "等待", c: "v3" };
+      var dims = ["moat " + num(w.moat, 1), "质量 " + num(w.quality, 1), "管理 " + num(w.mgmt, 1), "成长 " + num(w.growth, 1), "估值 " + num(w.valuation, 1)];
+      h += '<tr title="' + esc((w.note || "") + (w.tryNote ? " ｜试仓点推导：" + w.tryNote : "")) + '">' +
+        '<td><b>' + esc(w.name) + '</b><span class="us-watch">观察</span><span class="muted small"> ' + fmtCode(w.code) + '</span></td>' +
+        '<td>' + esc(w.industry) + '</td>' +
+        '<td>' + num(w.px, 2) + '</td>' +
+        '<td class="' + cls(w.chg) + '">' + (w.chg > 0 ? "+" : "") + pct(w.chg) + '</td>' +
+        '<td>' + num(w.pe, 1) + ' / ' + num(w.peF, 1) + '</td>' +
+        '<td><b>' + num(cv, 2) + '</b></td>' +
+        '<td><span class="badge g' + gr + '">' + gr + '</span></td>' +
+        '<td class="small wrapcol">' + esc(dims.join(" · ") + (w.npg != null ? " · H1净利 " + (w.npg > 0 ? "+" : "") + pct(w.npg, 1) : "")) + '</td>' +
+        '<td><b>' + num(w.trial, 1) + '</b><div class="muted small">试仓触发价</div></td>' +
+        '<td class="' + (dist != null && dist <= 3 ? "c-down" : "") + '">' + (dist == null ? "—" : "+" + pct(dist, 0)) + '<div class="muted small">现价高于试仓点</div></td>' +
+        '<td><span class="vchip ' + st.c + '">' + st.t + '</span></td></tr>';
+    }
+    h += '</tbody></table>';
+    h += '<div class="muted small" style="margin-top:8px">评分口径与主池一致（0-10 五维）；悬停行可见完整备注与试仓点推导。兆易创新用周期口径（epsBase 校准 + fairPE [12,18]，对齐紫金矿业）；「距试仓点」为正表示尚未跌到触发价。观察池成员每月 1 日与主池一并复核。</div>';
+    return h;
   }
 
   // ---------- 美股组合（与 A股/港股组合完全独立，配比与标的池各自独立） ----------
@@ -2045,7 +2085,7 @@
     h += '<div class="sliders2" style="max-width:320px;margin-bottom:8px"><label>可投资金（万元，自动记住）</label>' +
       '<input type="number" min="1" step="10" value="' + cap + '" onchange="window._setCap(this.value)"></div>';
     h += '<div class="note verdict"><b>本金 ' + w2(cap) + ' → 目标配置：</b>红利 <b>' + w2(F.amt.div) + '</b>（' + F.w.div + '%）· 纳斯达克 <b>' + w2(F.amt.nas) + '</b>（' + F.w.nas + '%）· 巴菲特式股票 <b>' + w2(F.amt.stock) + '</b>（' + F.w.stock + '%）· 货币弹药 <b>' + w2(F.amt.cash) + '</b>（' + F.w.cash + '%）。' +
-      '<div class="small" style="margin-top:6px"><b>不要一次性买满</b> —— 纳指当前 52 周位置 ' + num(A.nasdaq.pos52, 0) + '%、高于年线 ' + pct(A.nasdaq.distMA250, 1) + '，是最差的建仓时点；红利位置中性（52 周位置 ' + num(A.dividend.csi.pos52, 0) + '%、已跌破年线 ' + pct(-A.dividend.csi.distMA250, 1) + '）可以正常推进。' +
+      '<div class="small" style="margin-top:6px"><b>不要一次性买满</b> —— 纳指当前 52 周位置 ' + num(A.nasdaq.pos52, 0) + '%、高于年线 ' + pct(A.nasdaq.distMA250, 1) + '，是最差的建仓时点；红利位置中性（52 周位置 ' + num(A.dividend.csi.pos52, 0) + '%、' + (A.dividend.csi.distMA250 >= 0 ? '高于年线 +' + num(A.dividend.csi.distMA250, 1) + '%' : '已跌破年线 ' + num(A.dividend.csi.distMA250, 1) + '%') + '）可以正常推进。' +
       '因此节奏的原则是：<b>便宜的先建、贵的最慢建、看不准的留给信号</b>。</div></div>';
 
     // ① 红利的四层拆分
@@ -3210,6 +3250,20 @@
       if (q.time) t = q.time;
       hit++;
     }
+    // 观察池：现价/涨跌/PE/PB/股息率随实时价联动（与主池同一套锚定缩放逻辑；评级/试仓点为慢变数据不动）
+    for (var wi = 0; wi < WATCH.length; wi++) {
+      var wst = WATCH[wi], qw = parseQuote(wst.code);
+      if (!qw) continue;
+      if (!wst.px0) { wst.px0 = wst.px; wst.pe0 = wst.pe; wst.peF0 = wst.peF; wst.pb0 = wst.pb; wst.div0 = wst.div; }
+      var wf = qw.px / wst.px0;
+      wst.px = qw.px;
+      wst.chg = qw.chg;
+      wst.pe = wst.pe0 == null ? null : wst.pe0 * wf;
+      wst.peF = wst.peF0 == null ? null : wst.peF0 * wf;
+      wst.pb = wst.pb0 == null ? null : wst.pb0 * wf;
+      wst.div = wst.div0 == null ? null : wst.div0 / wf;
+      hit++;
+    }
     for (var j = 0; j < IX_CODES.length; j++) {
       var qi = parseQuote(IX_CODES[j][0]);
       if (!qi) continue;
@@ -3288,6 +3342,8 @@
     setAsOf();
     var codes = [];
     for (var i = 0; i < S.length; i++) codes.push(S[i].code);
+    // 观察池（WATCH）同样实时刷新：观察池页的现价/涨跌/PE/距试仓点跟着盘中走
+    for (var wi = 0; wi < WATCH.length; wi++) codes.push(WATCH[wi].code);
     for (var j = 0; j < IX_CODES.length; j++) codes.push(IX_CODES[j][0]);
     // 红利标的也纳入实时刷新：中证红利指数 sh000922 + 红利低波ETF sh512890，
     // 以及可投工具 4 只 ETF（sh515180 / sh515080 / sh563020 / sh512890）——首页「ETF 加/减仓参考价」由它们的现价折算

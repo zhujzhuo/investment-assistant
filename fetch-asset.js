@@ -10,6 +10,11 @@
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
+const { execFileSync } = require("child_process");
+
+// 2026-10-13：腾讯 K 线接口 web.ifzq.gtimg.cn 已被 WAF 拦截（HTTP 501 HTML），
+// 改为优先走 westock CLI（与 MCP 同源）；CLI 不可用的周期再从日K本地聚合。
+const WS_BIN = "/Users/didi/.local/bin/westock";
 
 const DIR = __dirname;
 const RAW = path.join(DIR, "data", "asset-raw.json");
@@ -34,7 +39,7 @@ const CODES = {
   lowvolEtf: "sh512890",   // 红利低波ETF（华泰柏瑞）
   nasEtf: "sh513100",      // 纳指ETF（国泰，跟踪纳斯达克100，人民币计价）
   nasIdx: "usNDX",         // 纳斯达克100（点位 / 52周线）
-  nasEtfUs: "usQQQ.OQ",    // QQQ（美股侧技术面兜底）
+  nasEtfUs: "usQQQ",       // QQQ（美股侧技术面兜底）——westock CLI 不认 "usQQQ.OQ"
   hs300Etf: "sh510300",    // 沪深300ETF（回测基准）
   hs300Idx: "sh000300"
 };
@@ -80,16 +85,83 @@ function parseQuote(text) {
   return out;
 }
 
+// westock CLI 返回 markdown 表格；解析成 [{d,o,c,h,l}]，按时间升序
+function parseCLIKline(out) {
+  const rows = [];
+  for (const ln of String(out).split("\n")) {
+    if (!/^\|\s*\d{4}-\d{2}-\d{2}\s*\|/.test(ln)) continue;
+    const f = ln.split("|").map((s) => s.trim());   // f[1]=date f[2]=open f[3]=last f[4]=high f[5]=low
+    const d = f[1], o = Number(f[2]), c = Number(f[3]), h = Number(f[4]), l = Number(f[5]);
+    if (!d || !isFinite(c) || c <= 0) continue;
+    rows.push({ d: d.slice(0, 10), o, c, h, l });
+  }
+  rows.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
+  return rows;
+}
+// 日K → 周K/月K 聚合（美股 ETF 的周/月K 接口不可用时使用）
+function aggregateKline(daily, period) {
+  if (!daily || !daily.length) return [];
+  const keyOf = (d) => {
+    if (period === "month") return d.slice(0, 7);
+    const dt = new Date(d + "T00:00:00Z");
+    dt.setUTCDate(dt.getUTCDate() - ((dt.getUTCDay() + 6) % 7));   // 周一为周首
+    return dt.toISOString().slice(0, 10);
+  };
+  const groups = new Map();
+  for (const r of daily) {
+    const k = keyOf(r.d);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(r);
+  }
+  const out = [];
+  for (const arr of groups.values()) {
+    arr.sort((a, b) => (a.d < b.d ? -1 : 1));
+    out.push({
+      d: arr[arr.length - 1].d,
+      o: arr[0].o,
+      c: arr[arr.length - 1].c,
+      h: Math.max.apply(null, arr.map((r) => r.h)),
+      l: Math.min.apply(null, arr.map((r) => r.l))
+    });
+  }
+  out.sort((a, b) => (a.d < b.d ? -1 : 1));
+  return out;
+}
+function klineViaCLI(code, period, n, fq) {
+  const run = (per, lim) => {
+    const args = ["kline", String(code), "--period", per, "--limit", String(lim)];
+    if (fq) args.push("--fq", fq);
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const out = execFileSync(WS_BIN, args, { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, timeout: 60000 });
+        const rows = parseCLIKline(out);
+        if (rows.length) return rows;
+      } catch (e) { /* 限频/瞬时失败 */ }
+      try { execFileSync("/bin/sleep", [String(2.5 + attempt * 1.5)]); } catch (e) { }
+    }
+    return [];
+  };
+  let rows = run(period, n);
+  if (!rows.length && (period === "week" || period === "month")) {
+    rows = aggregateKline(run("day", 900), period);
+  }
+  return rows;
+}
 async function kline(code, period, n, fq) {
-  const url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=" + code + "," + period + ",,," + n + "," + (fq || "");
-  const j = JSON.parse(await get(url));
-  const d = j.data && j.data[code];
-  if (!d) return [];
-  const arr = d[period] || d["qfq" + period] || [];
-  return arr
-    .filter((r) => r && r[0] && r[2] != null)
-    .map((r) => ({ d: String(r[0]).slice(0, 10), o: Number(r[1]), c: Number(r[2]), h: Number(r[3]), l: Number(r[4]) }))
-    .filter((r) => isFinite(r.c) && r.c > 0);
+  try {
+    const url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=" + code + "," + period + ",,," + n + "," + (fq || "");
+    const j = JSON.parse(await get(url));
+    const d = j.data && j.data[code];
+    if (d) {
+      const arr = d[period] || d["qfq" + period] || [];
+      const out = arr
+        .filter((r) => r && r[0] && r[2] != null)
+        .map((r) => ({ d: String(r[0]).slice(0, 10), o: Number(r[1]), c: Number(r[2]), h: Number(r[3]), l: Number(r[4]) }))
+        .filter((r) => isFinite(r.c) && r.c > 0);
+      if (out.length) return out;
+    }
+  } catch (e) { /* ifzq 已被 WAF 拦截 → 落到 CLI */ }
+  return klineViaCLI(code, period, n, fq);
 }
 
 // ---------- 指标 ----------
@@ -205,13 +277,13 @@ function peSeries(prices, epsGrowthPerYear) {
       raw.kline[key] = arr;
       console.log(key, code, per, fq || "raw", "n=" + arr.length, arr.length ? arr[arr.length - 1].d + " c=" + arr[arr.length - 1].c : "");
     } catch (e) { console.log(key, "ERR", e.message); raw.kline[key] = []; }
-    await sleep(200);
+    await sleep(1300);
   }
   raw.kline.stocks = {};
   for (const s of STOCKS) {
     try { raw.kline.stocks[s.c] = await kline(s.c, "month", 48, "qfq"); console.log("stock", s.c, "n=" + raw.kline.stocks[s.c].length); }
     catch (e) { console.log("stock", s.c, "ERR", e.message); raw.kline.stocks[s.c] = []; }
-    await sleep(200);
+    await sleep(1300);
   }
   fs.writeFileSync(RAW, JSON.stringify(raw));
 
@@ -338,17 +410,17 @@ function peSeries(prices, epsGrowthPerYear) {
     stockComboNames: STOCKS.map((s) => s.n),
     kline: {
       months: months,
-      csi: series.csiEtfM.map((v) => Number(v.toFixed(4))),
-      lowvol: series.lowvolEtfM.map((v) => Number(v.toFixed(4))),
-      nasdaq: series.nasEtfM.map((v) => Number(v.toFixed(4))),
-      hs300: series.hs300EtfM.map((v) => Number(v.toFixed(4))),
-      stock: stockCombo.map((v) => Number(v.toFixed(3))),
-      stocks: (function () { const o = {}; STOCKS.forEach((s) => { o[s.c] = { n: s.n, px: stockSeries[s.c].map((v) => Number(v.toFixed(4))) }; }); return o; })()
+      csi: series.csiEtfM.map((v) => v == null ? null : Number(v.toFixed(4))),
+      lowvol: series.lowvolEtfM.map((v) => v == null ? null : Number(v.toFixed(4))),
+      nasdaq: series.nasEtfM.map((v) => v == null ? null : Number(v.toFixed(4))),
+      hs300: series.hs300EtfM.map((v) => v == null ? null : Number(v.toFixed(4))),
+      stock: stockCombo.map((v) => v == null ? null : Number(v.toFixed(3))),
+      stocks: (function () { const o = {}; STOCKS.forEach((s) => { o[s.c] = { n: s.n, px: stockSeries[s.c].map((v) => v == null ? null : Number(v.toFixed(4))) }; }); return o; })()
     }
   };
 
   const banner = "// 整体投顾组合数据（自动生成，勿手改）\n"
-    + "// 生成脚本：fetch-asset.js | 数据源：腾讯公开行情 qt.gtimg.cn / web.ifzq.gtimg.cn\n"
+    + "// 生成脚本：fetch-asset.js | 数据源：腾讯公开行情 qt.gtimg.cn + westock CLI（K线，ifzq 已被 WAF 拦截时的替代）\n"
     + "// 股息率 / PE 现值与历史分位：锚定法模型估算（假设见 ref.dpsGrowth / ref.epsGrowth）\n";
   fs.writeFileSync(OUT, banner + "window.ASSET = " + JSON.stringify(asset, null, 1) + ";\n");
   console.log("\nWROTE", OUT);

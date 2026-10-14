@@ -17,25 +17,28 @@ function numOrNull(v) { const n = Number(v); return (v == null || v === "-" || v
 
 (async function main() {
 
-// ---------- 1. 读取股票池代码 ----------
+// ---------- 1. 读取股票池代码（主池 + 观察池 WATCH） ----------
 const sb = { window: {} };
 new Function("window", fs.readFileSync(DATA_F, "utf8"))(sb.window);
 const STOCKS = sb.window.STOCKS || [];
+const WATCH = sb.window.WATCH || [];          // 观察池：与主池同结构，行情字段同样每日刷新
 const MKT = sb.window.MKT || { indices: [] };
 if (!STOCKS.length) { console.error("data.js 无股票池，退出"); process.exit(1); }
+const ALL = STOCKS.concat(WATCH);             // 行情刷新合并处理（去重：WATCH 不应与主池重复）
+for (let w = WATCH.length - 1; w >= 0; w--) if (STOCKS.some(s => s.code === WATCH[w].code)) WATCH.splice(w, 1);
 
 // ---------- 2. 拉取行情（provider 适配层：本地 westock / 云端 qt.gtimg.cn） ----------
-const codes = STOCKS.map(s => s.code);
+const codes = ALL.map(s => s.code);
 const IX = [["sh000001", "上证指数"], ["sz399001", "深证成指"], ["sz399006", "创业板指"]];
 for (const c of IX) codes.push(c[0]);
 const { quotes, source } = await P.quotes(codes);
 console.log("行情数据源: " + source);
-const got = STOCKS.filter(s => quotes[s.code]).length;
-console.log("行情获取: " + got + "/" + STOCKS.length + " 只股票 + 指数 " + IX.filter(x => quotes[x[0]]).length + "/3");
+const got = ALL.filter(s => quotes[s.code]).length;
+console.log("行情获取: " + got + "/" + ALL.length + " 只股票（主池 " + STOCKS.length + " + 观察池 " + WATCH.length + "）+ 指数 " + IX.filter(x => quotes[x[0]]).length + "/3");
 
 // ---------- 3. 计算各市场 asOf ----------
 let asOfA = MKT.asOfA || "", asOfHK = MKT.asOfHK || "";
-for (const s of STOCKS) {
+for (const s of ALL) {
   const q = quotes[s.code]; if (!q || !q.time) continue;
   const d = String(q.time).slice(0, 10);
   if (s.mkt === "HK") { if (d > asOfHK) asOfHK = d; }
@@ -46,7 +49,7 @@ for (const s of STOCKS) {
 let src = fs.readFileSync(DATA_F, "utf8");
 const fmt = (v, d) => (v == null ? "null" : Number(v).toFixed(d == null ? 2 : d));
 let updCount = 0;
-for (const s of STOCKS) {
+for (const s of ALL) {
   const q = quotes[s.code];
   const re = new RegExp('(\\{ code: "' + s.code.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + '"[^\\n]*)');
   const m = src.match(re);
@@ -117,16 +120,25 @@ if (fs.existsSync(VAL_F)) {
   new Function("window", fs.readFileSync(VAL_F, "utf8"))(vw.window);
   const VAL = vw.window.VAL;
   if (VAL) {
+    // 与 calc-valuation.js 的 pctOf 同口径（升序序列，计数「≤ 当前值」，保留 1 位小数）
+    const pctOfSeries = (series, v) => {
+      if (!series || !series.length || v == null) return null;
+      const vals = series.map(p => p[1]).sort((a, b) => a - b);
+      let le = 0;
+      for (let i = 0; i < vals.length; i++) if (vals[i] <= v) le++;
+      return Math.round(le / vals.length * 1000) / 10;
+    };
     let anchor = 0;
-    for (const s of STOCKS) {
+    for (const s of ALL) {
       const v = VAL[s.code]; const q = quotes[s.code];
       if (!v || !q) continue;
       const px = numOrNull(q.price);
       if (px != null) { v.px0 = px; anchor++; }
       const pe = numOrNull(q.pe_ratio), pb = numOrNull(q.pb_ratio), dv = numOrNull(q.dividend_ratio_ttm);
-      if (pe != null) v.pe0 = pe;
-      if (pb != null) v.pb0 = pb;
-      if (dv != null) v.div0 = dv;
+      // 锚点变了 → 快照分位必须同步重算，否则「1 倍价 = 快照分位」不再成立（val-check.js 校验该一致性）
+      if (pe != null) { v.pe0 = pe; v.peNow = pe; if (v.pe) v.pePct = pctOfSeries(v.pe, pe); }
+      if (pb != null) { v.pb0 = pb; v.pbNow = pb; if (v.pb) v.pbPct = pctOfSeries(v.pb, pb); }
+      if (dv != null) { v.div0 = dv; if (v.dy) v.dyPct = pctOfSeries(v.dy, dv); }
     }
     const head = "// 历史估值百分位数据（calc-valuation.js 自动生成，勿手改；锚定基准由 refresh-data.js 每日同步）\n" +
       "// 口径：以行情接口当前 PE/PB/股息率为锚，结合真实财报(EPSTTM/BasicEPS/NAPS)与不复权月K回推逐月估值序列\n" +

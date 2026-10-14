@@ -68,7 +68,7 @@ assert("茅台三年后 EPS = 66.97 × 1.1752 ≈ 78.70", near(mt.eps3y, 78.70, 
 assert("茅台隐含三年年化增速 ≈ 5.5%", near(mt.g3y * 100, 5.5, 0.3), (mt.g3y * 100).toFixed(2));
 assert("茅台增速 3~8% → 合理PE 封顶 = 基准 ×0.87 ≈ 16.6 倍（美债10Y 5.24% → 基准 19.1）", near(mt.cap, 16.6, 0.15) && near(mt.pe, mt.cap, 0.01), mt.pe.toFixed(2));
 assert("茅台买点 = 三年后合理估值 × 50%", near(mt.buy, mt.fair3y * 0.5, 0.01), mt.buy.toFixed(2));
-assert("茅台买点 ≈ 653（美债5.24%口径，比旧 rf3.5% 的 984 低约 1/3）", near(mt.buy, 653, 2), mt.buy.toFixed(2));
+assert("茅台买点 ≈ 655（美债5.24%口径，比旧 rf3.5% 的 984 低约 1/3）", near(mt.buy, 655.2, 2), mt.buy.toFixed(2));
 assert("茅台距买点 +93%（需回落近半），已退出 30% 观察窗（不再入选老唐法正式名单）", mt.buy < by("sh600519").px * 0.55, mt.buy.toFixed(1) + " vs 现价 " + by("sh600519").px);
 assert("茅台卖点 = min(三年后×150%, 基准EPS×50倍)", near(mt.sell, Math.min(mt.fair3y * 1.5, mt.base * 50), 0.01));
 
@@ -102,9 +102,10 @@ assert("老唐模式下建设银行未入选（高杠杆）", tblSeg.indexOf("�
 assert("老唐模式下美团未入选（无正 EPS 基准）", tblSeg.indexOf("美团") < 0);
 assert("老唐模式下紫金矿业未入选（护城河 6 < 6.5）", tblSeg.indexOf("紫金矿业") < 0);
 assert("剔除说明列出被筛标的", fundHtml.indexOf("老唐法额外筛掉") >= 0 && fundHtml.indexOf("高杠杆") >= 0);
-assert("美债5.24%口径下正式名单仅 4 只：宁德（唯一已达买点）+ 海康/泸州/伊利（观察窗内）",
-  tblSeg.indexOf("宁德时代") >= 0 && tblSeg.indexOf("海康威视") >= 0 && tblSeg.indexOf("泸州老窖") >= 0 && tblSeg.indexOf("伊利股份") >= 0,
-  "名单：" + (fundHtml.match(/● 已达买点|○ 距买点/g) || []).length + " 行");
+// 注：老唐法名单由「机构一致预期 k3y × 合理PE × 50%」逐日重算，fetch-lt.js 每周刷新后成员会变（此处 2026-10-12 刷新后：宁德/海康/泸州 3 只，伊利 +31.3% 出窗）
+assert("美债5.24%口径下正式名单 3 只：宁德（唯一已达买点）+ 海康/泸州（观察窗内，伊利已出窗）",
+  tblSeg.indexOf("宁德时代") >= 0 && tblSeg.indexOf("海康威视") >= 0 && tblSeg.indexOf("泸州老窖") >= 0 && tblSeg.indexOf("伊利股份") < 0,
+  "名单：" + (fundHtml.match(/● 已达买点|○ 距买点|待观察/g) || []).length + " 行");
 assert("茅台/腾讯距买点 >30%（买点 653/306），退出老唐法观察窗", tblSeg.indexOf("贵州茅台") < 0 && tblSeg.indexOf("腾讯控股") < 0);
 assert("页面说明买点来源（机构一致预期）", fundHtml.indexOf("机构一致预期三年倍数") >= 0);
 assert("表头改为三年后合理估值/理想买点", fundHtml.indexOf("理想买点(×50%)") >= 0 && fundHtml.indexOf("三年后合理估值") >= 0);
