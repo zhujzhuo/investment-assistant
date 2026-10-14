@@ -1,42 +1,42 @@
 // 名单归档基线 + 与上期变动（gen-baseline.js 自动生成，每日 18:00 覆盖；请勿手改）
 window.IA_BASELINE = {
  "version": 1,
- "asOf": "2026-10-13",
- "prevAsOf": "2026-10-12",
+ "asOf": "2026-10-14",
+ "prevAsOf": "2026-10-13",
  "lists": {
   "picks": {
    "steady": [
     {
      "code": "sz000651",
      "name": "格力电器",
-     "reason": "股息率 7.6%，PE 8.0 倍，PB 1.49"
+     "reason": "股息率 7.5%，PE 8.0 倍，PB 1.50"
     },
     {
      "code": "sz000568",
      "name": "泸州老窖",
-     "reason": "股息率 8.2%，PE 13.8 倍，PB 2.27"
+     "reason": "股息率 8.2%，PE 13.8 倍，PB 2.26"
     },
     {
      "code": "sz000858",
      "name": "五粮液",
-     "reason": "股息率 7.3%，PE 20.9 倍，PB 2.31"
+     "reason": "股息率 7.3%，PE 21.0 倍，PB 2.32"
     }
    ],
    "growth": [
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 14.3 倍"
+     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 14.2 倍"
     },
     {
      "code": "sz300750",
      "name": "宁德时代",
-     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 15.7 倍"
+     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 15.3 倍"
     },
     {
      "code": "sh603259",
      "name": "药明康德",
-     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 22.0 倍"
+     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 21.6 倍"
     }
    ],
    "rotate": [
@@ -81,7 +81,7 @@ window.IA_BASELINE = {
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "dist": 7.2,
+     "dist": 6.8,
      "score": 8.4
     },
     {
@@ -112,17 +112,17 @@ window.IA_BASELINE = {
     {
      "code": "hk09992",
      "name": "泡泡玛特",
-     "dist": 11.5
+     "dist": 10.6
+    },
+    {
+     "code": "hk06181",
+     "name": "老铺黄金",
+     "dist": 12
     },
     {
      "code": "sz300760",
      "name": "迈瑞医疗",
      "dist": 12
-    },
-    {
-     "code": "hk06181",
-     "name": "老铺黄金",
-     "dist": 14.6
     }
    ]
   },
