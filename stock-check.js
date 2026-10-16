@@ -103,7 +103,10 @@ window.showTab("fund");
 const bandHtml = store["fund-body"].innerHTML;
 const iB = bandHtml.indexOf("三批触发价（40/30/30）");
 const tblB = bandHtml.slice(iB, bandHtml.indexOf("</tbody></table>", iB));
-assert("旧法正式名单仍为 6 只", ((bandHtml.match(/● 已达买点/g) || []).length + (bandHtml.match(/○ 距买点/g) || []).length + (bandHtml.match(/待观察/g) || []).length) === 6);
+// 名单只数随行情变化（10-14 海康移出 6→5；10-16 海康重新进入观察窗 5→6），故断言「正式表内状态标记数 == 表格行数」自洽即可，不钉死常量
+const bandMarkers = (tblB.match(/● 已达买点|○ 距买点|待观察/g) || []).length;
+const bandRows = (tblB.match(/<tr>/g) || []).length;
+assert("旧法正式名单：状态标记数 = 表格行数", bandMarkers > 0 && bandMarkers === bandRows, "markers=" + bandMarkers + " rows=" + bandRows);
 assert("旧法含阳光电源与伊利股份", tblB.indexOf("阳光电源") >= 0 && tblB.indexOf("伊利股份") >= 0);
 assert("旧法含紫金矿业于备选", bandHtml.slice(bandHtml.indexOf("备选（等跌进买点")).indexOf("紫金矿业") >= 0);
 const pmB = bandHtml.match(/泡泡玛特[\s\S]{0,200}?买点 ([\d.]+)/);

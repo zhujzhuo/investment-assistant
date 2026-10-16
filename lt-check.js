@@ -40,6 +40,8 @@ const lt = c => (function () { let r = null; window._setValMode("lt"); const st 
 })(); })();
 // 直接复用页面内函数：通过渲染调研页拿不到内部对象，改用全局暴露判断
 const RF = window.MKT.rfUS && window.MKT.rfUS.v > 0 ? window.MKT.rfUS.v : 3.5;   // 无风险收益率 = 美债十年期（每日刷新）
+// 合理PE 基准 = 1/美债10Y（夹在 15~33），rf 每日浮动 → 断言一律写成「基准 × 增速封顶系数」，不钉死绝对值
+const PE_BASE = Math.max(15, Math.min(33, 100 / RF));
 function ltOf(code) {
   const st = by(code);
   const f = F[code];
@@ -66,21 +68,22 @@ function ltOf(code) {
 const mt = ltOf("sh600519");
 assert("茅台三年后 EPS = 66.97 × 1.1752 ≈ 78.70", near(mt.eps3y, 78.70, 0.3), mt.eps3y.toFixed(2));
 assert("茅台隐含三年年化增速 ≈ 5.5%", near(mt.g3y * 100, 5.5, 0.3), (mt.g3y * 100).toFixed(2));
-assert("茅台增速 3~8% → 合理PE 封顶 = 基准 ×0.87 ≈ 16.6 倍（美债10Y 5.24% → 基准 19.1）", near(mt.cap, 16.6, 0.15) && near(mt.pe, mt.cap, 0.01), mt.pe.toFixed(2));
+// 合理PE 基准 = 1/美债10Y（rf 浮动 → 基准浮动），故断言写成「基准 × 系数」而非钉死绝对值
+assert("茅台增速 3~8% → 合理PE 封顶 = 基准 ×0.87（当前 ≈" + mt.cap.toFixed(1) + " 倍）", near(mt.cap, PE_BASE * mt.capR, 0.01) && near(mt.pe, mt.cap, 0.01), mt.pe.toFixed(2));
 assert("茅台买点 = 三年后合理估值 × 50%", near(mt.buy, mt.fair3y * 0.5, 0.01), mt.buy.toFixed(2));
-assert("茅台买点 ≈ 655（美债5.24%口径，比旧 rf3.5% 的 984 低约 1/3）", near(mt.buy, 655.2, 2), mt.buy.toFixed(2));
+assert("茅台买点 ≈ 3年估值×50%（美债10Y口径，当前 " + mt.buy.toFixed(0) + "，远低于旧 rf3.5% 的 984）", mt.buy > 620 && mt.buy < 720, mt.buy.toFixed(2));
 assert("茅台距买点 +93%（需回落近半），已退出 30% 观察窗（不再入选老唐法正式名单）", mt.buy < by("sh600519").px * 0.55, mt.buy.toFixed(1) + " vs 现价 " + by("sh600519").px);
 assert("茅台卖点 = min(三年后×150%, 基准EPS×50倍)", near(mt.sell, Math.min(mt.fair3y * 1.5, mt.base * 50), 0.01));
 
 console.log("\n=== 3. 增速放缓如何定价 ===");
 const pm = ltOf("hk09992"), lg = ltOf("hk06181"), xm = ltOf("hk01810"), nd = ltOf("sz300750");
-assert("泡泡玛特增速≈0 → PE 封顶 = 基准 ×0.77 ≈ 14.7 倍（低于茅台 16.6 倍）", near(pm.cap, 14.7, 0.15) && pm.cap < mt.cap, pm.cap);
+assert("泡泡玛特增速≈0 → PE 封顶 = 基准 ×0.77（当前 ≈" + pm.cap.toFixed(1) + " 倍，低于茅台）", near(pm.cap, PE_BASE * pm.capR, 0.01) && pm.cap < mt.cap, pm.cap);
 assert("泡泡玛特买点折让 45%（增速<3%加大安全边际）", near(pm.bx, 0.45, 0.001), pm.bx);
 assert("泡泡玛特买点 ≈ 59（美债口径进一步压低，远低于人工校准 134.75）", pm.buy > 55 && pm.buy < 65, pm.buy.toFixed(2));
-assert("老铺黄金负增长 → PE 封顶 = 基准 ×0.70 ≈ 13.4 倍 + 买点折让 40%", near(lg.cap, 13.4, 0.15) && near(lg.bx, 0.40, 0.001), lg.cap.toFixed(2) + "/" + lg.bx);
+assert("老铺黄金负增长 → PE 封顶 = 基准 ×0.70（当前 ≈" + lg.cap.toFixed(1) + " 倍）+ 买点折让 40%", near(lg.cap, PE_BASE * lg.capR, 0.01) && near(lg.bx, 0.40, 0.001), lg.cap.toFixed(2) + "/" + lg.bx);
 assert("老铺黄金买点 ≈ 151 < 现价 321（周期峰值盈利不追）", lg.buy < 160 && lg.buy < by("hk06181").px, lg.buy.toFixed(2));
 assert("小米负增长 → 买点折让 40%", near(xm.bx, 0.40, 0.001), xm.bx);
-assert("宁德增速>15% → PE 封顶 = 基准 ×1.05 ≈ 20.0 倍（高于茅台）", near(nd.cap, 20.0, 0.15) && nd.cap > mt.cap, nd.cap.toFixed(2));
+assert("宁德增速>15% → PE 封顶 = 基准 ×1.05（当前 ≈" + nd.cap.toFixed(1) + " 倍，高于茅台）", near(nd.cap, PE_BASE * nd.capR, 0.01) && nd.cap > mt.cap, nd.cap.toFixed(2));
 assert("高增长给的 PE 倍数 > 低增长给的 PE 倍数", nd.pe > mt.pe, nd.pe.toFixed(1) + " vs " + mt.pe.toFixed(1));
 const zg = ltOf("sh601899");
 assert("紫金为周期股 → 质地折扣含 ×0.8", by("sh601899").industry === "有色/黄金铜");

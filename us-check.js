@@ -64,6 +64,8 @@ eval(fs.readFileSync(path.join(dir, "data.js"), "utf8"));
 const SNAP_600519 = (window.STOCKS.find(s => s.code === "sh600519") || {}).px;   // 快照价随每日刷新变化，测试不钉死具体数字
 eval(fs.readFileSync(path.join(dir, "data/valuation.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "data/us.js"), "utf8"));
+// KO 快照价随 fetch-us.js 每日刷新变化，测试不钉死具体数字（曾因钉死 86.17 在刷新后误报失败）
+const SNAP_KO = (window.US_STOCKS.find(s => s.code === "usKO") || {}).px;
 eval(fs.readFileSync(path.join(dir, "app.js"), "utf8"));
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -182,7 +184,7 @@ const get = c => US.find(s => s.code === c);
   assert("重复刷新价格不累积", ms2.px === 1050, "现价 " + ms2.px);
   assert("重复刷新 PE 不累积", Math.abs(ms2.pe - 1050 / 17.95) < 0.05, "PE " + Number(ms2.pe).toFixed(2));
   const ko = get("usKO");
-  assert("无实时数据的美股保持快照", ko.px === 86.17, "现价 " + ko.px);
+  assert("无实时数据的美股保持快照", ko.px === SNAP_KO, "现价 " + ko.px + " vs 快照 " + SNAP_KO);
   const ahStock = window.STOCKS.find(s => s.code === "sh600519");
   assert("A股标的未被美股逻辑污染（价格保持快照值）", ahStock.px === SNAP_600519, "现价 " + ahStock.px + " vs 快照 " + SNAP_600519);
 

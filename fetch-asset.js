@@ -158,7 +158,11 @@ async function kline(code, period, n, fq) {
         .filter((r) => r && r[0] && r[2] != null)
         .map((r) => ({ d: String(r[0]).slice(0, 10), o: Number(r[1]), c: Number(r[2]), h: Number(r[3]), l: Number(r[4]) }))
         .filter((r) => isFinite(r.c) && r.c > 0);
-      if (out.length) return out;
+      // 数量合理性校验（2026-10-16 踩坑）：ifzq 对 usQQQ 会返回 HTTP 200 但只有 2 条残缺数据
+      // （首日 2011-06-02 + 最近一天），"有数据就采信" 会绕过 CLI 兜底 → 纳指 MA250/RSI 全废。
+      // 规则：至少要到请求条数的一半，且周/月K至少 20 条；否则视为接口异常，落 CLI。
+      if (out.length >= Math.min(n, 20) && (period === "day" || out.length >= 20)) return out;
+      if (out.length >= Math.floor(n / 2)) return out;
     }
   } catch (e) { /* ifzq 已被 WAF 拦截 → 落到 CLI */ }
   return klineViaCLI(code, period, n, fq);
@@ -321,8 +325,20 @@ function peSeries(prices, epsGrowthPerYear) {
   });
 
   // ---------- 红利两兄弟 ----------
+  // 未完月防护：月中运行时月K最后一条是「本月至今」的不完整K线（如 2026-10-16 只走了11个交易日）。
+  // 用它回推股息率历史会让 dyHist 尾部混入未完月数据 → dyPct 分位无谓跳动（10-15→10-16 从 22.2% 跳到 16.7% 的原因之一）。
+  // 规则：月K最后一条若不是本月最后一个自然日（简化：日期非 28~31 号，且下一条不存在），视为未完月，锚定序列剔除它。
+  // 注意：日K/周K（技术面）不受影响——它们本来就是「至今为止」的口径，且 liveDiv 用实时价现算，天然覆盖当月最新价。
+  function dropIncompleteMonth(arr) {
+    if (!arr || arr.length < 2) return arr;
+    const out = arr.slice();
+    const last = out[out.length - 1];
+    const d = +last.d.slice(8, 10);
+    if (d < 28) out.pop();                     // 月中：丢弃未完月
+    return out;
+  }
   function buildDiv(key, ref, mRaw, dArr, wArr, quoteCode) {
-    const prices = (mRaw || []).map((r) => r.c);
+    const prices = dropIncompleteMonth(mRaw || []).map((r) => r.c);
     const coef = yieldSeries(prices, ref.dpsGrowth);
     const dyHist = coef.map((c) => c * ref.dy);
     const dyPct = pctRank(dyHist.slice(-36), ref.dy);
@@ -360,7 +376,7 @@ function peSeries(prices, epsGrowthPerYear) {
 
   // ---------- 纳斯达克 ----------
   // 估值用纳斯达克100 指数（PE 与点位）；技术面用可直接买卖的 QQQ（美股账户）/ 513100（QDII）
-  const nasPrices = (K.nasM || []).map((r) => r.c);            // QQQ 前复权月K
+  const nasPrices = dropIncompleteMonth(K.nasM || []).map((r) => r.c);   // QQQ 前复权月K（剔未完月，同红利口径）
   const peCoef = peSeries(nasPrices, REF.nasdaq.epsGrowth);
   const peHist = peCoef.map((c) => c * REF.nasdaq.pe);
   // PE 分位对 EPS 增速假设很敏感，给出 15% / 20% / 25% 三档情景
