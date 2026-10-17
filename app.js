@@ -938,7 +938,7 @@
     var lst = (window.DIV_ETF && window.DIV_ETF.nas) || [];
     if (!lst.length) return '';
     var h = '<div class="card" style="margin-top:10px"><h3>🎯 纳指100 可投工具对比（按可投额度 · 费率 · 溢价综合）</h3>';
-    h += '<table class="tbl"><thead><tr><th>工具</th><th>现价</th><th>涨跌</th><th>参考净值</th><th>表观溢价</th><th>总费率/年</th><th>规模(亿)</th><th>可投额度</th><th>要点</th></tr></thead><tbody>';
+    h += '<table class="tbl"><thead><tr><th>工具</th><th>现价</th><th>涨跌</th><th>参考净值</th><th>表观溢价</th><th>总费率/年</th><th>规模(亿)</th><th>申购(一级)</th><th>场内(二级)</th><th>要点</th></tr></thead><tbody>';
     for (var i = 0; i < lst.length; i++) {
       var e = lst[i];
       var pCls = e.prem == null ? "v-na" : (e.prem > 5 ? "v5" : (e.prem > 3 ? "v4" : (e.prem > 1 ? "v2" : "v1")));
@@ -950,11 +950,16 @@
         '<td><span class="vchip ' + pCls + '">' + (e.prem == null ? "—" : pct(e.prem, 1)) + '</span></td>' +
         '<td>' + pct(e.fee, 2) + '</td>' +
         '<td>' + num(e.scale, 0) + '</td>' +
-        '<td class="small">' + (e.mgr === "国泰基金" ? "申购暂停（额度紧）" : "场内不限购") + '</td>' +
+        '<td class="small">' + (e.mgr === "国泰基金" ? '<span class="c-down">暂停申购</span>' : "开放（设每日限额）") + '</td>' +
+        '<td class="small">✓ 不限购<br><span class="muted">T+0 交易</span></td>' +
         '<td class="small wrapcol">' + esc(e.note || "") + '</td></tr>';
     }
     h += '</tbody></table>';
-    h += '<div class="note" style="margin-top:8px"><b>溢价口径提醒</b>：表观溢价 = 现价 / 最新已披露净值 − 1，而 QDII 净值 T+1 披露且含美股当日波动，'
+    h += '<div class="note" style="margin-top:8px"><b>场内「申购限制」的两层含义（2026-10 新规口径）</b>：<br>'
+      + '① <b>一级市场申购（机构/大资金用）</b>：用一篮子股票换基金份额——受 QDII 外汇额度约束，国泰 513100 已暂停申购，其余 5 只仍开放但设有每日限额。普通投资者基本不走这条路。<br>'
+      + '② <b>二级市场买卖（普通投资者用的）</b>：和买股票一样在交易软件里直接买，<b>没有任何额度限制、不限购</b>。但代价是价格由供需决定：QDII 额度越紧，场内越容易溢价（多家基金公司 10 月已连发溢价风险提示，纳指 ETF 一度盘中临时停牌）。<br>'
+      + '结论：<b>场内不是「能不能买到」的问题，而是「以什么价格买到」的问题</b>——额度紧张的成本从申购限额转移到了溢价里，买之前先看溢价列，>3% 观望。<br>'
+      + '<b>溢价口径提醒</b>：表观溢价 = 现价 / 最新已披露净值 − 1，而 QDII 净值 T+1 披露且含美股当日波动，'
       + '因此表格显示的是「按昨日净值的表观值」。真实溢价需以基金公司实时预估净值为准（规模大、做市商活跃的品种回归快）。'
       + '择时规则：<b>溢价 &lt;1% 直接买；1%~3% 分 3~5 天分批；&gt;3% 观望等回落</b>——溢价买入相当于当场多付一笔隐形成本，会直接吃掉定投收益。</div>';
     // 场外与美元渠道
