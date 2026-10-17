@@ -930,6 +930,57 @@
     return h;
   }
 
+  // ---------- 纳斯达克100 可投工具对比（场内 QDII ETF + 场外联接 + 美元渠道）----------
+  // 数据：window.DIV_ETF.nas（fetch-etf.js 每日生成：现价/净值/溢价率 + 静态费率规模），
+  // 现价列随 loadLive 实时刷新（DIV_ETF 纳指组同样进 codes 批次）；溢价率按 T-1 净值口径展示。
+  // 静态费率/规模为 2026-10-17 基金公司口径（westock etf profile + 官网费率页），变更频率低，季度复核即可。
+  function nasVehicleHTML() {
+    var lst = (window.DIV_ETF && window.DIV_ETF.nas) || [];
+    if (!lst.length) return '';
+    var h = '<div class="card" style="margin-top:10px"><h3>🎯 纳指100 可投工具对比（按可投额度 · 费率 · 溢价综合）</h3>';
+    h += '<table class="tbl"><thead><tr><th>工具</th><th>现价</th><th>涨跌</th><th>参考净值</th><th>表观溢价</th><th>总费率/年</th><th>规模(亿)</th><th>可投额度</th><th>要点</th></tr></thead><tbody>';
+    for (var i = 0; i < lst.length; i++) {
+      var e = lst[i];
+      var pCls = e.prem == null ? "v-na" : (e.prem > 5 ? "v5" : (e.prem > 3 ? "v4" : (e.prem > 1 ? "v2" : "v1")));
+      h += '<tr title="' + esc(e.note || "") + '">' +
+        '<td><b>' + esc(e.name) + '</b><span class="muted small"> ' + e.code + '</span></td>' +
+        '<td>' + num(e.px, 3) + '</td>' +
+        '<td class="' + cls(e.chgPct) + '">' + (e.chgPct > 0 ? "+" : "") + pct(e.chgPct) + '</td>' +
+        '<td>' + num(e.nav, 4) + '<div class="muted small">' + esc(e.navDate || '') + '</div></td>' +
+        '<td><span class="vchip ' + pCls + '">' + (e.prem == null ? "—" : pct(e.prem, 1)) + '</span></td>' +
+        '<td>' + pct(e.fee, 2) + '</td>' +
+        '<td>' + num(e.scale, 0) + '</td>' +
+        '<td class="small">' + (e.mgr === "国泰基金" ? "申购暂停（额度紧）" : "场内不限购") + '</td>' +
+        '<td class="small wrapcol">' + esc(e.note || "") + '</td></tr>';
+    }
+    h += '</tbody></table>';
+    h += '<div class="note" style="margin-top:8px"><b>溢价口径提醒</b>：表观溢价 = 现价 / 最新已披露净值 − 1，而 QDII 净值 T+1 披露且含美股当日波动，'
+      + '因此表格显示的是「按昨日净值的表观值」。真实溢价需以基金公司实时预估净值为准（规模大、做市商活跃的品种回归快）。'
+      + '择时规则：<b>溢价 &lt;1% 直接买；1%~3% 分 3~5 天分批；&gt;3% 观望等回落</b>——溢价买入相当于当场多付一笔隐形成本，会直接吃掉定投收益。</div>';
+    // 场外与美元渠道
+    h += '<div class="grid2">';
+    h += '<div class="card"><h3>场外联接基金（人民币，无溢价）</h3><div class="tbl-scroll"><table class="tbl"><thead><tr><th>渠道</th><th>费率</th><th>额度</th><th>要点</th></tr></thead><tbody>' +
+      '<tr><td>广发纳指100ETF联接A (270042)</td><td>申购 0.12%（1折）+ 运作 ~1.05%</td><td class="c-down">日限购 ~5 元</td><td class="small">按净值成交无溢价；限购形同虚设，只适合「每天攒一点」的零钱定投</td></tr>' +
+      '<tr><td>大成纳指100联接A</td><td>申购 0.12% + 运作 ~1.0%</td><td class="c-down">日限购 ~10 元</td><td class="small">同上，QDII 外汇额度紧张所致（2026-08 口径）</td></tr>' +
+      '<tr><td>建信纳指100指数A</td><td>申购 0.12% + 运作 ~1.0%</td><td class="c-down">日限购 ~100 元</td><td class="small">限购最宽松的一档，仍是杯水车薪</td></tr>' +
+      '</tbody></table></div>' +
+      '<div class="muted small" style="margin-top:6px">来源：天天基金 2026-08 限购公告口径；赎回 T+5~T+7。场外适合小额定投托底，大额资金只能走场内。</div></div>';
+    h += '<div class="card"><h3>美元直投渠道（绕开 QDII 限购）</h3><div class="tbl-scroll"><table class="tbl"><thead><tr><th>渠道</th><th>成本</th><th>额度</th><th>要点</th></tr></thead><tbody>' +
+      '<tr><td>银行换汇 + 基金公司美元份额</td><td>换汇点差 ~0.3% + 运作 ~0.75%</td><td>个人 5 万美元/年</td><td class="small">换汇用途须如实申报「境外证券投资」；美元份额多数仅基金公司直销 APP 可买（支付宝/天天不支持）</td></tr>' +
+      '<tr><td>境外券商直接买 QQQ</td><td>QQQ 费率仅 0.20%/年</td><td>5 万美元/年 + 境外卡门槛</td><td class="small">成本最低但门槛高：需护照+境外银行卡面签；存量账户多已限制内地新开户（2026-06 起）；股息预扣税 10%~30%；不占用 QDII 机构额度</td></tr>' +
+      '</tbody></table></div>' +
+      '<div class="muted small" style="margin-top:6px">合规提示：个人 5 万美元便利化购汇额度用途申报有严格限制，虚构用途换汇属违规；港股通/跨境理财通仅覆盖港股或大湾区理财，不直接覆盖美股指数。</div></div>';
+    h += '</div>';
+    // 结论
+    h += '<div class="card verdict"><b>怎么选（按资金量）：</b>① <b>小额定投（月几千元）</b>：场外联接 + 场内 ETF 各配一半——场外按净值成交无溢价但限购，场内灵活但要看溢价；'
+      + '② <b>大额（10 万+）</b>：只能场内，六只里优先「<b>规模大 + 费率低 + 溢价低</b>」的组合（513300 华夏 0.6%/133亿 与 159632 华安 0.6%/113亿 是费率规模平衡档；159941 广发规模最大 347 亿流动性最好但费率 1.0% 最贵；'
+      + '富国 513870 总费率最低 0.5% 但规模仅 25 亿，大额进出注意冲击成本）；'
+      + '③ <b>有美元且年换汇额度内</b>：基金公司直销美元份额（运作 ~0.75% 无溢价）优于场内高溢价时点；'
+      + '④ <b>已有境外账户</b>：直接 QQQ（0.20% 费率）是成本最优，但注意合规与税务。'
+      + '所有渠道都承担人民币/美元汇率波动，纳指定投本身已含汇率敞口。</div></div>';
+    return h;
+  }
+
   // ---------- 美股组合（与 A股/港股组合完全独立，配比与标的池各自独立） ----------
   var US_ALLOC = { steady: UDEF.steady, growth: UDEF.growth, rotate: UDEF.rotate, tenx: UDEF.tenx };
   var US_KEYS = ["steady", "growth", "rotate", "tenx"];
@@ -1338,7 +1389,12 @@
     var wDiv = Math.max(floor, Math.min(cap, raw));
     var cut = Math.max(0, raw - wDiv);
     var wNas = 20, wStock = 10, wCash = 100 - wDiv - wNas - wStock;
-    var nl = nasLevel(A.nasdaq.pe);
+    // 纳指 PE 口径（2026-10-17 起实时优先）：peLiveRT = 成份股加权实时 PE（applyLive 随美股价格折算），
+    // 无实时行情时回落 peLive（fetch-asset 每日收盘锚），两者皆缺才用披露口径 REF.pe（慢变，可能滞后数周）。
+    // 档位判定与定投倍数全部跟随实时口径 → PE 从 9-21 的 28.99 变为当日加权值后，档位随之联动。
+    var nasPE = (A.nasdaq.peLiveRT != null) ? A.nasdaq.peLiveRT : (A.nasdaq.peLive != null ? A.nasdaq.peLive : A.nasdaq.pe);
+    A.nasdaq.peEff = nasPE;                                 // 页面统一读 peEff（展示与档位一致，避免两套口径）
+    var nl = nasLevel(nasPE);
     var nasNote = "";
     if (A.nasdaq.distMA250 != null && A.nasdaq.distMA250 > 15 && A.nasdaq.rsi14 != null && A.nasdaq.rsi14 > 70) {
       nl = { lv: nl.lv, label: nl.label + "（技术过热，本期减半）", mult: nl.mult * 0.5, cls: nl.cls };
@@ -1838,12 +1894,18 @@
       '真要减仓时看的是<b>利差</b>（见上方「仓位调整提示 · 减仓方向」的触发价），不是价格涨幅。</div>';
     // ⑤ 纳斯达克模块
     var n = P.nas;
+    var peTxt = (n.peLiveRT != null || n.peLive != null)
+      ? num(n.peEff, 2) + ' 倍 <span class="muted small">' + (n.peLiveRT != null ? "实时 · 成份股加权" : "收盘锚 " + esc(n.peLiveAsOf || "")) + '</span>'
+      : num(n.pe, 2) + ' 倍 <span class="muted small">披露 ' + esc(n.peAsOf) + '</span>';
+    var pePctTxt = (n.pePctRT != null)
+      ? pct(n.pePctRT, 1) + ' <span class="muted small">实时 PE 在36个月锚定序列中的位置</span>'
+      : pct(n.pePct, 0) + ' <span class="muted small">EPS 增速 25% 假设</span>';
     h += '<div class="card"><h3><span class="dot" style="background:#1d4ed8"></span>纳斯达克100（只做指数，不做个股） <span class="vchip ' + P.nasLv.cls + '">' + esc(P.nasLv.label) + '</span></h3>';
     h += '<div class="kv kvg k4" style="margin:6px 0">' +
       kvRow("指数点位", num(n.idxPx, 2) + ' <span class="' + cls(n.chg) + ' small">' + (n.chg > 0 ? "+" : "") + pct(n.chg) + '</span>') +
-      kvRow("PE-TTM", num(n.pe, 2) + ' 倍 <span class="muted small">' + esc(n.peAsOf) + '</span>') +
-      kvRow("PE 近 1 年分位", pct(n.pePct1y, 2) + ' <span class="muted small">越低越便宜</span>') +
-      kvRow("PE 锚定分位（模型）", pct(n.pePct, 0) + ' <span class="muted small">EPS 增速 25% 假设</span>') +
+      kvRow("PE-TTM（加权）", peTxt) +
+      kvRow("PE 分位", pePctTxt) +
+      kvRow("披露口径对照", num(n.pe, 2) + ' 倍 <span class="muted small">' + esc(n.peAsOf) + ' 基金公司披露</span>') +
       kvRow("锚定分位敏感性", (n.peScen ? "增速15%→" + pct(n.peScen.g15, 0) + " / 20%→" + pct(n.peScen.g20, 0) + " / 25%→" + pct(n.peScen.g25, 0) + " / 30%→" + pct(n.peScen.g30, 0) : "—")) +
       kvRow("交易标的", esc(n.vehicle)) +
       kvRow("距年线（QQQ）", (n.distMA250 == null ? "—" : (n.distMA250 > 0 ? "+" : "") + pct(n.distMA250, 1))) +
@@ -1857,12 +1919,13 @@
       '<tr><td>32 ~ 36 倍</td><td>偏高</td><td><b>0.5 倍</b>基准</td><td>每涨 5% 减 10%</td></tr>' +
       '<tr><td>&gt; 36 倍</td><td>高估</td><td><b>暂停</b>定投</td><td>每涨 5% 减 20%，直至 20% 基准仓的一半</td></tr>' +
       '</tbody></table>';
-    h += '<div class="note" style="margin-top:10px"><b>本期结论：</b>PE ' + num(n.pe, 2) + ' 倍处于「合理」档 → 按 <b>' + num(P.nasLv.mult, 1) + ' 倍</b>基准金额定投（建议每月固定日期自动扣款，不择时）。' +
+    h += '<div class="note" style="margin-top:10px"><b>本期结论：</b>PE ' + num(n.peEff, 2) + ' 倍处于「' + esc(P.nasLv.label.replace(/（.*/, "")) + '」档 → 按 <b>' + num(P.nasLv.mult, 1) + ' 倍</b>基准金额定投（建议每月固定日期自动扣款，不择时）。' +
       (P.nasNote ? ' ' + esc(P.nasNote) + '。' : '') +
       ' 定投的意义在于：纳指长期波动大（年化波动 20%+），用固定金额摊平成本；只有估值进入"偏高/高估"档才做分批止盈，其余时间不中断。' +
       '<br><b>技术提示：</b>距年线 ' + (n.distMA250 == null ? "—" : (n.distMA250 > 0 ? "+" : "") + pct(n.distMA250, 1)) + '、RSI ' + num(n.rsi14, 0) + '、52 周位置 ' + (n.pos52 == null ? "—" : pct(n.pos52, 0)) +
       ' —— ' + (n.pos52 != null && n.pos52 > 90 ? '处于历史高位区间，追高性价比低，等回调或降低单次金额' : '未处于极端位置') + '。</div>';
-    h += '<div class="muted small" style="margin-top:6px">说明：美股只做指数（QDII 纳指ETF 或美股账户买 QQQ），不做个股；人民币投资者还需承担汇率波动与 QDII 溢价。PE 近 1 年分位来自基金公司披露（' + esc(n.peAsOf) + '），锚定分位为本项目模型估算，对 EPS 增速假设敏感，故同时给出敏感性区间。</div></div>';
+    h += nasVehicleHTML();
+    h += '<div class="muted small" style="margin-top:6px">说明：美股只做指数（QDII 纳指ETF 或美股账户买 QQQ），不做个股；人民币投资者还需承担汇率波动与 QDII 溢价。PE-TTM（加权）为每日用纳指100成份股行情计算的市值加权口径（91 只正 PE 样本 + 剔除约 10 只亏损股，覆盖约 9 成市值），盘中随美股价格实时折算；披露口径（' + esc(n.peAsOf) + '）为基金公司披露，作对照不作档位依据。分位基于 36 个月锚定序列估算，对 EPS 增速假设敏感，故同时给出敏感性区间。</div></div>';
 
     // ⑥ 货币 + 股票
     h += '<div class="grid2">';
@@ -3318,9 +3381,28 @@
       if (liveDiv("csi", "sh000922")) hit++;
       if (liveDiv("lowvol", "sh512890")) hit++;
     }
-    // 可投工具 4 只 ETF：现价/涨跌也实时刷新 → 首页「ETF 加/减仓参考价」表的现价列与触发表里逐行标注的 ETF 参考价全部跟着实时走
+    // 纳斯达克 PE 实时折算（2026-10-17 新增）：
+    // peLive 锚（fetch-asset 每日用纳指100成份股加权算出）× 美股价格变动比例 → 实时 PE。
+    // 价格变动 → 整体市值等比变动（股本不变），EPS TTM 当日不变，故 PE = peLive × (现价/锚价)。
+    // 锚价用 QQQ 现价（nas.px 同为 QQQ 口径）；分位历史 peHist 的尾值即锚日 PE，
+    // 实时分位 = 历史序列中 ≤ 实时 PE 的占比（与 liveDiv 的 dyPct 同口径，严格小于）。
+    if (A && A.nasdaq && A.nasdaq.peLive != null && A.nasdaq.px) {
+      var nqLive = parseQuote("usQQQ");
+      if (nqLive && nqLive.px != null) {
+        if (A.nasdaq.px0 == null) { A.nasdaq.px0 = A.nasdaq.px; A.nasdaq.peLive0 = A.nasdaq.peLive; }
+        var nf = nqLive.px / A.nasdaq.px0;
+        A.nasdaq.peLiveRT = A.nasdaq.peLive0 * nf;
+        if (A.nasdaq.peHist && A.nasdaq.peHist.length) {
+          var nBelow = 0;
+          for (var ni = 0; ni < A.nasdaq.peHist.length; ni++) if (A.nasdaq.peHist[ni] < A.nasdaq.peLiveRT) nBelow++;
+          A.nasdaq.pePctRT = nBelow / A.nasdaq.peHist.length * 100;
+        }
+        hit++;
+      }
+    }
+    // 可投工具 ETF（红利 4 只 + 纳指 6 只）：现价/涨跌也实时刷新 → 红利「ETF 加/减仓参考价」与纳指「可投工具对比表」的现价列实时更新
     if (window.DIV_ETF) {
-      ["csi", "lowvol"].forEach(function (k) {
+      ["csi", "lowvol", "nas"].forEach(function (k) {
         var lst = window.DIV_ETF[k] || [];
         for (var j = 0; j < lst.length; j++) {
           var qe = parseQuote((lst[j].mkt || "sh") + lst[j].code);
@@ -3360,10 +3442,10 @@
     for (var wi = 0; wi < WATCH.length; wi++) codes.push(WATCH[wi].code);
     for (var j = 0; j < IX_CODES.length; j++) codes.push(IX_CODES[j][0]);
     // 红利标的也纳入实时刷新：中证红利指数 sh000922 + 红利低波ETF sh512890，
-    // 以及可投工具 4 只 ETF（sh515180 / sh515080 / sh563020 / sh512890）——首页「ETF 加/减仓参考价」由它们的现价折算
+    // 以及可投工具 4 只红利 ETF（sh515180 / sh515080 / sh563020 / sh512890）+ 6 只纳指 ETF（513100/513300/513870/159632/159941/159513）
     codes.push("sh000922", "sh512890");
     if (window.DIV_ETF) {
-      ["csi", "lowvol"].forEach(function (k) {
+      ["csi", "lowvol", "nas"].forEach(function (k) {
         var lst = window.DIV_ETF[k] || [];
         for (var e = 0; e < lst.length; e++) codes.push((lst[e].mkt || "sh") + lst[e].code);
       });
@@ -3374,6 +3456,7 @@
       if (US[u].code.indexOf(".") >= 0) continue;
       codesUS.push(US[u].code);
     }
+    codesUS.push("usQQQ");                                 // 纳指 PE 实时折算的价格锚（applyLive 内 nas.peLiveRT 用）
     for (var g = 0; g < UM.indices.length; g++) codesUS.push(UM.indices[g].code);
     var batches = [codes, codesUS];                        // 分两批，避免单次请求代码过多
     var settled = false;

@@ -289,6 +289,53 @@ function peSeries(prices, epsGrowthPerYear) {
     catch (e) { console.log("stock", s.c, "ERR", e.message); raw.kline.stocks[s.c] = []; }
     await sleep(1300);
   }
+
+  // ---------- 纳指100 实时加权 PE（2026-10-17 新增）----------
+  // 步骤：①westock index constituent usNDX 拿成份清单（约 100 只）
+  //       ②westock quote 批量拉行情（表头索引定位 pe_ratio / total_market_cap）
+  //       ③市值加权整体 PE = Σmcap / Σ(mcap/pe)，剔除 PE≤0 的亏损股（TTW/MSTR/INTC 等）
+  //       ④分批拉取（每批 30 只 + 间隔 2s）规避 CLI 限频；失败批次重试一次
+  // 产出：raw.kline.nasPELive / nasPELiveAsOf / nasPELiveCov（覆盖市值占比）
+  async function fetchNasPELive() {
+    try {
+      const out = execFileSync(WS_BIN, ["index", "constituent", "usNDX"], { encoding: "utf8", maxBuffer: 32 * 1024 * 1024, timeout: 60000 });
+      const codes = [...new Set(String(out).match(/us[A-Z]+/g) || [])];
+      if (codes.length < 80) { console.log("nasPELive: 成份数异常 " + codes.length + "，跳过"); return; }
+      let totCap = 0, totProfit = 0, nOk = 0, nLoss = 0;
+      const BATCH = 30;
+      for (let b = 0; b < codes.length; b += BATCH) {
+        const batch = codes.slice(b, b + BATCH);
+        let done = false;
+        for (let attempt = 0; attempt < 2 && !done; attempt++) {
+          try {
+            const q = execFileSync(WS_BIN, ["quote", batch.join(",")], { encoding: "utf8", maxBuffer: 32 * 1024 * 1024, timeout: 90000 });
+            const rows = String(q).split("\n").filter((l) => /^\|\s*us/.test(l));
+            if (rows.length) {
+              const hdr = String(q).split("\n")[0].split("|").map((s) => s.trim());
+              const iPe = hdr.indexOf("pe_ratio"), iCap = hdr.indexOf("total_market_cap");
+              for (const l of rows) {
+                const f = l.split("|").map((s) => s.trim());
+                const pe = parseFloat(f[iPe]), cap = parseFloat(f[iCap]);
+                if (cap > 0 && pe > 0) { totCap += cap; totProfit += cap / pe; nOk++; }
+                else if (cap > 0) nLoss++;
+              }
+              done = true;
+            }
+          } catch (e) { /* 限频重试 */ }
+          if (!done) await sleep(2500);
+        }
+        await sleep(2000);
+      }
+      if (nOk >= 60 && totProfit > 0) {
+        raw.kline.nasPELive = Number((totCap / totProfit).toFixed(2));
+        raw.kline.nasPELiveAsOf = new Date().toISOString().slice(0, 10);
+        raw.kline.nasPELiveCov = nOk;
+        console.log("nasPELive: 市值加权 PE=" + raw.kline.nasPELive + "（正PE " + nOk + " 只 / 亏损剔除 " + nLoss + " 只）");
+      } else { console.log("nasPELive: 有效样本不足（" + nOk + "），跳过"); }
+    } catch (e) { console.log("nasPELive ERR", e.message); }
+  }
+  await fetchNasPELive();
+
   fs.writeFileSync(RAW, JSON.stringify(raw));
 
   // ---------- 计算 ----------
@@ -394,11 +441,18 @@ function peSeries(prices, epsGrowthPerYear) {
   const nasHi = nasCloses.length ? Math.max.apply(null, nasCloses.slice(-250)) : null;
   const nasLo = nasCloses.length ? Math.min.apply(null, nasCloses.slice(-250)) : null;
   const nasWb = boll(nasW, 20, 2);
+  // 纳指100 实时加权 PE（2026-10-17 新增）：
+  // 用成份股行情算「市值加权整体 PE」= Σ市值 / Σ(市值/个股PE)，覆盖约 9 成市值；
+  // 剔除亏损股（PE≤0：TTW/NBIS/MSTR/INTC 等，亏损期盈利贡献为负会低估整体 PE——
+  // 纳指100 权重高度集中（前十占~50%），盈利大头全部有正 PE，剔除影响 <0.5 倍）。
+  // 该口径 vs 基金公司披露（28.99, 9-21）：前者 TTM 个股聚合、后者或含平滑，量级一致可互为校验。
+  const nasPELive = K.nasPELive || null;
   const nas = {
     name: REF.nasdaq.name, code: "NDX", vehicle: REF.nasdaq.vehicle,
     idxPx: nq.px || null, chg: nq.chg != null ? nq.chg : null,
     px: nasPx, pxName: "QQQ（美股可交易标的）",
     pe: REF.nasdaq.pe, peAsOf: REF.nasdaq.peAsOf, pePct: peScen.g25, pePct1y: REF.nasdaq.pePct1y, peScen: peScen, peStats: peStats,
+    peLive: nasPELive, peLiveAsOf: K.nasPELiveAsOf || null, peLiveCov: K.nasPELiveCov || null,
     peHist: peHist.slice(-36).map((v) => Number(v.toFixed(2))),
     epsGrowth: REF.nasdaq.epsGrowth,
     ma250: nasMA, distMA250: (nasPx && nasMA) ? (nasPx / nasMA - 1) * 100 : null,
