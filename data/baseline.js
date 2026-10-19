@@ -1,25 +1,25 @@
 // 名单归档基线 + 与上期变动（gen-baseline.js 自动生成，每日 18:00 覆盖；请勿手改）
 window.IA_BASELINE = {
  "version": 1,
- "asOf": "2026-10-17",
- "prevAsOf": "2026-10-16",
+ "asOf": "2026-10-19",
+ "prevAsOf": "2026-10-17",
  "lists": {
   "picks": {
    "steady": [
     {
      "code": "sz000651",
      "name": "格力电器",
-     "reason": "股息率 7.6%，PE 7.9 倍，PB 1.49"
+     "reason": "股息率 7.5%，PE 8.0 倍，PB 1.50"
     },
     {
      "code": "sz000568",
      "name": "泸州老窖",
-     "reason": "股息率 8.0%，PE 14.1 倍，PB 2.32"
+     "reason": "股息率 7.8%，PE 14.4 倍，PB 2.37"
     },
     {
      "code": "sz000858",
      "name": "五粮液",
-     "reason": "股息率 7.2%，PE 21.4 倍，PB 2.36"
+     "reason": "股息率 7.1%，PE 21.6 倍，PB 2.39"
     }
    ],
    "growth": [
@@ -31,12 +31,12 @@ window.IA_BASELINE = {
     {
      "code": "sz300750",
      "name": "宁德时代",
-     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 15.1 倍"
+     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 14.6 倍"
     },
     {
      "code": "sh603259",
      "name": "药明康德",
-     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 20.2 倍"
+     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 20.0 倍"
     }
    ],
    "rotate": [
@@ -69,13 +69,13 @@ window.IA_BASELINE = {
     {
      "code": "sz300750",
      "name": "宁德时代",
-     "dist": -15.4,
+     "dist": -17.9,
      "score": 8.1
     },
     {
      "code": "sz300274",
      "name": "阳光电源",
-     "dist": -13.4,
+     "dist": -13.3,
      "score": 6.9
     },
     {
@@ -87,27 +87,27 @@ window.IA_BASELINE = {
     {
      "code": "sh600887",
      "name": "伊利股份",
-     "dist": 16.5,
+     "dist": 15.5,
      "score": 7.1
-    },
-    {
-     "code": "sh600519",
-     "name": "贵州茅台",
-     "dist": 21.2,
-     "score": 8.5
     },
     {
      "code": "sz002415",
      "name": "海康威视",
-     "dist": 29.8,
+     "dist": 16.3,
      "score": 6.8
+    },
+    {
+     "code": "sh600519",
+     "name": "贵州茅台",
+     "dist": 22,
+     "score": 8.5
     }
    ],
    "alts": [
     {
      "code": "sh601899",
      "name": "紫金矿业",
-     "dist": -3.2
+     "dist": -3.6
     },
     {
      "code": "hk09992",
@@ -120,9 +120,9 @@ window.IA_BASELINE = {
      "dist": 16
     },
     {
-     "code": "sz300760",
-     "name": "迈瑞医疗",
-     "dist": 16.1
+     "code": "sh603259",
+     "name": "药明康德",
+     "dist": 16.2
     }
    ]
   },

@@ -67,11 +67,16 @@ let wkM;
 while ((wkM = wkRe.exec(fundHtml)) !== null) wkLabels.push({ wk: +wkM[1], d: wkM[2] });
 assert("逐周行连续 W1~W12", wkLabels.length === 12 && wkLabels.every((x, i) => x.wk === i + 1), wkLabels.map(x => "W" + x.wk).join(","));
 assert("每周带起始日期", wkLabels.every(x => /^\d{1,2}\/\d{2}$/.test(x.d)), wkLabels[0] && wkLabels[0].d);
-// 相邻周日期间隔 7 天
-function toDate(s) { const [m, d] = s.split("/").map(Number); return new Date(2026, m - 1, d); }
-let gapOk = true;
-for (let i = 1; i < wkLabels.length; i++) {
-  const g = (toDate(wkLabels[i].d) - toDate(wkLabels[i - 1].d)) / 86400000;
+// 相邻周日期间隔 7 天（W12 落在次年 1 月，需先把日期序列整体换算再比较，否则跨年会算出负间隔）
+let gapOk = true, yearCursor = 2026, prevMon = null;
+const wkDates = wkLabels.map(function (x) {
+  const p = x.d.split("/"), m = Number(p[0]), d = Number(p[1]);
+  if (prevMon != null && m < prevMon) yearCursor++;
+  prevMon = m;
+  return new Date(yearCursor, m - 1, d);
+});
+for (let i = 1; i < wkDates.length; i++) {
+  const g = (wkDates[i] - wkDates[i - 1]) / 86400000;
   if (Math.abs(g - 7) > 1) gapOk = false;
 }
 assert("相邻周间隔 7 天", gapOk, wkLabels[0].d + " → " + wkLabels[1].d);

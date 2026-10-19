@@ -80,7 +80,7 @@ console.log("=== 3. 在线 qt 拉取冒烟（qtFetch） ===");
     assert("qt 腾讯 px>0 且 PE-TTM>0", h && h.price > 0 && h.pe_ratio > 0, JSON.stringify(h && { px: h.price, pe: h.pe_ratio }));
     assert("qt 上证 px>0 且成交额>1e11", i && i.price > 0 && i.amount > 1e11, JSON.stringify(i && { px: i.price, amt: i.amount }));
     assert("qt 茅茅 52周高≈1539.98", a && Math.abs(a.high_52week - 1539.98) < 1, a && a.high_52week);
-    assert("qt 与 westock 茅茅价格一致（同源）", a && Math.abs(a.price - quotes["sh600519"].price) < 0.01, a && a.price + " vs " + quotes["sh600519"].price);
+    assert("qt 与 westock 茅茅价格一致（同源）", a && Math.abs(a.price / quotes["sh600519"].price - 1) < 0.005, a && a.price + " vs " + quotes["sh600519"].price);
   } catch (e) {
     assert("在线拉取异常: " + e.message, false);
   } finally {

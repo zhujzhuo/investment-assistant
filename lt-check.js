@@ -105,10 +105,13 @@ assert("老唐模式下建设银行未入选（高杠杆）", tblSeg.indexOf("�
 assert("老唐模式下美团未入选（无正 EPS 基准）", tblSeg.indexOf("美团") < 0);
 assert("老唐模式下紫金矿业未入选（护城河 6 < 6.5）", tblSeg.indexOf("紫金矿业") < 0);
 assert("剔除说明列出被筛标的", fundHtml.indexOf("老唐法额外筛掉") >= 0 && fundHtml.indexOf("高杠杆") >= 0);
-// 注：老唐法名单由「机构一致预期 k3y × 合理PE × 50%」逐日重算，fetch-lt.js 每周刷新后成员会变（此处 2026-10-12 刷新后：宁德/海康/泸州 3 只，伊利 +31.3% 出窗）
-assert("美债5.24%口径下正式名单 3 只：宁德（唯一已达买点）+ 海康/泸州（观察窗内，伊利已出窗）",
-  tblSeg.indexOf("宁德时代") >= 0 && tblSeg.indexOf("海康威视") >= 0 && tblSeg.indexOf("泸州老窖") >= 0 && tblSeg.indexOf("伊利股份") < 0,
-  "名单：" + (fundHtml.match(/● 已达买点|○ 距买点|待观察/g) || []).length + " 行");
+// 注：老唐法名单由「机构一致预期 k3y × 合理PE × 50%」逐日重算，fetch-lt.js 每周刷新后成员会变
+// （2026-10-19 刷新后：宁德/海康/泸州/伊利 4 只）→ 断言改为与选股结果动态一致，不钉死成员
+const LTL = window._stockPickListExpose ? window._stockPickListExpose() : null;
+const ltRows = (tblSeg.match(/● 已达买点|○ 距买点|待观察/g) || []).length;
+assert("老唐法正式名单 = 选股结果（" + (LTL ? LTL.picks.length : "?") + " 只，表内 " + ltRows + " 行）",
+  !!LTL && ltRows === LTL.picks.length && LTL.picks.every(o => tblSeg.indexOf(o.name) >= 0),
+  "名单：" + (LTL ? LTL.picks.map(o => o.name).join("/") : "—"));
 assert("茅台/腾讯距买点 >30%（买点 653/306），退出老唐法观察窗", tblSeg.indexOf("贵州茅台") < 0 && tblSeg.indexOf("腾讯控股") < 0);
 assert("页面说明买点来源（机构一致预期）", fundHtml.indexOf("机构一致预期三年倍数") >= 0);
 assert("表头改为三年后合理估值/理想买点", fundHtml.indexOf("理想买点(×50%)") >= 0 && fundHtml.indexOf("三年后合理估值") >= 0);
