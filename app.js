@@ -887,6 +887,10 @@
       h += '<div class="sectitle"><b>观察池 · 评分与试仓点（' + WATCH.length + ' 只）</b> <span class="muted small">不入正式名单，到试仓点先复核再动手</span></div>';
       h += '<div id="watch-body"></div>';
     }
+    if (window.EARNINGS && window.EARNINGS.items && window.EARNINGS.items.length) {
+      h += '<div class="sectitle"><b>财报速览 · 最新一期 vs 上季 vs 预期（' + window.EARNINGS.items.length + ' 只）</b> <span class="muted small">' + esc(window.EARNINGS.asOf || "") + ' 更新 · 一行看懂：赚多少 / 比上季改善还是恶化 / 比机构预期好还是差</span></div>';
+      h += '<div id="earnings-body"></div>';
+    }
     h += '<div class="muted small" style="margin:8px 0">' + window.DISCLAIMER + '</div>';
     $("ah-body").innerHTML = h;
     $("radar-body").innerHTML = radarHTML();
@@ -894,7 +898,64 @@
     $("portfolio-body").innerHTML = portfolioHTML();
     $("screen-body").innerHTML = screenHTML();
     if (WATCH.length && $("watch-body")) $("watch-body").innerHTML = watchHTML();
+    if (window.EARNINGS && $("earnings-body")) $("earnings-body").innerHTML = earningsHTML();
     drawAlloc();
+  }
+
+  // ---------- 财报速览：一行看懂最新财报（简明扼要口径） ----------
+  // 数据：window.EARNINGS（fetch-earnings.js 每日生成）——q=报告期、revYi/npYi=累计、npQYi=单季净利、
+  //       npQoQ=单季环比、npYoY=单季同比、npYoYAcc=累计同比、consCagr=机构年度预期增速、vsCons=累计同比−预期。
+  // 判定逻辑（三档，避免过度解读）：
+  //   改善/恶化：看单季同比（与去年同期比，剔除季节性）+ 单季环比方向佐证；
+  //   vs 预期：累计同比 vs 机构年度预期增速，±5pp 内算「符合」，之外「超预期/低于预期」。
+  // 周期股（季节性极强，如白酒 Q1 春节备货）环比波动大是常态，故环比只作辅助展示不作判定。
+  function earningsHTML() {
+    var E = window.EARNINGS, items = E.items || [];
+    var h = '<div class="card note"><b>怎么读</b>：每行 = 最新一期财报的三个答案——<b>① 赚了多少</b>（累计营收/归母净利）；' +
+      '<b>② 比上季改善还是恶化</b>（单季净利环比 + 同比，同比剔除季节性是主判定）；<b>③ 机构怎么看</b>（A股：累计同比 vs 年度一致预期增速；港股：单季年化 vs 机构近四季预期年化；±5pp 内 = 符合预期）。' +
+      '财报为<b>慢变数据</b>：报告期收盘后更新，页内数字随每日刷新自动跟上最新披露。</div>';
+    h += '<div class="tbl-scroll"><table class="tbl"><thead><tr><th>公司</th><th>报告期</th><th>累计营收(亿)</th><th>累计归母净利(亿)</th><th>单季净利(亿)</th><th>单季环比</th><th>单季同比</th><th>vs 机构预期</th><th>一句话</th></tr></thead><tbody>';
+    for (var i = 0; i < items.length; i++) {
+      var e = items[i];
+      if (e.err) { h += '<tr><td colspan="9" class="muted small">' + esc(e.name) + '：' + esc(e.err) + '</td></tr>'; continue; }
+      // 判定：主看单季同比，环比佐证
+      var verdict = "—", vc = "c-flat";
+      if (e.npYoY != null) {
+        if (e.npYoY > 10) { verdict = "盈利扩张"; vc = "c-up"; }
+        else if (e.npYoY > -10) { verdict = "大体平稳"; vc = "c-flat"; }
+        else { verdict = "盈利收缩"; vc = "c-down"; }
+      }
+      // vs 预期（±5pp = 符合；港股口径为年化偏离%，阈值同用 5）
+      var consTxt = "—", cc = "c-flat";
+      if (e.vsCons != null) {
+        if (e.vsCons > 5) { consTxt = "超预期 +" + num(e.vsCons, 1) + "pp"; cc = "c-up"; }
+        else if (e.vsCons < -5) { consTxt = "低于预期 " + num(e.vsCons, 1) + "pp"; cc = "c-down"; }
+        else { consTxt = "符合预期（" + (e.vsCons >= 0 ? "+" : "") + num(e.vsCons, 1) + "pp）"; cc = "c-flat"; }
+      }
+      // 一句话
+      var bits = [];
+      if (e.qUnreliable) bits.push("数据源为单季口径（财年错位），环比/同比不可比");
+      else {
+        if (e.npQoQ != null) bits.push("环比" + (e.npQoQ > 0 ? "改善" : "回落") + num(Math.abs(e.npQoQ), 0) + "%");
+        if (e.npYoY != null) bits.push("同比" + (e.npYoY > 0 ? "+" : "") + num(e.npYoY, 1) + "%");
+      }
+      if (e.npYoYAcc != null) bits.push("累计同比" + (e.npYoYAcc > 0 ? "+" : "") + num(e.npYoYAcc, 1) + "%");
+      h += '<tr>' +
+        '<td><b>' + esc(e.name) + '</b><span class="muted small"> ' + fmtCode(e.code) + '</span></td>' +
+        '<td>' + esc(e.q || "—") + '</td>' +
+        '<td>' + num(e.revYi, 0) + '</td>' +
+        '<td>' + num(e.npYi, 1) + '</td>' +
+        '<td>' + num(e.npQYi, 1) + '</td>' +
+        '<td class="' + (e.npQoQ > 0 ? "c-up" : (e.npQoQ < 0 ? "c-down" : "c-flat")) + '">' + (e.npQoQ == null ? "—" : (e.npQoQ > 0 ? "+" : "") + num(e.npQoQ, 1) + "%") + '</td>' +
+        '<td class="' + vc + '"><b>' + (e.npYoY == null ? "—" : (e.npYoY > 0 ? "+" : "") + num(e.npYoY, 1) + "%") + '</b><div class="muted small">' + verdict + '</div></td>' +
+        '<td class="' + cc + '">' + consTxt +
+        (e.consCagr != null ? '<div class="muted small">预期年增 +' + num(e.consCagr, 1) + '%</div>' : "") +
+        (e.consNpAnnual != null ? '<div class="muted small">预期年化 ' + num(e.consNpAnnual, 0) + ' 亿（近四季）</div>' : "") + '</td>' +
+        '<td class="small wrapcol">' + esc(bits.join(" · ")) + '</td></tr>';
+    }
+    h += '</tbody></table></div>';
+    h += '<div class="muted small" style="margin-top:6px">口径：单季 = 累计值差分（中报/三季报是 1~6/1~9 月累计，差分后才是真实单季）；vs 预期 = 累计同比 − 机构年度一致预期增速（A股，westock consensus 年度口径）/ 单季年化 vs 近四季预期年化（港股，同接口季度口径）；±5pp 内 = 符合。阿里等财年错位公司数据源为单季口径，差分会出错，已自动弃用环比/同比（只展示累计）。白酒等强季节性行业的环比波动是常态，判定以同比为主。数据每日刷新（报告期未变则数字不变）。</div>';
+    return h;
   }
 
   // ---------- 观察池：五维评分 + 试仓点（trial） ----------

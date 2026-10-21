@@ -1,82 +1,82 @@
 // 美股组合 + 全球指数 —— 真实行情快照（腾讯公开行情接口）
-// 美股行情截至 2026-10-16 收盘（美东时间）；基本面与评分说明见各字段注释
+// 美股行情截至 2026-10-20 收盘（美东时间）；基本面与评分说明见各字段注释
 // 说明：pe=PE(TTM)、eps=EPS(TTM)、div=股息率(%)、mcapYi=总市值(亿美元)；
 //       pos52=现价在 52 周高低区间中的位置(%，0=最低 100=最高)；vol12=近12月年化波动率(%)；
 //       fairPE 为估值假设区间（用于生成参考目标价），moat/quality/mgmt/growth/valuation 为 0-10 模型评估分。
 window.US_MKT = {
-  asOfUS: "2026-10-16",
+  asOfUS: "2026-10-20",
   indices: [
   {
     "code": "hkHSTECH",
     "name": "恒生科技指数",
     "short": "HSTECH",
     "region": "中国香港",
-    "close": 4108.24,
-    "chg": 1.16,
-    "chgAmt": 47.25,
+    "close": 3994.77,
+    "chg": -1.26,
+    "chgAmt": -51.14,
     "hi52": 6198.68,
-    "lo52": 4042.05,
-    "asOf": "2026-10-16 16:08"
+    "lo52": 3985.63,
+    "asOf": "2026-10-21 16:08"
   },
   {
     "code": "hkHSI",
     "name": "恒生指数",
     "short": "HSI",
     "region": "中国香港",
-    "close": 24186.83,
-    "chg": 0.52,
-    "chgAmt": 124.11,
+    "close": 23651.87,
+    "chg": -0.9,
+    "chgAmt": -215.87,
     "hi52": 28056.1,
     "lo52": 22518,
-    "asOf": "2026-10-16 18:31"
+    "asOf": "2026-10-21 17:47"
   },
   {
     "code": "usIXIC",
     "name": "纳斯达克综合",
     "short": "IXIC",
     "region": "美国",
-    "close": 26140.03,
-    "chg": -2.14,
-    "chgAmt": -573,
+    "close": 26424.82,
+    "chg": -0.02,
+    "chgAmt": -6.07,
     "hi52": 27722.75,
     "lo52": 20690.25,
-    "asOf": "2026-10-16 17:15"
+    "asOf": "2026-10-20 17:15"
   },
   {
     "code": "usNDX",
     "name": "纳斯达克100",
     "short": "NDX",
     "region": "美国",
-    "close": 29187.55,
-    "chg": -2.5,
-    "chgAmt": -748.04,
+    "close": 29490.28,
+    "chg": -0.13,
+    "chgAmt": -39.06,
     "hi52": 31361.37,
     "lo52": 22841.42,
-    "asOf": "2026-10-16 17:15"
+    "asOf": "2026-10-20 17:15"
   },
   {
     "code": "usINX",
     "name": "标普500",
     "short": "INX",
     "region": "美国",
-    "close": 7659.44,
-    "chg": -1.09,
-    "chgAmt": -84.62,
+    "close": 7712.57,
+    "chg": 0.28,
+    "chgAmt": 21.84,
     "hi52": 7844.52,
     "lo52": 6316.91,
-    "asOf": "2026-10-16 16:42"
+    "asOf": "2026-10-20 16:45"
   },
   {
     "code": "usDJI",
     "name": "道琼斯",
     "short": "DJI",
     "region": "美国",
-    "close": 52002.41,
-    "chg": -0.34,
-    "chgAmt": -175.28,
+    "close": 52495.88,
+    "chg": 1.02,
+    "chgAmt": 529.85,
     "hi52": 54744.33,
     "lo52": 45057.28,
-    "asOf": "2026-10-16 16:42"
+    "asOf": "2026-10-20 16:46"
   }
 ]
 };
@@ -90,13 +90,13 @@ window.US_STOCKS = [
     "cat": [
       "steady"
     ],
-    "px": 532.02,
-    "chg": 1.21,
-    "pe": 13.38,
+    "px": 539.82,
+    "chg": 1.43,
+    "pe": 13.57,
     "eps": 39.77,
     "div": null,
-    "mcapYi": 6637.55,
-    "hi52": 537.74,
+    "mcapYi": 6734.87,
+    "hi52": 541,
     "lo52": 464.01,
     "fairPE": [
       12,
@@ -108,13 +108,13 @@ window.US_STOCKS = [
     "growth": 6,
     "valuation": 8,
     "note": "巴菲特本尊：浮存金+巨额现金，护城河来自低成本资金与长期复利文化",
-    "ytd": 10.72,
-    "m1": 6.84,
-    "m3": 4,
-    "m12": 11.41,
-    "vol12": 15.08,
-    "pos52": 92.24,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 98.47,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usAAPL",
@@ -124,12 +124,12 @@ window.US_STOCKS = [
     "cat": [
       "steady"
     ],
-    "px": 343.46,
-    "chg": 0.43,
-    "pe": 39.39,
+    "px": 339.5,
+    "chg": -1,
+    "pe": 38.93,
     "eps": 8.72,
     "div": 0.31,
-    "mcapYi": 50094.01,
+    "mcapYi": 49516.44,
     "hi52": 348.15,
     "lo52": 242.76,
     "fairPE": [
@@ -142,13 +142,13 @@ window.US_STOCKS = [
     "growth": 6,
     "valuation": 5,
     "note": "生态+品牌+转换成本，巴菲特第一大重仓；高 ROE + 巨额回购，现金流稳定",
-    "ytd": 32.36,
-    "m1": 3.13,
-    "m3": 11.18,
-    "m12": 27.03,
-    "vol12": 21.21,
-    "pos52": 95.55,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 91.79,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usKO",
@@ -158,12 +158,12 @@ window.US_STOCKS = [
     "cat": [
       "steady"
     ],
-    "px": 93.9,
-    "chg": 2.07,
-    "pe": 28.2,
+    "px": 93.49,
+    "chg": 0.07,
+    "pe": 28.08,
     "eps": 3.33,
-    "div": 2.24,
-    "mcapYi": 4011.34,
+    "div": 2.27,
+    "mcapYi": 3993.82,
     "hi52": 94.1,
     "lo52": 65.91,
     "fairPE": [
@@ -176,13 +176,13 @@ window.US_STOCKS = [
     "growth": 5.5,
     "valuation": 6,
     "note": "全球品牌+渠道壁垒，连续 60+ 年增股息，巴菲特持仓超 30 年",
-    "ytd": 25.52,
-    "m1": 9.08,
-    "m3": 7.2,
-    "m12": 36.28,
-    "vol12": 18.59,
-    "pos52": 99.29,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 97.84,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usJNJ",
@@ -192,12 +192,12 @@ window.US_STOCKS = [
     "cat": [
       "steady"
     ],
-    "px": 255.56,
-    "chg": 0.9,
-    "pe": 38.84,
+    "px": 259.36,
+    "chg": 2.19,
+    "pe": 39.42,
     "eps": 6.58,
-    "div": 2.08,
-    "mcapYi": 5534.29,
+    "div": 2.05,
+    "mcapYi": 5616.58,
     "hi52": 281.07,
     "lo52": 180.59,
     "fairPE": [
@@ -210,13 +210,13 @@ window.US_STOCKS = [
     "growth": 6,
     "valuation": 5.5,
     "note": "制药+器械双轮，AAA 级信用，股息贵族",
-    "ytd": 12.46,
-    "m1": -3.47,
-    "m3": -0.31,
-    "m12": 35.31,
-    "vol12": 21.31,
-    "pos52": 74.61,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 78.39,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usCVX",
@@ -226,13 +226,13 @@ window.US_STOCKS = [
     "cat": [
       "steady"
     ],
-    "px": 224.99,
-    "chg": 2.59,
-    "pe": 21.65,
+    "px": 225.71,
+    "chg": 0.6,
+    "pe": 21.72,
     "eps": 10.39,
-    "div": 3.13,
-    "mcapYi": 4393.09,
-    "hi52": 225.31,
+    "div": 3.12,
+    "mcapYi": 4407.15,
+    "hi52": 227.28,
     "lo52": 142.5,
     "fairPE": [
       14,
@@ -244,13 +244,13 @@ window.US_STOCKS = [
     "growth": 4,
     "valuation": 8,
     "note": "一体化油气+上游低成本储量，油价周期中的现金牛",
-    "ytd": 27.18,
-    "m1": 10.18,
-    "m3": 14.31,
-    "m12": 42.65,
-    "vol12": 31.75,
-    "pos52": 99.61,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 98.15,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usVZ",
@@ -260,12 +260,12 @@ window.US_STOCKS = [
     "cat": [
       "steady"
     ],
-    "px": 44.79,
+    "px": 44.54,
     "chg": 0.88,
-    "pe": 11.66,
+    "pe": 11.6,
     "eps": 3.84,
-    "div": 6.28,
-    "mcapYi": 1860.37,
+    "div": 6.31,
+    "mcapYi": 1849.99,
     "hi52": 50.88,
     "lo52": 9.94,
     "fairPE": [
@@ -278,13 +278,13 @@ window.US_STOCKS = [
     "growth": 3.5,
     "valuation": 9,
     "note": "高股息防御，估值低；但增长弱、负债重，属收息型标的",
-    "ytd": 0.61,
-    "m1": -2.35,
-    "m3": -4.32,
-    "m12": 12.71,
-    "vol12": 26.06,
-    "pos52": 85.12,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 84.51,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usMSFT",
@@ -294,12 +294,12 @@ window.US_STOCKS = [
     "cat": [
       "growth"
     ],
-    "px": 529.05,
-    "chg": -1.93,
-    "pe": 29.47,
+    "px": 531.87,
+    "chg": -0.31,
+    "pe": 29.63,
     "eps": 17.95,
     "div": 0.7,
-    "mcapYi": 39272.79,
+    "mcapYi": 39482.12,
     "hi52": 551.15,
     "lo52": 348.54,
     "fairPE": [
@@ -312,13 +312,13 @@ window.US_STOCKS = [
     "growth": 8.5,
     "valuation": 5,
     "note": "Azure+Office+Copilot 三层护城河，转换成本极高，现金流质量顶级",
-    "ytd": 22.95,
-    "m1": 3.15,
-    "m3": 13.84,
-    "m12": 2.17,
-    "vol12": 39.86,
-    "pos52": 89.09,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 90.48,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usGOOGL",
@@ -328,12 +328,12 @@ window.US_STOCKS = [
     "cat": [
       "growth"
     ],
-    "px": 340.59,
-    "chg": -2.47,
-    "pe": 17.09,
+    "px": 340.28,
+    "chg": -1.13,
+    "pe": 17.07,
     "eps": 19.93,
     "div": 0.25,
-    "mcapYi": 19974.1,
+    "mcapYi": 19955.63,
     "hi52": 408.12,
     "lo52": 243.52,
     "fairPE": [
@@ -346,13 +346,13 @@ window.US_STOCKS = [
     "growth": 8,
     "valuation": 8.5,
     "note": "搜索广告垄断+YouTube+云，当前 PE 在大型科技股中最便宜",
-    "ytd": 0.77,
-    "m1": -1.01,
-    "m3": -4.36,
-    "m12": 21.12,
-    "vol12": 40.88,
-    "pos52": 58.97,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 58.78,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usAMZN",
@@ -362,12 +362,12 @@ window.US_STOCKS = [
     "cat": [
       "growth"
     ],
-    "px": 250,
-    "chg": -1.87,
-    "pe": 20.11,
+    "px": 262.63,
+    "chg": 0.07,
+    "pe": 21.13,
     "eps": 12.43,
     "div": null,
-    "mcapYi": 24581.13,
+    "mcapYi": 25822.96,
     "hi52": 287.2,
     "lo52": 196,
     "fairPE": [
@@ -380,13 +380,13 @@ window.US_STOCKS = [
     "growth": 8.5,
     "valuation": 7,
     "note": "AWS 利润引擎+零售规模效应，物流网络构成重资产壁垒",
-    "ytd": 4.47,
-    "m1": 0.34,
-    "m3": -7.95,
-    "m12": 2.37,
-    "vol12": 37.66,
-    "pos52": 59.21,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 73.06,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usNVDA",
@@ -396,12 +396,12 @@ window.US_STOCKS = [
     "cat": [
       "growth"
     ],
-    "px": 214.13,
-    "chg": -1.43,
-    "pe": 27.07,
+    "px": 216.47,
+    "chg": -0.29,
+    "pe": 27.37,
     "eps": 7.91,
     "div": 0.24,
-    "mcapYi": 49656.09,
+    "mcapYi": 50198.73,
     "hi52": 243.37,
     "lo52": 163.89,
     "fairPE": [
@@ -414,13 +414,13 @@ window.US_STOCKS = [
     "growth": 9.5,
     "valuation": 5.5,
     "note": "CUDA 生态锁定，AI 算力事实标准；估值高度依赖 AI 资本开支延续",
-    "ytd": 12.03,
-    "m1": -6.24,
-    "m3": 6.67,
-    "m12": 5.75,
-    "vol12": 26.88,
-    "pos52": 63.21,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 66.16,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usCOST",
@@ -430,12 +430,12 @@ window.US_STOCKS = [
     "cat": [
       "growth"
     ],
-    "px": 989.11,
-    "chg": 1.13,
-    "pe": 47.64,
+    "px": 994.61,
+    "chg": -0.09,
+    "pe": 47.91,
     "eps": 20.76,
-    "div": 0.58,
-    "mcapYi": 4378.48,
+    "div": 0.57,
+    "mcapYi": 4402.83,
     "hi52": 1094.75,
     "lo52": 840.35,
     "fairPE": [
@@ -448,13 +448,13 @@ window.US_STOCKS = [
     "growth": 7.5,
     "valuation": 3.5,
     "note": "会员制模式极强，续费率>90%；估值长期溢价，需等回调",
-    "ytd": 5.2,
-    "m1": 8.65,
-    "m3": 3.91,
-    "m12": 8.52,
-    "vol12": 17.97,
-    "pos52": 58.47,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 60.64,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usV",
@@ -464,13 +464,13 @@ window.US_STOCKS = [
     "cat": [
       "growth"
     ],
-    "px": 402.61,
-    "chg": 0.72,
-    "pe": 34.26,
+    "px": 406.57,
+    "chg": 0.91,
+    "pe": 34.6,
     "eps": 11.75,
-    "div": 0.67,
-    "mcapYi": 6858.01,
-    "hi52": 404.74,
+    "div": 0.66,
+    "mcapYi": 6925.46,
+    "hi52": 408.59,
     "lo52": 292.72,
     "fairPE": [
       25,
@@ -482,13 +482,13 @@ window.US_STOCKS = [
     "growth": 8,
     "valuation": 5,
     "note": "支付网络效应+转换成本，巴芒经典护城河；轻资产高 ROE",
-    "ytd": 25.1,
-    "m1": 12.04,
-    "m3": 9.96,
-    "m12": 18.16,
-    "vol12": 21.87,
-    "pos52": 98.1,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 98.26,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usMA",
@@ -498,13 +498,13 @@ window.US_STOCKS = [
     "cat": [
       "growth"
     ],
-    "px": 617.42,
-    "chg": 0.18,
-    "pe": 33.96,
+    "px": 620.42,
+    "chg": 0.65,
+    "pe": 34.13,
     "eps": 18.18,
     "div": 0.56,
-    "mcapYi": 5366.73,
-    "hi52": 622.49,
+    "mcapYi": 5392.81,
+    "hi52": 624.29,
     "lo52": 463.03,
     "fairPE": [
       28,
@@ -516,13 +516,13 @@ window.US_STOCKS = [
     "growth": 8.5,
     "valuation": 4.5,
     "note": "与 Visa 双寡头，全球支付网络；轻资产高 ROE，现金牛",
-    "ytd": 14.59,
-    "m1": 11.96,
-    "m3": 7.73,
-    "m12": 11.85,
-    "vol12": 21,
-    "pos52": 96.82,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 97.6,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usTSM",
@@ -532,12 +532,12 @@ window.US_STOCKS = [
     "cat": [
       "rotate"
     ],
-    "px": 412.61,
-    "chg": -2.28,
-    "pe": 26.56,
+    "px": 425.08,
+    "chg": 1.16,
+    "pe": 27.36,
     "eps": 15.54,
-    "div": 0.78,
-    "mcapYi": 19984.62,
+    "div": 0.75,
+    "mcapYi": 20588.6,
     "hi52": 487.47,
     "lo52": 263.05,
     "fairPE": [
@@ -550,13 +550,13 @@ window.US_STOCKS = [
     "growth": 9,
     "valuation": 5,
     "note": "先进制程独供，AI 芯片必经关口；地缘风险为主要折价因素",
-    "ytd": 24.82,
-    "m1": -9.55,
-    "m3": 2.07,
-    "m12": 37.34,
-    "vol12": 36.38,
-    "pos52": 66.64,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 72.2,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usAVGO",
@@ -566,12 +566,12 @@ window.US_STOCKS = [
     "cat": [
       "rotate"
     ],
-    "px": 328.75,
-    "chg": -4.52,
-    "pe": 41.93,
+    "px": 334.37,
+    "chg": -0.07,
+    "pe": 42.65,
     "eps": 7.84,
-    "div": 0.79,
-    "mcapYi": 15399.37,
+    "div": 0.78,
+    "mcapYi": 15662.62,
     "hi52": 493.32,
     "lo52": 288.98,
     "fairPE": [
@@ -584,13 +584,13 @@ window.US_STOCKS = [
     "growth": 9,
     "valuation": 4,
     "note": "定制 ASIC+网络芯片，绑定头部云厂商；估值已计入高预期",
-    "ytd": -0.77,
-    "m1": -6.39,
-    "m3": -15.55,
-    "m12": -11.06,
-    "vol12": 45.82,
-    "pos52": 19.46,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 22.21,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usAMD",
@@ -600,12 +600,12 @@ window.US_STOCKS = [
     "cat": [
       "rotate"
     ],
-    "px": 528.75,
-    "chg": -5.95,
-    "pe": 135.58,
+    "px": 534.74,
+    "chg": -0.62,
+    "pe": 137.11,
     "eps": 3.9,
     "div": null,
-    "mcapYi": 8595.12,
+    "mcapYi": 8692.49,
     "hi52": 658.52,
     "lo52": 188.22,
     "fairPE": [
@@ -618,13 +618,13 @@ window.US_STOCKS = [
     "growth": 9,
     "valuation": 2,
     "note": "CPU 份额持续抢进+MI 系列加速卡；当前 PE 高企取决于预期兑现",
-    "ytd": 123.36,
-    "m1": -13.57,
-    "m3": 11.05,
-    "m12": 106.45,
-    "vol12": 97.62,
-    "pos52": 72.41,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 73.68,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usORCL",
@@ -634,13 +634,13 @@ window.US_STOCKS = [
     "cat": [
       "rotate"
     ],
-    "px": 128.23,
-    "chg": -4.64,
-    "pe": 20.1,
+    "px": 131.14,
+    "chg": 1.2,
+    "pe": 20.55,
     "eps": 6.38,
-    "div": 1.56,
-    "mcapYi": 2395.06,
-    "hi52": 300.25,
+    "div": 1.53,
+    "mcapYi": 2449.41,
+    "hi52": 283.39,
     "lo52": 114.08,
     "fairPE": [
       20,
@@ -652,13 +652,13 @@ window.US_STOCKS = [
     "growth": 8.5,
     "valuation": 6,
     "note": "数据库存量客户黏性极强，OCI 承接 AI 云需求；负债需关注",
-    "ytd": -22.09,
-    "m1": -6.61,
-    "m3": -1.26,
-    "m12": -51.17,
-    "vol12": 66.85,
-    "pos52": 7.6,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 10.08,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usPLTR",
@@ -668,12 +668,12 @@ window.US_STOCKS = [
     "cat": [
       "tenx"
     ],
-    "px": 186.03,
-    "chg": -7.22,
-    "pe": 159,
+    "px": 192.6,
+    "chg": -0.8,
+    "pe": 164.62,
     "eps": 1.17,
     "div": null,
-    "mcapYi": 3993.56,
+    "mcapYi": 4134.6,
     "hi52": 212.94,
     "lo52": 106.37,
     "fairPE": [
@@ -686,13 +686,13 @@ window.US_STOCKS = [
     "growth": 9.5,
     "valuation": 1,
     "note": "政府+企业 AI 决策平台，AIP 渗透加速；估值极贵，属期权型仓位",
-    "ytd": 26.9,
-    "m1": -0.55,
-    "m3": 51.17,
-    "m12": -7.2,
-    "vol12": 67.49,
-    "pos52": 74.75,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 80.91,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usARM",
@@ -702,12 +702,12 @@ window.US_STOCKS = [
     "cat": [
       "tenx"
     ],
-    "px": 227.8,
-    "chg": -6.94,
-    "pe": 232.45,
+    "px": 221.06,
+    "chg": -3.07,
+    "pe": 225.57,
     "eps": 0.98,
     "div": null,
-    "mcapYi": 330.91,
+    "mcapYi": 321.12,
     "hi52": 452.7,
     "lo52": 100.02,
     "fairPE": [
@@ -720,13 +720,13 @@ window.US_STOCKS = [
     "growth": 9,
     "valuation": 1,
     "note": "ARM 架构授权垄断，端侧 AI 受益；PE 数百倍，仅适合小仓位试探",
-    "ytd": 116.21,
-    "m1": -21.36,
-    "m3": -4.96,
-    "m12": 34.14,
-    "vol12": 100.22,
-    "pos52": 36.23,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 34.32,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usHOOD",
@@ -736,12 +736,12 @@ window.US_STOCKS = [
     "cat": [
       "tenx"
     ],
-    "px": 98.87,
-    "chg": -4.92,
-    "pe": 43.75,
+    "px": 98.21,
+    "chg": 1.75,
+    "pe": 43.46,
     "eps": 2.26,
     "div": null,
-    "mcapYi": 773.45,
+    "mcapYi": 768.29,
     "hi52": 150.47,
     "lo52": 63.52,
     "fairPE": [
@@ -754,13 +754,13 @@ window.US_STOCKS = [
     "growth": 9,
     "valuation": 2.5,
     "note": "年轻用户券商，资产规模高增；护城河较浅、强周期，波动极大",
-    "ytd": -0.61,
-    "m1": -12.12,
-    "m3": 14.22,
-    "m12": -32.64,
-    "vol12": 55.18,
-    "pos52": 40.66,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 39.9,
+    "asOf": "2026-10-20"
   },
   {
     "code": "usCOIN",
@@ -770,12 +770,12 @@ window.US_STOCKS = [
     "cat": [
       "tenx"
     ],
-    "px": 173.16,
-    "chg": -5.79,
+    "px": 170.85,
+    "chg": 1.42,
     "pe": null,
     "eps": null,
     "div": null,
-    "mcapYi": 380.84,
+    "mcapYi": 375.76,
     "hi52": 373.25,
     "lo52": 139.11,
     "fairPE": [
@@ -788,13 +788,13 @@ window.US_STOCKS = [
     "growth": 8.5,
     "valuation": 1,
     "note": "加密合规交易所龙头，业绩与币价强相关；当前盈利口径不适用 PE 法",
-    "ytd": -11.08,
-    "m1": -7.11,
-    "m3": 18.39,
-    "m12": -49.63,
-    "vol12": 48.85,
-    "pos52": 14.54,
-    "asOf": "2026-10-16"
+    "ytd": null,
+    "m1": null,
+    "m3": null,
+    "m12": null,
+    "vol12": null,
+    "pos52": 13.56,
+    "asOf": "2026-10-20"
   }
 ];
 

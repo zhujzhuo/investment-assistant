@@ -161,4 +161,16 @@ try {
   }
 } catch (e) { console.error("财报披露日刷新异常（保留旧值）: " + e.message); }
 
+// ---------- 7. 财报速览（data/earnings.js，westock finance + consensus，2026-10-21 新增） ----------
+// 报告期收盘后数字才会变，但放每日链里跑成本低（33 只 × ~2s），且新披露当日即可见；
+// 失败保留旧值，不影响行情主流程。qt 云端模式无对应接口，同样跳过。
+try {
+  if (source === "westock") {
+    const okErn = require("./fetch-earnings.js") ? true : false;   // fetch-earnings.js 主流程自执行
+    if (!okErn) console.error("财报速览刷新异常");
+  } else {
+    console.log("财报速览：qt 数据源无财务接口，保留旧值");
+  }
+} catch (e) { console.error("财报速览刷新异常（保留旧值）: " + e.message); }
+
 })();

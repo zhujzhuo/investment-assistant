@@ -73,7 +73,14 @@ assert("宁德时代已入选且为核心", tblSeg.indexOf("宁德时代") >= 0 
 const ltNames = SPL ? SPL.picks.map(o => o.name) : [];
 assert("老唐名单全部入表（" + ltNames.join("/") + "）", ltNames.length > 0 && ltNames.every(n => tblSeg.indexOf(n) >= 0),
   "表内缺：" + ltNames.filter(n => tblSeg.indexOf(n) < 0).join("、") || "—");
-assert("茅台/腾讯距买点 >90%（美债5.24% → 买点 653/306），退出观察窗不再入选", tblSeg.indexOf("贵州茅台") < 0 && tblSeg.indexOf("腾讯控股") < 0);
+// 2026-10-21：腾讯跌至 394 HKD，距老唐买点 28.7% <30% → 重新进入观察窗并入选，旧断言（高价时写的「退出」）过时。
+// 改为「动态一致性」断言：名单成员 = 选股结果，茅台始终 >30% 不入选；腾讯随价格在 30% 线两侧摆动，断言其「在/不在」与选股结果一致。
+assert("茅台距买点 >30%，不入选", tblSeg.indexOf("贵州茅台") < 0);
+{
+  const txInSPL = ltNames.indexOf("腾讯控股") >= 0;
+  assert("腾讯入选状态与选股结果一致（当前" + (txInSPL ? "已进入 30% 观察窗" : "退出观察窗") + "）",
+    txInSPL ? tblSeg.indexOf("腾讯控股") >= 0 : tblSeg.indexOf("腾讯控股") < 0);
+}
 assert("药明康德/比亚迪距买点 >30%，同样退出观察窗", tblSeg.indexOf("药明康德") < 0 && tblSeg.indexOf("比亚迪") < 0);
 assert("阳光电源退出正式名单（H1 净利 -32%，机构复苏预期不采信）", tblSeg.indexOf("阳光电源") < 0);
 // 泡泡玛特在老唐法下买点 ≈ 59（美债口径）、距买点 +100%+，超出 30% 门槛，页面不再列出其买点；

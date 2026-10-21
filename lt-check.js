@@ -112,7 +112,13 @@ const ltRows = (tblSeg.match(/● 已达买点|○ 距买点|待观察/g) || [])
 assert("老唐法正式名单 = 选股结果（" + (LTL ? LTL.picks.length : "?") + " 只，表内 " + ltRows + " 行）",
   !!LTL && ltRows === LTL.picks.length && LTL.picks.every(o => tblSeg.indexOf(o.name) >= 0),
   "名单：" + (LTL ? LTL.picks.map(o => o.name).join("/") : "—"));
-assert("茅台/腾讯距买点 >30%（买点 653/306），退出老唐法观察窗", tblSeg.indexOf("贵州茅台") < 0 && tblSeg.indexOf("腾讯控股") < 0);
+// 2026-10-21：腾讯跌至 394 HKD 距买点 28.7% <30% → 重新入选；茅台仍 >30% 不入选。改为动态口径。
+assert("茅台距买点 >30%，退出老唐法观察窗", tblSeg.indexOf("贵州茅台") < 0);
+{
+  const txInLTL = LTL && LTL.picks.some(o => o.name === "腾讯控股");
+  assert("腾讯入选状态与选股结果一致（当前" + (txInLTL ? "已进入 30% 观察窗" : "退出观察窗") + "）",
+    txInLTL ? tblSeg.indexOf("腾讯控股") >= 0 : tblSeg.indexOf("腾讯控股") < 0);
+}
 assert("页面说明买点来源（机构一致预期）", fundHtml.indexOf("机构一致预期三年倍数") >= 0);
 assert("表头改为三年后合理估值/理想买点", fundHtml.indexOf("理想买点(×50%)") >= 0 && fundHtml.indexOf("三年后合理估值") >= 0);
 assert("无 undefined/NaN 泄漏", fundHtml.indexOf("undefined") < 0 && fundHtml.indexOf("NaN") < 0);
