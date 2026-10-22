@@ -1,42 +1,42 @@
 // 名单归档基线 + 与上期变动（gen-baseline.js 自动生成，每日 18:00 覆盖；请勿手改）
 window.IA_BASELINE = {
  "version": 1,
- "asOf": "2026-10-21",
- "prevAsOf": "2026-10-20",
+ "asOf": "2026-10-22",
+ "prevAsOf": "2026-10-21",
  "lists": {
   "picks": {
    "steady": [
     {
      "code": "sz000651",
      "name": "格力电器",
-     "reason": "股息率 8.1%，PE 7.5 倍，PB 1.40"
+     "reason": "股息率 8.0%，PE 7.5 倍，PB 1.41"
     },
     {
      "code": "sz000568",
      "name": "泸州老窖",
-     "reason": "股息率 8.3%，PE 13.6 倍，PB 2.23"
+     "reason": "股息率 8.5%，PE 13.3 倍，PB 2.19"
     },
     {
      "code": "sz000858",
      "name": "五粮液",
-     "reason": "股息率 7.2%，PE 21.4 倍，PB 2.36"
+     "reason": "股息率 7.2%，PE 21.3 倍，PB 2.35"
     }
    ],
    "growth": [
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 13.2 倍"
+     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 12.8 倍"
     },
     {
      "code": "sz300750",
      "name": "宁德时代",
-     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 12.0 倍"
+     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 11.6 倍"
     },
     {
      "code": "sh603259",
      "name": "药明康德",
-     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 20.6 倍"
+     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 19.8 倍"
     }
    ],
    "rotate": [
@@ -81,7 +81,7 @@ window.IA_BASELINE = {
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "dist": -0.7,
+     "dist": -3.6,
      "score": 8.4
     },
     {
@@ -97,17 +97,17 @@ window.IA_BASELINE = {
      "score": 8.5
     },
     {
-     "code": "sz002415",
-     "name": "海康威视",
-     "dist": 27.1,
-     "score": 6.8
+     "code": "hk00388",
+     "name": "香港交易所",
+     "dist": 29.2,
+     "score": 8.2
     }
    ],
    "alts": [
     {
      "code": "hk09992",
      "name": "泡泡玛特",
-     "dist": -3.7
+     "dist": -4.6
     },
     {
      "code": "sh601899",
@@ -117,7 +117,7 @@ window.IA_BASELINE = {
     {
      "code": "hk06181",
      "name": "老铺黄金",
-     "dist": 8
+     "dist": 3.5
     },
     {
      "code": "sz300760",
@@ -440,7 +440,21 @@ window.IA_BASELINE = {
  },
  "changes": {
   "picks": [],
-  "formal": [],
+  "formal": [
+   {
+    "dir": "in",
+    "scope": "formal",
+    "tag": "进入观察窗",
+    "name": "香港交易所",
+    "reason": "距老唐买点 +29.2%，综合分 8.2"
+   },
+   {
+    "dir": "out",
+    "scope": "formal",
+    "name": "海康威视",
+    "reason": "象限配额内被反超，转入备选池（距买点 +27.1%）"
+   }
+  ],
   "us": [],
   "pool": []
  }
