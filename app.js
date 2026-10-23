@@ -157,6 +157,10 @@
     if (t === "backtest") safe(renderBacktest);
     if (t === "report") safe(buildReport);
     if (t === "history") safe(renderHistory);
+    // 2026-10-23 修复：detail 此前不在渲染列表——从其他页点「标的调研」nav 回来时只切显示不重渲染，
+    // 用户看到的是离开前的旧标的/旧估值法内容（「估值法切了但下面内容不变」的根源之一）。
+    // 现在统一重渲染：nav 回来时若有 curDetail 则渲染它，无则渲染默认标的。
+    if (t === "detail") safe(renderDetail);
     // 移动端底部 tab 栏可横向滚动：把当前项滚到可见位置
     var nb = $("nav-" + t);
     if (nb && nb.scrollIntoView) { try { nb.scrollIntoView({ block: "nearest", inline: "center" }); } catch (e) { } }
@@ -544,7 +548,7 @@
     h += '</div>';
     return h;
   }
-  window._setValMode = function (v) { VAL_MODE = (v === "band") ? "band" : "lt"; rerender(); };
+  window._setValMode = function (v) { VAL_MODE = (v === "band") ? "band" : "lt"; rerender(); flash("估值法已切换为「" + (VAL_MODE === "lt" ? "老唐估值法" : "合理PE带法") + "」，全站买点与选股口径同步更新"); };
   window._setRf = function (v) { LT_CFG.rf = Number(v) / 10; renderDetail(); };
 
   // ---------- 腾讯可比估值卡（对标 Google/Meta/微软，2026-10-23 固化） ----------
