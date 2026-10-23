@@ -4,7 +4,7 @@
 //    无需为数据更新而 bump 版本；只有数据真变了且已部署，刷新页面即可见（离线时回退缓存）。
 //  · 应用外壳（html/css/app.js/icons/manifest）—— 缓存优先，保证离线可用；仅在 shell 真正
 //    变更时 bump 下方 CACHE 版本号即可生效。
-const CACHE = "ia-cache-v39";
+const CACHE = "ia-cache-v40";
 const SHELL = [
   "./",
   "./index.html",
@@ -29,6 +29,7 @@ const DATA_ASSETS = [
   "./data/baseline.js",
   "./data/reports.js",
   "./data/earnings.js",
+  "./data/comps.js",
   "./data/snap-all.js"
 ];
 

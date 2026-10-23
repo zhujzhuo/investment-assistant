@@ -547,6 +547,56 @@
   window._setValMode = function (v) { VAL_MODE = (v === "band") ? "band" : "lt"; rerender(); };
   window._setRf = function (v) { LT_CFG.rf = Number(v) / 10; renderDetail(); };
 
+  // ---------- 腾讯可比估值卡（对标 Google/Meta/微软，2026-10-23 固化） ----------
+  // 数据：window.COMPS（fetch-comps.js 每日生成收盘锚）；现价实时联动见 applyLive（三巨头/腾讯 px 变 → wpe/fair/buys 重算）。
+  // 与老唐法互为独立口径：可比法看「相对同行的位置」，老唐法看「绝对安全边际」，两口径共振（350~360 一带）时信号最强。
+  function compsCard(st) {
+    var C = window.COMPS;
+    if (!C || !C.target || C.target.code !== st.code) return "";    // 仅腾讯渲染
+    var t = C.target, wpe = C.wpe;
+    var fair = [C.fair.none, C.fair.d10, C.fair.d20], buys = [C.buys.ideal, C.buys.tier2, C.buys.tier3];
+    var h = '<div class="card"><h3>⚖️ 可比估值 · 对标 Google / Meta / 微软 <span class="muted small">' + esc(C.asOf || "") + ' 收盘锚 · 实时联动</span></h3>';
+    h += '<table class="tbl"><thead><tr><th>对标公司</th><th>现价(USD)</th><th>PE-TTM</th><th>权重</th><th>对标逻辑</th></tr></thead><tbody>';
+    for (var i = 0; i < C.items.length; i++) {
+      var c = C.items[i];
+      h += '<tr><td><b>' + esc(c.name) + '</b><span class="muted small"> ' + fmtCode(c.code) + '</span></td>' +
+        '<td>' + num(c.px, 2) + '</td><td><b>' + num(c.pe, 1) + '</b></td><td>' + Math.round(c.w * 100) + '%</td>' +
+        '<td class="small wrapcol">' + esc(c.why) + '</td></tr>';
+    }
+    h += '</tbody></table>';
+    h += '<div class="grid2 kv" style="margin-top:8px">';
+    h += kvRow("加权可比 PE", '<b>' + num(wpe, 1) + ' 倍</b> <span class="muted small">40/30/30 加权</span>');
+    h += kvRow("腾讯 EPS(TTM)", num(t.epsTTM, 2) + ' HKD <span class="muted small">现价/PE-TTM 反推 · USDHKD ' + num(C.fx.usdHkd, 2) + '</span>');
+    h += kvRow("合计估值（无折价）", '<b>' + num(fair[0], 0) + '</b> HKD <span class="muted small">美股同价口径</span>');
+    h += kvRow("合计估值（10% 折价）", '<b>' + num(fair[1], 0) + '</b> HKD <span class="muted small">流动性+红利税常规折价</span>');
+    h += kvRow("合计估值（20% 折价）", num(fair[2], 0) + ' HKD <span class="muted small">地缘悲观情景</span>');
+    h += kvRow("较现价空间（10% 档）", (st.px > 0 ? (fair[1] / st.px * 100 - 100).toFixed(0) : "—") + '%');
+    h += '</div>';
+    // 加仓价位表
+    var rows = [["理想买点", buys[0], 0.50], ["二档加仓", buys[1], 0.60], ["三档加仓", buys[2], 0.70]];
+    h += '<div class="tbl-scroll"><table class="tbl tbl-stack" style="margin-top:6px"><thead><tr><th>加仓档位</th><th>触发价（HKD）</th><th>较现价</th><th>状态</th></tr></thead><tbody>';
+    for (var r = 0; r < rows.length; r++) {
+      var dist = (st.px / rows[r][1] - 1) * 100;
+      var state = dist <= 0 ? { t: "已触发（现价在此档下方）", c: "v1" } : (dist <= 5 ? { t: "逼近中", c: "v2" } : { t: "等待", c: "v3" });
+      h += '<tr><td><b>' + rows[r][0] + '</b> <span class="muted small">×' + Math.round(rows[r][2] * 100) + '%</span></td>' +
+        '<td><b>' + num(rows[r][1], 1) + '</b></td>' +
+        '<td class="' + (dist <= 0 ? "c-down" : "") + '">' + (dist > 0 ? "还需跌 " + num(dist, 1) + "%" : "已低 " + num(-dist, 1) + "%") + '</td>' +
+        '<td><span class="vchip ' + state.c + '">' + state.t + '</span></td></tr>';
+    }
+    h += '</tbody></table></div>';
+    // 与老唐法交叉验证
+    var L = ltValue(st);
+    if (L && L.buy) {
+      var gap = buys[1] != null ? (buys[1] / L.buy - 1) * 100 : null;
+      h += '<div class="note" style="margin-top:8px"><b>双口径交叉验证：</b>可比法二档 ' + num(buys[1], 0) + ' vs 老唐法理想买点 ' + num(L.buy, 0) +
+        (gap != null ? '（相差 ' + num(Math.abs(gap), 1) + '%）' : '') +
+        ' —— 两条完全独立的路径给出的加仓区若相互印证（历史上曾共振于 350~360 一带），信号强度高于单一口径。<br>' +
+        '<b>口径说明：</b>权重按业务重合度（Google 广告+云+AI 平台+同受反垄断 40% / Meta 社交广告 30% / 微软 云+企服 30%）；' +
+        '腾讯折价是港股流动性+红利税的常规假设；美股三巨头 PE 与腾讯现价盘中随「↻ 刷新行情」实时重算（锚定法，收盘锚由每日刷新链更新）。</div>';
+    }
+    return h + '</div>';
+  }
+
   function renderDetail() {
     var st = byCode(curDetail) || S[0];
     curDetail = st.code;
@@ -583,6 +633,8 @@
     h += '</div>';
     var L0 = ltValue(st);
     if (L0) h += ltCard(st, L0);
+    // 可比估值卡（仅腾讯：对标 Google/Meta/微软）
+    h += compsCard(st);
     // 历史估值百分位
     h += valCard(st);
     // 目标价计算（合理PE带法：老唐法的对照口径，可手动调 PE 带与安全边际）
@@ -3457,7 +3509,42 @@
       if (liveDiv("csi", "sh000922")) hit++;
       if (liveDiv("lowvol", "sh512890")) hit++;
     }
-    // 纳斯达克 PE 实时折算（2026-10-17 新增）：
+    // 腾讯可比估值实时联动（2026-10-23 新增）：三巨头现价变 → PE 随价等比 → 加权 PE 重算；
+    // 腾讯现价变 → EPS 不变（锚定法），合理价不变但「较现价空间」与加仓档距离实时变。
+    // 幂等：首次记录各锚（px0/pe0），重复刷新从锚重算，结果稳定。
+    if (window.COMPS && window.COMPS.items) {
+      var CM = window.COMPS, ccHit = 0;
+      if (CM._anchor == null) {
+        CM._anchor = { wpe0: CM.wpe, txEps: CM.target.epsTTM };
+        for (var ci = 0; ci < CM.items.length; ci++) CM.items[ci].pe0 = CM.items[ci].pe;
+      }
+      for (var cj = 0; cj < CM.items.length; cj++) {
+        var qc = parseQuote(CM.items[cj].code);
+        if (!qc || qc.px == null || !CM.items[cj].pe0) continue;
+        CM.items[cj].pe = CM.items[cj].pe0 * (qc.px / (CM.items[cj].px || qc.px));   // EPS 不变 → PE 随价
+        CM.items[cj].px = qc.px;
+        ccHit++;
+      }
+      if (ccHit) {
+        var wpe2 = 0;
+        for (var ck = 0; ck < CM.items.length; ck++) wpe2 += (CM.items[ck].pe || 0) * CM.items[ck].w;
+        CM.wpe = +(wpe2).toFixed(2);
+        // 腾讯现价（主池 S 里已有实时价）——EPS 锚不变
+        var txSt = byCode(CM.target.code);
+        var tPx = (txSt && txSt.px) || CM.target.px;
+        CM.target.px = tPx;
+        var eps0 = CM._anchor.txEps;
+        if (eps0 != null && CM.wpe > 0) {
+          CM.fair.none = +(eps0 * CM.wpe).toFixed(1);
+          CM.fair.d10 = +(eps0 * CM.wpe * 0.9).toFixed(1);
+          CM.fair.d20 = +(eps0 * CM.wpe * 0.8).toFixed(1);
+          CM.buys.ideal = +(CM.fair.d10 * 0.5).toFixed(1);
+          CM.buys.tier2 = +(CM.fair.d10 * 0.6).toFixed(1);
+          CM.buys.tier3 = +(CM.fair.d10 * 0.7).toFixed(1);
+        }
+        hit += ccHit;
+      }
+    }
     // peLive 锚（fetch-asset 每日用纳指100成份股加权算出）× 美股价格变动比例 → 实时 PE。
     // 价格变动 → 整体市值等比变动（股本不变），EPS TTM 当日不变，故 PE = peLive × (现价/锚价)。
     // 锚价用 QQQ 现价（nas.px 同为 QQQ 口径）；分位历史 peHist 的尾值即锚日 PE，

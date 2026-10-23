@@ -3,7 +3,7 @@
 // npYoYAcc=累计同比(%)；A股 consCagr=年度预期增速(%)、vsCons=累计同比−预期(pp)；
 // 港股 consNpAnnual=近四季预期净利年化(亿)、npAnnual=单季年化、vsCons=年化偏离(%)
 window.EARNINGS = {
- "asOf": "2026-10-21",
+ "asOf": "2026-10-22",
  "items": [
   {
    "code": "sh600519",
@@ -81,9 +81,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 17.5,
+   "consCagr": 17.6,
    "npYoYAcc": -20,
-   "vsCons": -37.5
+   "vsCons": -37.6
   },
   {
    "code": "sh600276",
@@ -101,9 +101,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 16.8,
+   "consCagr": 17.2,
    "npYoYAcc": 0.3,
-   "vsCons": -16.5
+   "vsCons": -16.9
   },
   {
    "code": "sz300760",
@@ -241,9 +241,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 27.8,
+   "consCagr": 27.9,
    "npYoYAcc": -20.5,
-   "vsCons": -48.3
+   "vsCons": -48.4
   },
   {
    "code": "sz000651",
@@ -340,7 +340,7 @@ window.EARNINGS = {
     "2025Q4",
     "2026Q3"
    ],
-   "consNpAnnual": 2981,
+   "consNpAnnual": 2980,
    "npAnnual": 2623.7,
    "vsCons": -12,
    "npYoYAcc": 15.8
@@ -397,13 +397,21 @@ window.EARNINGS = {
    "code": "hk00941",
    "name": "中国移动",
    "mkt": "HK",
-   "q": "2026Q2",
-   "revYi": 6194.6,
-   "npYi": 908.8,
-   "npQoQ": 73.5,
-   "npYoY": -2.6,
-   "revQoQ": 5.3,
-   "npQYi": 576.5
+   "q": "2026Q3",
+   "revYi": 9089.9,
+   "npYi": 1237.1,
+   "npQoQ": -43,
+   "npYoY": -3.4,
+   "revQoQ": -8.9,
+   "npQYi": 328.3,
+   "consQRange": [
+    "2026Q3",
+    "2026Q4"
+   ],
+   "consNpAnnual": 688,
+   "npAnnual": 1313.3,
+   "vsCons": 90.9,
+   "npYoYAcc": -2.1
   },
   {
    "code": "hk01299",
@@ -465,9 +473,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 22.2,
+   "consCagr": 21.6,
    "npYoYAcc": 31.6,
-   "vsCons": 9.4
+   "vsCons": 10
   },
   {
    "code": "sz300274",
@@ -529,9 +537,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 15.8,
+   "consCagr": 17.1,
    "npYoYAcc": -15,
-   "vsCons": -30.8
+   "vsCons": -32.1
   },
   {
    "code": "sz002901",
@@ -609,9 +617,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 19.4,
+   "consCagr": 18.6,
    "npYoYAcc": 1091.5,
-   "vsCons": 1072.1
+   "vsCons": 1072.9
   }
  ]
 };

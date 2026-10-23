@@ -81,7 +81,18 @@ assert("茅台距买点 >30%，不入选", tblSeg.indexOf("贵州茅台") < 0);
   assert("腾讯入选状态与选股结果一致（当前" + (txInSPL ? "已进入 30% 观察窗" : "退出观察窗") + "）",
     txInSPL ? tblSeg.indexOf("腾讯控股") >= 0 : tblSeg.indexOf("腾讯控股") < 0);
 }
-assert("药明康德/比亚迪距买点 >30%，同样退出观察窗", tblSeg.indexOf("药明康德") < 0 && tblSeg.indexOf("比亚迪") < 0);
+// 2026-10-23：药明康德跌至 ~145，距买点 22% <30% → 重新进入观察窗（与腾讯同因：行情下跌）；
+// 比亚迪也跌到距买点 29.9% 刚好卡线进入。全部改为动态口径：入选状态与选股结果一致。
+{
+  const wmInSPL = ltNames.indexOf("药明康德") >= 0;
+  assert("药明康德入选状态与选股结果一致（当前" + (wmInSPL ? "已进入 30% 观察窗" : "退出观察窗") + "）",
+    wmInSPL ? tblSeg.indexOf("药明康德") >= 0 : tblSeg.indexOf("药明康德") < 0);
+}
+{
+  const bydInSPL = ltNames.indexOf("比亚迪") >= 0;
+  assert("比亚迪入选状态与选股结果一致（当前" + (bydInSPL ? "已进入 30% 观察窗" : "退出观察窗") + "）",
+    bydInSPL ? tblSeg.indexOf("比亚迪") >= 0 : tblSeg.indexOf("比亚迪") < 0);
+}
 assert("阳光电源退出正式名单（H1 净利 -32%，机构复苏预期不采信）", tblSeg.indexOf("阳光电源") < 0);
 // 泡泡玛特在老唐法下买点 ≈ 59（美债口径）、距买点 +100%+，超出 30% 门槛，页面不再列出其买点；
 // 数值断言在 lt-check.js 中校验，这里只验证说明段落点出了「增速放缓 → 买点被压低」
@@ -117,7 +128,14 @@ const tblB = bandHtml.slice(iB, bandHtml.indexOf("</tbody></table>", iB));
 const bandMarkers = (tblB.match(/● 已达买点|○ 距买点|待观察/g) || []).length;
 const bandRows = (tblB.match(/<tr>/g) || []).length;
 assert("旧法正式名单：状态标记数 = 表格行数", bandMarkers > 0 && bandMarkers === bandRows, "markers=" + bandMarkers + " rows=" + bandRows);
-assert("旧法含阳光电源与伊利股份", tblB.indexOf("阳光电源") >= 0 && tblB.indexOf("伊利股份") >= 0);
+// 2026-10-23：行情下跌后 band 名单轮换——阳光电源/腾讯/茅台进入，伊利退出观察窗（名单=宁德/阳光/腾讯/泸州/茅台/港交所）。
+// 改为动态口径：band 表内公司 = band 选股结果。
+{
+  const bandPicks = window._stockPickListExpose ? window._stockPickListExpose().picks.map(o => o.name) : [];
+  assert("旧法表内公司与选股结果一致（" + bandPicks.join("/") + "）",
+    bandPicks.length > 0 && bandPicks.every(n => tblB.indexOf(n) >= 0),
+    "表内缺：" + bandPicks.filter(n => tblB.indexOf(n) < 0).join("、"));
+}
 assert("旧法含紫金矿业于备选", bandHtml.slice(bandHtml.indexOf("备选（等跌进买点")).indexOf("紫金矿业") >= 0);
 const pmB = bandHtml.match(/泡泡玛特[\s\S]{0,200}?买点 ([\d.]+)/);
 assert("旧法泡泡玛特买点仍为 134.75（年化EPS 8.75 口径）", !!pmB && near(+pmB[1], 134.75, 0.6), pmB ? pmB[1] : "未匹配");

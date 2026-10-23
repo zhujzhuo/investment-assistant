@@ -173,4 +173,10 @@ try {
   }
 } catch (e) { console.error("财报速览刷新异常（保留旧值）: " + e.message); }
 
+// ---------- 8. 腾讯可比估值（data/comps.js，qt 行情三巨头 PE + 汇率，2026-10-23 新增） ----------
+// 走 qt 公开接口（云端也可跑），失败保留旧值不影响主流程。
+try {
+  require("./fetch-comps.js");
+} catch (e) { console.error("可比估值刷新异常（保留旧值）: " + e.message); }
+
 })();
