@@ -27,9 +27,19 @@ assert("含免责声明", out.indexOf("非投资建议") >= 0);
 
 // 消息分级口径：档位升档加仓 N/2、技术有效加仓全额 N——从代码逻辑核验（构造快照算一遍）
 console.log("== 2b. 加仓 pp 口径（与 app.js addPlanRows/DIV_ADD 一致）==");
-assert("档位增量贡献 N/2（脚本含 dW/2）", fs.readFileSync(path.join(DIR, "alert-check.js"), "utf8").indexOf("dW / 2") >= 0);
-assert("技术全额进总仓（脚本含全额加到红利总仓）", fs.readFileSync(path.join(DIR, "alert-check.js"), "utf8").indexOf("全额加到红利总仓") >= 0);
-assert("观察级含距真实加仓锚点", fs.readFileSync(path.join(DIR, "alert-check.js"), "utf8").indexOf("距真实加仓还有") >= 0);
+const SRC = fs.readFileSync(path.join(DIR, "alert-check.js"), "utf8");
+assert("档位增量贡献 N/2（脚本含 dW/2）", SRC.indexOf("dW / 2") >= 0);
+assert("技术全额进总仓（脚本含全额加到红利总仓）", SRC.indexOf("全额加到红利总仓") >= 0);
+assert("观察级含距真实加仓锚点", SRC.indexOf("距真实加仓还有") >= 0);
+
+// 2c. 全信号覆盖：wklow（周BOLL下轨 +5pp）与 wkup（组合确认）已纳入
+console.log("== 2c. 有效点位全景覆盖 ==");
+assert("中证红利 wklow +5pp 纳入", /csi:\s*\{[^}]*wklow:\s*5/.test(SRC));
+assert("红利低波 wklow +5pp 纳入", /lowvol:\s*\{[^}]*wklow:\s*5/.test(SRC));
+assert("wklow 触发判定接入（调用清单）", /addTech\("中证红利", "wklow"/.test(SRC) && /addTech\("红利低波", "wklow"/.test(SRC));
+assert("wkup 组合确认项接入", /addTech\("红利低波", "wkup"/.test(SRC) && /addTech\("中证红利", "wkup"/.test(SRC));
+assert("wkup 定位为组合确认（不单独加仓）", SRC.indexOf("组合确认项") >= 0);
+assert("RSI 消息含当前 RSI 值", SRC.indexOf("现 RSI") >= 0);
 
 // 触发价口径核验：与页面公式一致 pxT = px·dy/(th+bondY)
 console.log("== 3. 触发价口径核验（与 app.js addPlanRows 同式）==");
