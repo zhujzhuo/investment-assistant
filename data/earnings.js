@@ -3,7 +3,7 @@
 // npYoYAcc=累计同比(%)；A股 consCagr=年度预期增速(%)、vsCons=累计同比−预期(pp)；
 // 港股 consNpAnnual=近四季预期净利年化(亿)、npAnnual=单季年化、vsCons=年化偏离(%)
 window.EARNINGS = {
- "asOf": "2026-10-22",
+ "asOf": "2026-10-25",
  "items": [
   {
    "code": "sh600519",
@@ -101,9 +101,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 17.2,
+   "consCagr": 16.6,
    "npYoYAcc": 0.3,
-   "vsCons": -16.9
+   "vsCons": -16.3
   },
   {
    "code": "sz300760",
@@ -161,9 +161,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 5.5,
+   "consCagr": 5.4,
    "npYoYAcc": 2,
-   "vsCons": -3.5
+   "vsCons": -3.4
   },
   {
    "code": "sh601318",
@@ -181,9 +181,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 9.7,
+   "consCagr": 9.9,
    "npYoYAcc": 36.1,
-   "vsCons": 26.4
+   "vsCons": 26.2
   },
   {
    "code": "sh600900",
@@ -241,9 +241,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 27.9,
+   "consCagr": 27.8,
    "npYoYAcc": -20.5,
-   "vsCons": -48.4
+   "vsCons": -48.3
   },
   {
    "code": "sz000651",
@@ -281,9 +281,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 6,
+   "consCagr": 5.9,
    "npYoYAcc": 1.7,
-   "vsCons": -4.3
+   "vsCons": -4.2
   },
   {
    "code": "sh688981",
@@ -309,21 +309,21 @@ window.EARNINGS = {
    "code": "sh601899",
    "name": "紫金矿业",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 1941.8,
-   "npYi": 391.7,
-   "npQoQ": -4.9,
-   "npYoY": 45.5,
-   "revQoQ": -2.9,
-   "npQYi": 190.9,
+   "q": "2026Q3",
+   "revYi": 2834.5,
+   "npYi": 575.3,
+   "npQoQ": -3.8,
+   "npYoY": 26,
+   "revQoQ": -6.7,
+   "npQYi": 183.6,
    "consYears": [
     2026,
     2027,
     2028
    ],
    "consCagr": 17.9,
-   "npYoYAcc": 68.2,
-   "vsCons": 50.3
+   "npYoYAcc": 51.9,
+   "vsCons": 34
   },
   {
    "code": "hk00700",
@@ -340,9 +340,9 @@ window.EARNINGS = {
     "2025Q4",
     "2026Q3"
    ],
-   "consNpAnnual": 2980,
+   "consNpAnnual": 2979,
    "npAnnual": 2623.7,
-   "vsCons": -12,
+   "vsCons": -11.9,
    "npYoYAcc": 15.8
   },
   {
@@ -473,9 +473,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 21.6,
+   "consCagr": 20.5,
    "npYoYAcc": 31.6,
-   "vsCons": 10
+   "vsCons": 11.1
   },
   {
    "code": "sz300274",
@@ -537,9 +537,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 17.1,
+   "consCagr": 16.6,
    "npYoYAcc": -15,
-   "vsCons": -32.1
+   "vsCons": -31.6
   },
   {
    "code": "sz002901",
@@ -577,9 +577,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 23.4,
+   "consCagr": 23.1,
    "npYoYAcc": 78.5,
-   "vsCons": 55.1
+   "vsCons": 55.4
   },
   {
    "code": "sz002050",
