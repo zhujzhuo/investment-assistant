@@ -84,6 +84,17 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
   const c = A.dividend.csi, l = A.dividend.lowvol;
 
   const alerts = [];
+  // 档位仓贡献口径（与 app.js addPlanRows 一致）：红利总仓 = 两标的档位仓均值 → 单标的升 Npp 只贡献 N/2 到总仓
+  function wOf(spread) {
+    if (spread >= 3.5) return 50;
+    if (spread >= 3.0) return 47;
+    if (spread >= 2.5) return 44;
+    if (spread >= 2.0) return 40;
+    if (spread >= 1.5) return 35;
+    if (spread >= 1.0) return 32;
+    return 30;
+  }
+  function fmtPx(v) { return v < 10 ? v.toFixed(3) : v.toFixed(2); }
   function addLadder(name, d, px) {
     if (px == null || d.px == null || d.dy == null) return;
     const spread = d.dy - bondY;                       // 收盘锚利差（口径与页面一致）
@@ -92,28 +103,54 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
     const dyT = next.th + bondY;
     const pxT = d.px * d.dy / dyT;                     // 分红不变假设下的触发价
     if (px <= pxT) {
-      alerts.push({ key: "ladder_" + name + "_" + next.th, level: "档位升档",
-        title: name + " 触及加仓档位（利差→" + next.th.toFixed(1) + "pp）",
-        detail: "现价 " + (px < 10 ? px.toFixed(3) : px.toFixed(2)) + " ≤ 触发价 " + (pxT < 10 ? pxT.toFixed(3) : pxT.toFixed(2)) +
-          "（对应档位仓 " + next.w + "%，" + next.label + "）。当前利差 " + spread.toFixed(2) + "pp。" });
+      const dW = next.w - wOf(spread);                 // 该标的档位仓增量
+      const dTot = dW / 2;                             // 对红利总仓的贡献（两标的均值口径）
+      alerts.push({ key: "ladder_" + name + "_" + next.th, level: "实际加仓", title: name + " 触及加仓档位（利差→" + next.th.toFixed(1) + "pp）",
+        detail: "现价 " + fmtPx(px) + " ≤ 触发价 " + fmtPx(pxT) + "，当前利差 " + spread.toFixed(2) + "pp。\n" +
+          "加仓动作：该标的档位仓 " + wOf(spread) + "% → " + next.w + "%（+" + dW + "pp），红利总仓 +" + dTot.toFixed(1) + "pp ≈ " +
+          Math.round(dTot * 10000).toLocaleString() + " 元（按 100 万总资产）。分 2~3 批执行，从货币端划转。" });
     }
   }
-  function addTech(name, key, d, px, gainPP) {
+  function addTech(name, key, d, px) {
     const cfgT = TECH[name === "中证红利" ? "csi" : "lowvol"];
-    const add = cfgT[key] || 0;
+    const add = cfgT[key] || 0;                        // 回测增益 pp；0 = 无增益（仅观察）
     if (px == null) return;
-    let hit = false, txt = "";
+    let hit = false, trigPx = null, txt = "";
     if (key === "ma250" && d.ma250 != null) {
-      hit = px <= d.ma250;
-      txt = "现价 " + (px < 10 ? px.toFixed(3) : px.toFixed(2)) + " vs 年线 " + (d.ma250 < 10 ? d.ma250.toFixed(3) : d.ma250.toFixed(2)) +
-        (add ? "（回测加仓增益 +" + add + "pp）" : "（该标的此项无回测增益，仅提示）");
+      hit = px <= d.ma250; trigPx = d.ma250;
+      txt = "现价 " + fmtPx(px) + " vs 年线 " + fmtPx(d.ma250);
     }
     if (key === "rsi" && d.rsi30 && d.rsi30.price != null) {
-      hit = px <= d.rsi30.price;
-      txt = "现价接近 RSI30 触发价 " + (d.rsi30.price < 10 ? d.rsi30.price.toFixed(3) : d.rsi30.price.toFixed(2)) +
-        (add ? "（回测加仓增益 +" + add + "pp）" : "（该标的此项无回测增益，仅提示）");
+      hit = px <= d.rsi30.price; trigPx = d.rsi30.price;
+      txt = "现价 " + fmtPx(px) + " ≤ RSI30 触发价 " + fmtPx(d.rsi30.price);
     }
-    if (hit) alerts.push({ key: "tech_" + name + "_" + key, level: "技术信号", title: name + " " + (key === "ma250" ? "跌破年线" : "RSI 超卖区"), detail: txt });
+    if (!hit) return;
+    // 观察级（无增益）：不构成加仓动作——给出「距真实加仓触发价还差多少」
+    if (!add) {
+      // 真实加仓锚：①档位升档触发价（若未在最高档）②该标的有增益的另一技术位
+      const lines = [];
+      const spread = d.dy - bondY;
+      const next = LADDER.find((x) => x.th > spread);
+      if (next) {
+        const pxT = d.px * d.dy / (next.th + bondY);
+        lines.push("档位升档触发价 " + fmtPx(pxT) + "（还需再跌 " + ((px / pxT - 1) * 100).toFixed(1) + "%，利差需再走宽 " + (next.th - spread).toFixed(2) + "pp）");
+      }
+      const otherKey = key === "ma250" ? "rsi" : "ma250";
+      if (cfgT[otherKey]) {
+        const oPx = otherKey === "ma250" ? d.ma250 : (d.rsi30 && d.rsi30.price);
+        if (oPx != null) lines.push((otherKey === "ma250" ? "年线" : "RSI30 触发价") + " " + fmtPx(oPx) + "（" + (oPx < px ? "还需再跌 " + ((px / oPx - 1) * 100).toFixed(1) + "%" : "也已触发，可叠加") + "，+" + cfgT[otherKey] + "pp）");
+      }
+      alerts.push({ key: "tech_" + name + "_" + key, level: "观察提示",
+        title: name + " " + (key === "ma250" ? "跌破年线（观察项）" : "RSI 超卖（观察项）"),
+        detail: txt + " —— 该标的此项回测无增益，仅提示不加仓。\n" +
+          (lines.length ? "距真实加仓还有：\n· " + lines.join("\n· ") : "该标的已无在途加仓触发（等档位或分位）。") });
+    } else {
+      // 实际加仓级（有增益）：给出加仓 pp
+      alerts.push({ key: "tech_" + name + "_" + key, level: "实际加仓",
+        title: name + " " + (key === "ma250" ? "跌破年线（有效信号）" : "RSI 超卖（有效信号）"),
+        detail: txt + "\n加仓动作：技术性加仓 +" + add + "pp（全额加到红利总仓 ≈ " +
+          Math.round(add * 10000).toLocaleString() + " 元，按 100 万总资产）——时机性加仓，回补后可撤回。" });
+    }
   }
 
   addLadder("中证红利", c, csiPx);
