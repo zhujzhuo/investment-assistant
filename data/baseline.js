@@ -1,42 +1,42 @@
 // 名单归档基线 + 与上期变动（gen-baseline.js 自动生成，每日 18:00 覆盖；请勿手改）
 window.IA_BASELINE = {
  "version": 1,
- "asOf": "2026-10-27",
- "prevAsOf": "2026-10-26",
+ "asOf": "2026-10-28",
+ "prevAsOf": "2026-10-27",
  "lists": {
   "picks": {
    "steady": [
     {
      "code": "sz000651",
      "name": "格力电器",
-     "reason": "股息率 8.2%，PE 8.3 倍，PB 1.36"
+     "reason": "股息率 8.0%，PE 8.4 倍，PB 1.39"
     },
     {
      "code": "sz000568",
      "name": "泸州老窖",
-     "reason": "股息率 8.2%，PE 13.9 倍，PB 2.28"
+     "reason": "股息率 8.3%，PE 13.6 倍，PB 2.23"
     },
     {
-     "code": "hk00941",
-     "name": "中国移动",
-     "reason": "股息率 7.0%，PE 11.4 倍，PB 1.00"
+     "code": "sz000858",
+     "name": "五粮液",
+     "reason": "股息率 7.1%，PE 23.1 倍，PB 2.37"
     }
    ],
    "growth": [
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 12.9 倍"
+     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 13.0 倍"
     },
     {
      "code": "sz300750",
      "name": "宁德时代",
-     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 12.3 倍"
+     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 12.1 倍"
     },
     {
      "code": "sh603259",
      "name": "药明康德",
-     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 16.2 倍"
+     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 16.3 倍"
     }
    ],
    "rotate": [
@@ -81,7 +81,7 @@ window.IA_BASELINE = {
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "dist": -2.9,
+     "dist": -2.3,
      "score": 8.4
     },
     {
@@ -99,7 +99,7 @@ window.IA_BASELINE = {
     {
      "code": "hk00388",
      "name": "香港交易所",
-     "dist": 29.3,
+     "dist": 28.4,
      "score": 8.2
     }
    ],
@@ -112,17 +112,17 @@ window.IA_BASELINE = {
     {
      "code": "hk09992",
      "name": "泡泡玛特",
-     "dist": -2
+     "dist": -3
     },
     {
      "code": "hk06181",
      "name": "老铺黄金",
-     "dist": 0.5
+     "dist": 3.3
     },
     {
      "code": "hk01299",
      "name": "友邦保险",
-     "dist": 17.9
+     "dist": 15.3
     }
    ]
   },
@@ -439,22 +439,25 @@ window.IA_BASELINE = {
   }
  },
  "changes": {
-  "picks": [],
-  "formal": [
+  "picks": [
    {
     "dir": "in",
-    "scope": "formal",
-    "tag": "进入观察窗",
-    "name": "香港交易所",
-    "reason": "距老唐买点 +29.3%，综合分 8.2"
+    "scope": "picks",
+    "cat": "steady",
+    "tag": "稳增长",
+    "name": "五粮液",
+    "reason": "股息率 7.1%，PE 23.1 倍，PB 2.37"
    },
    {
     "dir": "out",
-    "scope": "formal",
-    "name": "海康威视",
-    "reason": "象限配额内被反超，转入备选池（距买点 +19.5%）"
+    "scope": "picks",
+    "cat": "steady",
+    "tag": "稳增长",
+    "name": "中国移动",
+    "reason": "象限内排序跌出前 3 名（本期末位：五粮液）"
    }
   ],
+  "formal": [],
   "us": [],
   "pool": []
  }
