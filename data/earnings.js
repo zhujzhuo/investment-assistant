@@ -3,7 +3,7 @@
 // npYoYAcc=累计同比(%)；A股 consCagr=年度预期增速(%)、vsCons=累计同比−预期(pp)；
 // 港股 consNpAnnual=近四季预期净利年化(亿)、npAnnual=单季年化、vsCons=年化偏离(%)
 window.EARNINGS = {
- "asOf": "2026-10-25",
+ "asOf": "2026-10-29",
  "items": [
   {
    "code": "sh600519",
@@ -29,21 +29,21 @@ window.EARNINGS = {
    "code": "sz000858",
    "name": "五粮液",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 284.2,
-   "npYi": 87.5,
-   "npQoQ": -91.4,
-   "npYoY": 232.6,
-   "revQoQ": -75.6,
-   "npQYi": 6.9,
+   "q": "2026Q3",
+   "revYi": 328.6,
+   "npYi": 97.1,
+   "npQoQ": 38.8,
+   "npYoY": -48.3,
+   "revQoQ": -20.4,
+   "npQYi": 9.6,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 11.5,
-   "npYoYAcc": 89.3,
-   "vsCons": 77.8
+   "consCagr": 11.6,
+   "npYoYAcc": 50,
+   "vsCons": 38.4
   },
   {
    "code": "sz000568",
@@ -89,21 +89,21 @@ window.EARNINGS = {
    "code": "sh600276",
    "name": "恒瑞医药",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 154.6,
-   "npYi": 44.7,
-   "npQoQ": -4.3,
-   "npYoY": -15.3,
-   "revQoQ": -10.1,
-   "npQYi": 21.8,
+   "q": "2026Q3",
+   "revYi": 244.1,
+   "npYi": 69.2,
+   "npQoQ": 12.6,
+   "npYoY": 88.9,
+   "revQoQ": 22.4,
+   "npQYi": 24.6,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 16.6,
-   "npYoYAcc": 0.3,
-   "vsCons": -16.3
+   "consCagr": 15.8,
+   "npYoYAcc": 20.4,
+   "vsCons": 4.6
   },
   {
    "code": "sz300760",
@@ -121,29 +121,29 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 13.8,
+   "consCagr": 13.7,
    "npYoYAcc": -5.4,
-   "vsCons": -19.2
+   "vsCons": -19.1
   },
   {
    "code": "sh603259",
    "name": "药明康德",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 289,
-   "npYi": 110.8,
-   "npQoQ": 38.2,
-   "npYoY": 31.5,
-   "revQoQ": 32.4,
-   "npQYi": 64.3,
+   "q": "2026Q3",
+   "revYi": 455.4,
+   "npYi": 194,
+   "npQoQ": 29.4,
+   "npYoY": 136.7,
+   "revQoQ": 1.1,
+   "npQYi": 83.2,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 20.6,
-   "npYoYAcc": 29.4,
-   "vsCons": 8.8
+   "consCagr": 19.3,
+   "npYoYAcc": 60.6,
+   "vsCons": 41.3
   },
   {
    "code": "sh600036",
@@ -161,9 +161,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 5.4,
+   "consCagr": 5.6,
    "npYoYAcc": 2,
-   "vsCons": -3.4
+   "vsCons": -3.6
   },
   {
    "code": "sh601318",
@@ -181,9 +181,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 9.9,
+   "consCagr": 9.7,
    "npYoYAcc": 36.1,
-   "vsCons": 26.2
+   "vsCons": 26.4
   },
   {
    "code": "sh600900",
@@ -201,9 +201,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 5,
+   "consCagr": 4.9,
    "npYoYAcc": 13,
-   "vsCons": 8
+   "vsCons": 8.1
   },
   {
    "code": "sz002415",
@@ -221,9 +221,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 13.2,
+   "consCagr": 13,
    "npYoYAcc": 38.5,
-   "vsCons": 25.3
+   "vsCons": 25.5
   },
   {
    "code": "sz002594",
@@ -249,21 +249,21 @@ window.EARNINGS = {
    "code": "sz000651",
    "name": "格力电器",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 894,
-   "npYi": 132.8,
-   "npQoQ": 18.3,
-   "npYoY": -15.4,
-   "revQoQ": 8.1,
-   "npQYi": 72,
+   "q": "2026Q3",
+   "revYi": 1260.8,
+   "npYi": 172.7,
+   "npQoQ": -44.5,
+   "npYoY": -43.3,
+   "revQoQ": -21,
+   "npQYi": 40,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 4.7,
-   "npYoYAcc": -7.9,
-   "vsCons": -12.6
+   "consCagr": 6.4,
+   "npYoYAcc": -19.5,
+   "vsCons": -25.9
   },
   {
    "code": "sz000333",
@@ -281,9 +281,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 5.9,
+   "consCagr": 6.3,
    "npYoYAcc": 1.7,
-   "vsCons": -4.2
+   "vsCons": -4.6
   },
   {
    "code": "sh688981",
@@ -321,9 +321,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 17.9,
+   "consCagr": 16.4,
    "npYoYAcc": 51.9,
-   "vsCons": 34
+   "vsCons": 35.5
   },
   {
    "code": "hk00700",
@@ -408,9 +408,9 @@ window.EARNINGS = {
     "2026Q3",
     "2026Q4"
    ],
-   "consNpAnnual": 688,
+   "consNpAnnual": 656,
    "npAnnual": 1313.3,
-   "vsCons": 90.9,
+   "vsCons": 100.2,
    "npYoYAcc": -2.1
   },
   {
@@ -473,9 +473,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 20.5,
+   "consCagr": 19.9,
    "npYoYAcc": 31.6,
-   "vsCons": 11.1
+   "vsCons": 11.7
   },
   {
    "code": "sz300274",
@@ -493,9 +493,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 26.9,
+   "consCagr": 26.8,
    "npYoYAcc": -32,
-   "vsCons": -58.9
+   "vsCons": -58.8
   },
   {
    "code": "hk09992",
@@ -545,21 +545,21 @@ window.EARNINGS = {
    "code": "sz002901",
    "name": "大博医疗",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 13.4,
-   "npYi": 3.5,
-   "npQoQ": 41.1,
-   "npYoY": 46.5,
-   "revQoQ": 8.9,
-   "npQYi": 2.1,
+   "q": "2026Q3",
+   "revYi": 20.8,
+   "npYi": 4.7,
+   "npQoQ": -42.9,
+   "npYoY": -34.6,
+   "revQoQ": 5.5,
+   "npQYi": 1.2,
    "consYears": [
     2026,
     2027,
     2028
    ],
    "consCagr": 10.1,
-   "npYoYAcc": 44.7,
-   "vsCons": 34.6
+   "npYoYAcc": 11,
+   "vsCons": 0.9
   },
   {
    "code": "sh605117",
@@ -577,9 +577,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 23.1,
+   "consCagr": 22.8,
    "npYoYAcc": 78.5,
-   "vsCons": 55.4
+   "vsCons": 55.7
   },
   {
    "code": "sz002050",
@@ -617,9 +617,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 18.6,
+   "consCagr": 15.9,
    "npYoYAcc": 1091.5,
-   "vsCons": 1072.9
+   "vsCons": 1075.6
   }
  ]
 };

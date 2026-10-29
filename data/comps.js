@@ -2,17 +2,17 @@
 // 对标 Google40%/Meta30%/微软30%（业务重合度权重）；腾讯 EPS=现价/PE-TTM 反推；
 // fair = EPS×加权PE×(1−折价) 三档（0/10%/20%）；buys 以 10% 折价为基准 ×50%/60%/70%；盘中实时联动见 app.js applyLive
 window.COMPS = {
- "asOf": "2026-10-25",
+ "asOf": "2026-10-29",
  "target": {
   "code": "hk00700",
   "name": "腾讯控股",
-  "px": 386,
+  "px": 384,
   "pe": 12.94,
   "peTTM": true,
-  "epsTTM": 29.83
+  "epsTTM": 29.68
  },
  "fx": {
-  "usdHkd": 7.8399,
+  "usdHkd": 7.8431,
   "asOf": ""
  },
  "items": [
@@ -21,8 +21,8 @@ window.COMPS = {
    "code": "usGOOG",
    "name": "Google",
    "w": 0.4,
-   "px": 317.28,
-   "pe": 15.92,
+   "px": 321.89,
+   "pe": 16.15,
    "why": "业务结构最像：广告+云+AI平台，同受反垄断监管"
   },
   {
@@ -30,8 +30,8 @@ window.COMPS = {
    "code": "usMETA",
    "name": "Meta",
    "w": 0.3,
-   "px": 642.62,
-   "pe": 21.92,
+   "px": 612.49,
+   "pe": 20.9,
    "why": "社交广告变现对标（微信生态 vs 社交矩阵）"
   },
   {
@@ -39,26 +39,26 @@ window.COMPS = {
    "code": "usMSFT",
    "name": "微软",
    "w": 0.3,
-   "px": 524.51,
-   "pe": 29.22,
+   "px": 531.01,
+   "pe": 29.58,
    "why": "云+企业服务对标（腾讯云/AI），业务重合度最低"
   }
  ],
- "wpe": 21.71,
+ "wpe": 21.6,
  "discounts": [
   0,
   0.1,
   0.2
  ],
  "fair": {
-  "none": 647.6,
-  "d10": 582.8,
-  "d20": 518.1
+  "none": 641.1,
+  "d10": 577,
+  "d20": 512.9
  },
  "buys": {
-  "ideal": 291.4,
-  "tier2": 349.7,
-  "tier3": 408
+  "ideal": 288.5,
+  "tier2": 346.2,
+  "tier3": 403.9
  },
  "buyMults": [
   0.5,

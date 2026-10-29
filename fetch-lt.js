@@ -16,8 +16,41 @@ const { execFileSync } = require("child_process");
 const DIR = __dirname;
 const RAW = path.join(DIR, "data", "lt-raw.json");
 const OUT = path.join(DIR, "data", "lt.js");
-const SKILL = "/Users/didi/.workbuddy/plugins/cache/cb_teams_marketplace/finance-data/1.6.0/skills/neodata-financial-search";
-const PY = "/Users/didi/.workbuddy/binaries/python/versions/3.13.12/bin/python3";
+// 动态发现 skill 目录（插件版本会升级，硬编码版本号迟早失效 → cwd 不存在会让 spawnSync 报 ENOENT）
+function findSkill() {
+  const ROOT = "/Users/didi/.workbuddy/plugins/cache/cb_teams_marketplace/finance-data";
+  const cand = [];
+  try {
+    fs.readdirSync(ROOT).forEach(function (v) {
+      const p = path.join(ROOT, v, "skills", "neodata-financial-search");
+      if (fs.existsSync(path.join(p, "scripts", "query.py"))) cand.push(p);
+    });
+  } catch (e) {}
+  if (!cand.length) throw new Error("未找到 neodata-financial-search skill 目录（" + ROOT + "）");
+  // 版本号按数值降序取最新
+  cand.sort(function (a, b) {
+    const va = (+(/finance-data\/([\d.]+)\//.exec(a) || [0, "0"])[1].replace(/\./g, "")),
+          vb = (+(/finance-data\/([\d.]+)\//.exec(b) || [0, "0"])[1].replace(/\./g, ""));
+    return vb - va;
+  });
+  return cand[0];
+}
+// python 同样动态发现（避免版本目录被清理后报 no such file）
+function findPy() {
+  const ROOT = "/Users/didi/.workbuddy/binaries/python/versions";
+  const cand = [];
+  try {
+    fs.readdirSync(ROOT).forEach(function (v) {
+      const p = path.join(ROOT, v, "bin", "python3");
+      if (fs.existsSync(p)) cand.push({ p: p, v: v });
+    });
+  } catch (e) {}
+  cand.sort(function (a, b) { return (+b.v.replace(/\./g, "")) - (+a.v.replace(/\./g, "")); });
+  return cand.length ? cand[0].p : "python3";
+}
+const SKILL = findSkill();
+const PY = findPy();
+console.log("skill: " + SKILL + "\npython: " + PY);
 
 // 载入 data.js 的股票池
 const g = { window: {} };
