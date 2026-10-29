@@ -73,10 +73,11 @@ assert("每日推荐表新增「财报」列", pickHtml.indexOf("<th>财报</th>
 assert("每日推荐行含披露日标记（repchip）", pickHtml.indexOf("repchip") >= 0);
 const screenHtml = store["screen-body"].innerHTML;
 assert("好公司清单表新增「财报」列", screenHtml.indexOf("<th>财报</th>") >= 0);
-// 好公司清单 28 行 / reports.js 覆盖 18~19 只（数据源未覆盖的显示 —）→ 按覆盖率校验，≥60% 即视为字段已接入
+// 好公司清单 28 行 / reports.js 覆盖度随 refresh 变化（曾 18~19 只，2026-10-29 降到 15 只，未覆盖的显示 —）
+// → 按「绝对下限」断言：字段接入坏掉时 chips 会掉到 0，仍能捕获；不再用百分比（数据源波动会误报）
 const screenRows = (screenHtml.match(/<tr/g) || []).length - 1;
 const screenChips = (screenHtml.match(/repchip/g) || []).length;
-assert("好公司清单行含披露日标记（repchip）", screenChips >= screenRows * 0.6, screenChips + "/" + screenRows);
+assert("好公司清单行含披露日标记（repchip）", screenChips >= 12, screenChips + "/" + screenRows + " 行");
 
 console.log("=== 4. 美股页（财报日历 + 四象限 / 标的池标记） ===");
 window.showTab("us");

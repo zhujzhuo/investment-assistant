@@ -1479,6 +1479,44 @@
     });
     return out;
   }
+  // ---------- 档位仓执行层：执行带宽 + 分红月脉冲过滤（2026-10-29）----------
+  // 背景（36 个月实测）：档位基准仓变过 8 次，其中 4 次是分红集中月的「脉冲」——2024-06 +4pp、2024-08 −4pp，
+  //   2026-05 +4pp、2026-06 −4pp，成对往返、净变化 0；另外 4 次里还有一半只有 1~2pp（100 万口径 1~2 万元）。
+  //   为这种变化下单没有收益依据（换手成本虽小，但会让仓位变成噪音驱动的随机游走）。
+  // 规则：① 新档位需**连续 2 期**成立才确认（滤掉脉冲）② |确认目标 − 已执行| ≥ DIV_EXEC_BAND 才真的动手。
+  //   技术叠加（时机性，回测有效）不受此限，触发即执行。
+  var DIV_EXEC_BAND = 3;
+  var DIV_EXEC_KEY = "ia_exec_base";
+  function divBaseHist() {
+    var bY = (A && A.bond10y && A.bond10y.v != null) ? A.bond10y.v : 1.75;
+    var c = (A && A.dividend && A.dividend.csi.dyHist) || [], l = (A && A.dividend && A.dividend.lowvol.dyHist) || [];
+    var out = [], n = Math.min(c.length, l.length);
+    for (var i = 0; i < n; i++) out.push(Math.round((divLevel(c[i] - bY).w + divLevel(l[i] - bY).w) / 2));
+    return out;
+  }
+  function execBaseGet(dflt) {
+    try { var v = Number(window.localStorage.getItem(DIV_EXEC_KEY)); if (v >= 20 && v <= 60) return Math.round(v); } catch (e) { }
+    return dflt;
+  }
+  window._setExecBase = function (v) {
+    var n = Math.round(Number(v));
+    if (!(n >= 20 && n <= 60)) return;
+    try { window.localStorage.setItem(DIV_EXEC_KEY, String(n)); } catch (e) { }
+    if (curTab === "plan") renderPlan(); else if (curTab === "divcmp") renderDivCmp();
+  };
+  function divExecPlan(base) {
+    var hist = divBaseHist(), n = hist.length;
+    var cur = n ? hist[n - 1] : base, prev = n >= 2 ? hist[n - 2] : cur;
+    var pending = n >= 2 && cur !== prev;
+    var confirmed = pending ? prev : cur;        // 本期刚变 → 沿用上一期，等下一期确认
+    var exec = execBaseGet(confirmed);
+    var gap = confirmed - exec;
+    return {
+      hist: hist, cur: cur, prev: prev, pending: pending, confirmed: confirmed, exec: exec, gap: gap,
+      band: DIV_EXEC_BAND, act: Math.abs(gap) >= DIV_EXEC_BAND,
+      amt: Math.round(Math.abs(gap) * 10000).toLocaleString()
+    };
+  }
   // 综合出「整体投顾」的当前建议权重
   function planState() {
     if (!A) return null;
@@ -1553,6 +1591,7 @@
       csi: csi, lowvol: lv, lc: lc, ll: ll, tc: tc, tl: tl,
       w: { div: wDiv, nas: wNas, stock: wStock, cash: wCash },
       base: base, add: add, why: why, tilt: { csi: tiltCsi, lowvol: tiltLv },
+      exec: divExecPlan(base),
       trim: { csi: trC, lowvol: trL, cap: cap, floor: floor, raw: raw, cut: cut },
       nas: A.nasdaq, nasLv: nl, nasNote: nasNote, alerts: alerts
     };
@@ -1596,6 +1635,10 @@
   window._trimLevel = trimLevel;
   window._trimWhy = trimWhy;
   window._planState = planState;
+  window._divExecPlan = divExecPlan;
+  window._divBaseHist = divBaseHist;
+  window._setExecBaseRaw = execBaseGet;
+  window._reportMarkdown = reportMarkdown;
   // ---- 名单归档钩子（gen-baseline.js 每日 18:00 调用，用于「名单变动」对比基线）----
   window._picksExpose = picks;                          // 每日推荐四象限名单
   window._stockPickListExpose = stockPickList;          // 正式名单（建仓节奏 ③ 股票端）
@@ -1787,7 +1830,7 @@
       '② <b>决定仓位的是利差，不是股息率。</b>利差 ' + num(sc, 2) + 'pp vs ' + num(sl, 2) + 'pp（都扣掉国债 ' + pct(bondY, 2) + '），对应档位仓 ' + P.lc.w + '% / ' + P.ll.w + '%，红利总仓取两者均值 = <b>' + P.base + '%</b>。<br>' +
       '③ <b>性格不同：</b>近 3 年中证红利年化 ' + (pc ? sgn(pc.cagr) : "—") + '、最大回撤 ' + (pc ? sgn(pc.mdd) : "—") + '、波动 ' + (pc ? num(pc.vol, 1) : "—") + '%；红利低波年化 ' + (pl ? sgn(pl.cagr) : "—") + '、回撤 ' + (pl ? sgn(pl.mdd) : "—") + '、波动 ' + (pl ? num(pl.vol, 1) : "—") + '% —— ' +
       '低波用更小的波动/回撤换到了相近的收益，适合当压舱石；' + firstPick + '的股息率分位更高（相对自己更便宜），是这一轮加仓的第一顺位。<br>' +
-      '④ <b>分开加仓：</b>谁的利差更宽、分位更低，就把红利内部的倾斜给它（当前 ' + P.tilt.csi + '% / ' + P.tilt.lowvol + '%，' + (P.tilt.csi === P.tilt.lowvol ? "两者同档 → 各一半" : "档位更高的一边多配 10pp") + '）。' +
+      '④ <b>分开加仓、但不互换：</b>谁的利差更宽、分位更低，就把<b>新增的钱</b>倾斜给它（当前 ' + P.tilt.csi + '% / ' + P.tilt.lowvol + '%，' + (P.tilt.csi === P.tilt.lowvol ? "两者同档 → 各一半" : "档位更高的一边多配 10pp") + '）；已持有的部分<b>不为一时倾斜做卖出买入</b>。' +
       '两者<b>各自的买入触发价、加仓金额与减仓触发价见「🧭 整体投顾 → 红利资产」</b>（红利是重仓，提示放首页）。</div>';
     h += '<div class="muted small" style="margin-top:6px">✓较优 = 该维度上两个标的里更占优的一侧（年化/利差/分位越高越好；波动/回撤深度/PE/52周位置越低越好）。表现指标为近 3 年（36 个月）月 K 前复权口径、含分红再投，与长期持有的真实体感仍有差异（未扣费、未计税）。<br>本页现价 / 涨跌 / 股息率 / 分位 / 利差 / 估值 / 技术距离均随「↻ 刷新行情」按实时价重算（DPS、EPS 锚定法）；年线值、BOLL 轨道值、RSI(14)、周 K 方向等需日线序列的基准值按日级快照。</div>';
     h += '</div>';
@@ -1931,13 +1974,17 @@
     // ⑤ 怎么配（内部倾斜规则 + 执行口径）
     h += '<div class="card"><h3>两个标的怎么配（内部倾斜）</h3>' +
       '<div class="kvg k2" style="margin-top:4px">' +
-      kvRow("倾斜规则", "利差档位更高的一边多配 10pp（60/40）；两者同档 → 各 50%") +
+      kvRow("倾斜规则", "默认各 50%；档位差 1 档时倾斜到 60/40 —— 只决定<b>新钱</b>的方向，<b>不单独换仓</b>") +
       kvRow("当前倾斜", "<b>中证红利 " + P.tilt.csi + "% / 红利低波 " + P.tilt.lowvol + "%</b>") +
       kvRow("折算金额（100 万）", Math.round(w.div * P.tilt.csi / 100 * 10000).toLocaleString() + " 元 / " + Math.round(w.div * P.tilt.lowvol / 100 * 10000).toLocaleString() + " 元") +
-      kvRow("再平衡触发", "红利偏离 ±5pp 或季度末；单条加仓分 2~3 批（每周一批）") +
+      kvRow("切换依据（回测）", "无增益：36 个月只切换 1 次，年化 8.82% vs 恒定 50/50 的 8.87%（<b>−0.05pp</b>）") +
+      kvRow("再平衡触发", "偏离 ±10pp 才再平衡；单条加仓分 2~3 批（每周一批）") +
       '</div>' +
-      '<div class="note" style="margin-top:10px"><b>性格分工：</b>中证红利弹性更大（下跌时利差扩张更快），是<b>加仓时的第一顺位</b>；红利低波波动与回撤更小，适合当<b>压舱石</b>长期拿住。' +
-      '两者都按各自的利差档位决定仓位，<b>谁的利差更宽、股息率分位更高，就把钱的倾斜给它</b>；不要因为某一个涨得多就换仓 —— 决定仓位的是估值，不是涨幅。</div></div>';
+      '<div class="note" style="margin-top:10px"><b>不为倾斜做一卖一买。</b>10pp 倾斜切换＝20pp 双边换手（100 万口径约 100~400 元摩擦），' +
+      '而两标的近 3 年累计收益只差 3.7pp（≈1.2pp/年），10pp 倾斜的理论上限约 0.12pp/年 —— 落在噪音里，且回测为负。' +
+      '倾斜只在三种时候顺带执行：<b>新钱投入、分红到账、本来就发生的加减仓</b>（零额外换手）。<br>' +
+      '<b>性格分工：</b>中证红利弹性更大（下跌时利差扩张更快），是<b>加仓时的第一顺位</b>；红利低波波动与回撤更小，适合当<b>压舱石</b>长期拿住。' +
+      '两者都按各自的利差档位决定仓位，<b>谁的利差更宽、股息率分位更高，就把新增的钱倾斜给它</b>；不要因为某一个涨得多就换仓 —— 决定仓位的是估值，不是涨幅。</div></div>';
     h += '<div class="muted small">' + window.DISCLAIMER + '</div>';
     $("divcmp-body").innerHTML = h;
   }
@@ -1990,6 +2037,7 @@
       '</div></div></div>';
 
     // ④ 红利模块：本页只留一句话摘要 —— 完整对比、逐条加仓触发价与金额在独立页「⚖️ 红利对比」
+    var EX = P.exec;
     var spC = P.csi.dy - A.bond10y.v, spL = P.lowvol.dy - A.bond10y.v;
     h += '<div class="card"><h3><span class="dot" style="background:#d92c2c"></span>红利资产 <b>' + w.div + '%</b> <span class="muted small">档位仓 ' + P.lc.w + '% / ' + P.ll.w + '%</span>' +
       '<button class="btn btn-mini" onclick="showTab(\'divcmp\')">⚖️ 两个标的对比 →</button></h3>' +
@@ -1997,8 +2045,15 @@
       kvRow("中证红利", pct(P.csi.dy, 2) + ' · 利差 <b>' + num(spC, 2) + 'pp</b> · 档位仓 ' + P.lc.w + '%') +
       kvRow("红利低波", pct(P.lowvol.dy, 2) + ' · 利差 <b>' + num(spL, 2) + 'pp</b> · 档位仓 ' + P.ll.w + '%') +
       kvRow("档位基准 ＋ 加仓信号", P.base + '%' + (P.add ? ' ＋ ' + P.add + 'pp' : '') + ' ＝ <b>' + P.trim.raw + '%</b>') +
-      kvRow("红利内部倾斜", '中证 ' + P.tilt.csi + '% / 低波 ' + P.tilt.lowvol + '%') +
+      kvRow("红利内部倾斜", '中证 ' + P.tilt.csi + '% / 低波 ' + P.tilt.lowvol + '%（不单独换仓）') +
+      kvRow("档位目标 ／ 已执行", EX.confirmed + '% ／ <b>' + EX.exec + '%</b>（偏离 ' + (EX.gap > 0 ? "+" : "") + EX.gap + 'pp）') +
+      kvRow("是否动手", EX.act ? ('<b>执行</b>：' + (EX.gap > 0 ? "买入 " : "卖出 ") + Math.abs(EX.gap) + 'pp ≈ ' + EX.amt + ' 元') : ('<b>不动</b>（偏离 ' + Math.abs(EX.gap) + 'pp &lt; 带宽 ' + EX.band + 'pp）')) +
       '</div>' +
+      '<div class="small" style="margin-top:6px"><b>仓位执行口径：</b>档位目标需<b>连续 2 期</b>成立才确认（滤掉分红月脉冲' +
+      (EX.pending ? '；本期 ' + EX.cur + '% 是当月新值 → <b>待下期确认，暂不调</b>' : '') + '），且偏离已执行 ≥' + EX.band + 'pp 才动手 —— 1~2pp 的漂移不下单。' +
+      ' 已执行仓位 <input type="number" id="execBaseIn" value="' + EX.exec + '" min="20" max="60" step="1" style="width:58px"> %' +
+      ' <button class="btn btn-mini" onclick="window._setExecBase(document.getElementById(\'execBaseIn\').value)">保存</button>' +
+      ' <span class="muted small">（= 你实际上执行到多少；记录后偏离归零）</span></div>' +
       '<div class="small" style="margin-top:8px"><b>仓位调整提示</b>（按 100 万总资产折算，1pp = 1 万元）' +
       '<div style="margin-top:4px">· <b>加仓方向</b>：' + nearestAdd("csi", P.csi, P.lc, P.tc) + '；' + nearestAdd("lowvol", P.lowvol, P.ll, P.tl) + '。</div>' +
       '<div style="margin-top:3px">· <b>减仓方向</b>（利差收窄 → 档位降 → 仓位降）：' + trimHintText("csi", P.csi, P.lc) + '；' + trimHintText("lowvol", P.lowvol, P.ll) + '。</div>' +
@@ -2818,13 +2873,13 @@
     L.push("## 一、整体投顾组合（资产配置层）");
     L.push("");
     if (A) {
-      var PW = planState(), w = PW.w;
+      var PW = planState(), w = PW.w, EXW = PW.exec;
       L.push("> 长期目标 " + TGOAL.lo + "%~" + TGOAL.hi + "%；四模块：红利（低估买入/高估卖出，30%~50%，按「股息率−10年国债利差」定档）· 纳斯达克100（只做指数定投 20%）· 货币基金（安全垫+弹药）· 巴菲特式股票 10%");
       L.push("");
       L.push("| 模块 | 建议仓位 | 依据 |");
       L.push("|---|---:|---|");
       var scM = PW.csi.dy - A.bond10y.v, slM = PW.lowvol.dy - A.bond10y.v;
-      L.push("| 红利资产 | " + w.div + "% | 中证红利股息率 " + pct(PW.csi.dy, 2) + "（利差 " + num(scM, 2) + "pp，" + PW.lc.label + "）／红利低波 " + pct(PW.lowvol.dy, 2) + "（利差 " + num(slM, 2) + "pp，" + PW.ll.label + "）；基准仓 " + PW.base + "%" + (PW.add ? "，技术叠加 +" + PW.add + "pp" : "") + "；内部倾斜 " + PW.tilt.csi + "% / " + PW.tilt.lowvol + "% |");
+      L.push("| 红利资产 | " + w.div + "% | 中证红利股息率 " + pct(PW.csi.dy, 2) + "（利差 " + num(scM, 2) + "pp，" + PW.lc.label + "）／红利低波 " + pct(PW.lowvol.dy, 2) + "（利差 " + num(slM, 2) + "pp，" + PW.ll.label + "）；档位目标 " + EXW.confirmed + "% ／已执行 " + EXW.exec + "%（偏离 " + (EXW.gap > 0 ? "+" : "") + EXW.gap + "pp）" + (EXW.act ? " → **执行**" : " → **不动**（<" + EXW.band + "pp 带宽）") + (EXW.pending ? "，本期新值待下期确认" : "") + (PW.add ? "，技术叠加 +" + PW.add + "pp" : "") + "；内部倾斜 " + PW.tilt.csi + "% / " + PW.tilt.lowvol + "%（不单独换仓） |");
       L.push("| 纳斯达克100 | " + w.nas + "% | PE-TTM " + num(PW.nas.pe, 2) + " 倍 → " + PW.nasLv.label + "，本期定投 " + num(PW.nasLv.mult, 1) + " 倍基准金额 |");
       L.push("| 货币/自由现金流 | " + w.cash + "% | 随红利仓位反向调节，作为抄底弹药 |");
       L.push("| 巴菲特式股票 | " + w.stock + "% | 见下文每日推荐与组合配比 |");
@@ -2845,6 +2900,7 @@
       L.push("| 距年线 / RSI / 52周位置 | " + pct(PW.csi.distMA250, 1) + " / " + num(PW.csi.rsi14, 0) + " / " + pct(PW.csi.pos52, 0) + " | " + pct(PW.lowvol.distMA250, 1) + " / " + num(PW.lowvol.rsi14, 0) + " / " + pct(PW.lowvol.pos52, 0) + " |");
       L.push("| 周线 BOLL 下轨（重度加仓触发价） | " + (PW.csi.wk ? num(PW.csi.wk.lower, PW.csi.px < 10 ? 3 : 0) + "（需再跌 " + pct(PW.csi.distWkLow, 1) + "）" : "—") + " | " + (PW.lowvol.wk ? num(PW.lowvol.wk.lower, PW.lowvol.px < 10 ? 3 : 0) + "（需再跌 " + pct(PW.lowvol.distWkLow, 1) + "）" : "—") + " |");
       L.push("| 红利内部倾斜（100 万折算） | " + PW.tilt.csi + "%（" + Math.round(w.div * PW.tilt.csi / 100 * 10000).toLocaleString() + " 元） | " + PW.tilt.lowvol + "%（" + Math.round(w.div * PW.tilt.lowvol / 100 * 10000).toLocaleString() + " 元） |");
+      L.push("| 仓位执行口径 | 档位目标需连续 2 期确认（滤分红月脉冲），偏离已执行 ≥" + EXW.band + "pp 才动手 | 倾斜只用于新钱方向，不为一时倾斜做一卖一买 |");
       L.push("");
       L.push("**下一次加仓是什么、加多少（按 100 万总资产折算，钱从货币端划转）：**");
       L.push("");
