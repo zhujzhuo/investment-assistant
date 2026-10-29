@@ -14,3 +14,4 @@ node_modules/
 # 部署状态（最近一次部署的数据哈希，本地运行时生成，不进仓库）
 .deploy-state/
 alert-config.json
+data/alert-state.json
