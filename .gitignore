@@ -14,4 +14,4 @@ node_modules/
 # 部署状态（最近一次部署的数据哈希，本地运行时生成，不进仓库）
 .deploy-state/
 alert-config.json
-data/alert-state.json
+# 注意：提醒的去重状态文件不忽略——云端 workflow 靠把它 commit 回仓库实现跨次运行去重复用

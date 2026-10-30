@@ -1,8 +1,8 @@
 // 名单归档基线 + 与上期变动（gen-baseline.js 自动生成，每日 18:00 覆盖；请勿手改）
 window.IA_BASELINE = {
  "version": 1,
- "asOf": "2026-10-29",
- "prevAsOf": "2026-10-27",
+ "asOf": "2026-10-30",
+ "prevAsOf": "2026-10-29",
  "lists": {
   "picks": {
    "steady": [
@@ -439,24 +439,7 @@ window.IA_BASELINE = {
   }
  },
  "changes": {
-  "picks": [
-   {
-    "dir": "in",
-    "scope": "picks",
-    "cat": "steady",
-    "tag": "稳增长",
-    "name": "五粮液",
-    "reason": "股息率 7.2%，PE 22.7 倍，PB 2.34"
-   },
-   {
-    "dir": "out",
-    "scope": "picks",
-    "cat": "steady",
-    "tag": "稳增长",
-    "name": "中国移动",
-    "reason": "象限内排序跌出前 3 名（本期末位：五粮液）"
-   }
-  ],
+  "picks": [],
   "formal": [],
   "us": [],
   "pool": []

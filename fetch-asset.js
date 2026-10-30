@@ -14,7 +14,8 @@ const { execFileSync } = require("child_process");
 
 // 2026-10-13：腾讯 K 线接口 web.ifzq.gtimg.cn 已被 WAF 拦截（HTTP 501 HTML），
 // 改为优先走 westock CLI（与 MCP 同源）；CLI 不可用的周期再从日K本地聚合。
-const WS_BIN = "/Users/didi/.local/bin/westock";
+// （可用 IA_WESTOCK_BIN 覆盖，便于在云端/测试里模拟「没有 CLI」的环境）
+const WS_BIN = process.env.IA_WESTOCK_BIN || "/Users/didi/.local/bin/westock";
 
 const DIR = __dirname;
 const RAW = path.join(DIR, "data", "asset-raw.json");
@@ -147,6 +148,43 @@ function klineViaCLI(code, period, n, fq) {
   }
   return rows;
 }
+// 云端（GitHub Actions）无 westock CLI → 只探测一次，避免每个周期都白等 CLI 重试
+const HAS_CLI = fs.existsSync(WS_BIN);
+
+// ---- 第三个 K 线源：东财公开接口（云端兜底）----
+// 背景：GitHub Actions 里 ①ifzq（WAF 拦截）②westock CLI（本地二进制，云端没有）都不可用，
+// 导致 data/asset.js 在云端长期不更新（asOfA 卡在数日前）→ 云端红利提醒的锚失真。
+// 东财 push2his 是公开 HTTPS 接口，国内外均可访问，按 klt 直接返回日/周/月K，无需聚合。
+// 覆盖：沪深标的（sh→1. / sz→0.）。美股（usQQQ 等）不由本源兜底，云端沿用快照旧值。
+const EM_PERIOD = { day: 101, week: 102, month: 103 };
+const EM_FQT = { qfq: 1, hfq: 2, "": 0 };   // 0=不复权（技术面口径）1=前复权（回测口径）
+function emSecid(code) {
+  const m = /^(sh|sz|hk|us)(.+)$/.exec(String(code));
+  if (!m) return null;
+  if (m[1] === "sh") return "1." + m[2];
+  if (m[1] === "sz") return "0." + m[2];
+  return null;
+}
+async function klineViaEM(code, period, n, fq) {
+  const secid = emSecid(code), klt = EM_PERIOD[period];
+  if (!secid || !klt) return [];
+  const fqt = EM_FQT[fq || ""] != null ? EM_FQT[fq || ""] : 0;
+  const url = "https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=" + secid +
+    "&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58&klt=" + klt +
+    "&fqt=" + fqt + "&end=20500101&lmt=" + Math.max(n, 20);
+  try {
+    const j = JSON.parse(await get(url));
+    const ks = j && j.data && j.data.klines;
+    if (!ks || !ks.length) return [];
+    const out = ks.map((s) => {
+      const f = String(s).split(",");                 // 日期,开,收,高,低,量,额,振幅
+      return { d: String(f[0]).slice(0, 10), o: Number(f[1]), c: Number(f[2]), h: Number(f[3]), l: Number(f[4]) };
+    }).filter((r) => r.d && isFinite(r.c) && r.c > 0);
+    out.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
+    return out.slice(-n);
+  } catch (e) { return []; }
+}
+
 async function kline(code, period, n, fq) {
   try {
     const url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=" + code + "," + period + ",,," + n + "," + (fq || "");
@@ -165,7 +203,13 @@ async function kline(code, period, n, fq) {
       if (out.length >= Math.floor(n / 2)) return out;
     }
   } catch (e) { /* ifzq 已被 WAF 拦截 → 落到 CLI */ }
-  return klineViaCLI(code, period, n, fq);
+  if (HAS_CLI) {                                  // 本地：westock CLI 是权威源
+    const rows = klineViaCLI(code, period, n, fq);
+    if (rows.length) return rows;
+  }
+  const em = await klineViaEM(code, period, n, fq); // 云端/CLI 失败：东财公开接口兜底
+  if (em.length) return em;
+  return [];
 }
 
 // ---------- 指标 ----------
@@ -336,6 +380,15 @@ function peSeries(prices, epsGrowthPerYear) {
   }
   await fetchNasPELive();
 
+  // 「降级不覆盖」保护：关键 K 线缺失时不写盘，保留上一次的好快照。
+  // 场景：云端东财接口临时不可用 / 本地 CLI 限频 → 若照样写盘，会把 asset.js 里的
+  // 股息率历史、年线、RSI、周BOLL 全部冲成空值，且下次同步会覆盖掉本地的好数据。
+  const REQUIRED_K = ["csiIdxM", "lowvolM", "csiD", "lowvolD", "csiW", "lowvolW"];
+  const missingK = REQUIRED_K.filter((k) => !(raw.kline[k] && raw.kline[k].length));
+  if (missingK.length) {
+    console.error("✗ 关键K线缺失：" + missingK.join(",") + " → 本次不写盘，保留上次快照（已抓取部分作废）");
+    process.exit(0);
+  }
   fs.writeFileSync(RAW, JSON.stringify(raw));
 
   // ---------- 计算 ----------

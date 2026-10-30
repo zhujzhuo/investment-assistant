@@ -8,9 +8,13 @@
 //   只会让「还需再跌」变大；反过来，只有当 ① 盘中价相对昨收锚回落、② 技术位自身滚动移动
 //   （年线/RSI/周BOLL 都是滚动窗口，会自己走）、③ 利差跨过档位边界 时，这个百分比才会变小。
 // 通道：Server酱 Turbo（https://sct.ftqq.com/，微信扫码免费申请 SendKey）与 企业微信群机器人 webhook 二选一。
-//   配置：data/alert-config.json { "channel": "serverchan"|"wecom"|"none", "serverChanKey": "...", "wecomWebhook": "..." }
+//   本地：data/alert-config.json { "channel": "serverchan"|"wecom"|"none", "serverChanKey": "...", "wecomWebhook": "..." }
+//   云端：用环境变量（GitHub Actions Secrets）注入，优先级高于文件 —— SERVERCHAN_KEY / WECOM_WEBHOOK，
+//         这样密钥不必进仓库（alert-config.json 已在 .gitignore）。
+//   已执行仓位可用 ALERT_EXEC_BASE 覆盖（云端无法读本地 localStorage）。
 // 去重：data/alert-state.json 记录「信号键+日期」，同一信号当日只推一次、触发状态持续期间不重推。
-// 用法：node alert-check.js [--dry]   # --dry 只打印不推送不发状态
+//   云端无持久盘 → 由 workflow 把该文件 commit 回仓库（[skip ci]）实现跨次运行去重。
+// 用法：node alert-check.js [--dry] [--cloud] [--px=sh000922:6300,sh512890:1.45]
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
@@ -97,7 +101,17 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
 
 (async function () {
   const dry = process.argv.indexOf("--dry") >= 0;
+  const cloud = process.argv.indexOf("--cloud") >= 0;     // 云端（GitHub Actions）运行：标注来源 + 校验快照新鲜度
   const cfg = loadJSON(CFG_F, { channel: "none" });
+  // 云端优先用环境变量（Secrets），本地仍走 alert-config.json
+  if (process.env.SERVERCHAN_KEY) { cfg.channel = "serverchan"; cfg.serverChanKey = process.env.SERVERCHAN_KEY; }
+  else if (process.env.WECOM_WEBHOOK) { cfg.channel = "wecom"; cfg.wecomWebhook = process.env.WECOM_WEBHOOK; }
+  if (cloud && cfg.channel === "none") {
+    console.error("⚠ 云端未检测到 SERVERCHAN_KEY / WECOM_WEBHOOK：本轮不会推送。" +
+      "请在仓库 Settings → Secrets and variables → Actions → Secrets 里添加 SERVERCHAN_KEY。" +
+      "（无信号时不影响；一旦有信号会故意让 workflow 失败以便你发现）");
+  }
+  const ENV_EXEC = Number(process.env.ALERT_EXEC_BASE);   // 云端覆盖「已执行仓位」
   const state = loadJSON(STATE_F, { sent: {} });
   const today = new Date().toISOString().slice(0, 10);
 
@@ -147,7 +161,10 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
   const prevBase = HB.length >= 2 ? HB[HB.length - 2] : curBase;
   const pending = HB.length >= 2 && curBase !== prevBase;   // 本期刚变 → 待下期确认
   const confBase = pending ? prevBase : curBase;
-  const execBase = (pos && pos.div >= 20 && pos.div <= 60) ? Math.round(pos.div) : confBase;
+  // 云端无法读 localStorage → ALERT_EXEC_BASE 覆盖（合法区间 20~60）
+  const execBase = (ENV_EXEC >= 20 && ENV_EXEC <= 60) ? Math.round(ENV_EXEC)
+    : ((pos && pos.div >= 20 && pos.div <= 60) ? Math.round(pos.div) : confBase);
+  const execSrc = (ENV_EXEC >= 20 && ENV_EXEC <= 60) ? "环境变量" : ((pos && pos.div >= 20 && pos.div <= 60) ? "data/pos.json" : "默认（=目标档位仓）");
   // 真实跌幅（与日报/页面 ETF 折算价同口径）：还需再跌 = 1 − 触发价/现价
   function dropPct(px, tPx) { return (1 - tPx / px) * 100; }
   function chgStr(px, base) {
@@ -281,7 +298,8 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
   });
 
   console.log("行情: 中证红利 " + csiPx + " / 红利低波 " + lvPx + "（快照锚 " + A.asOfA + "，利差 " + (c.dy - bondY).toFixed(2) + " / " + (l.dy - bondY).toFixed(2) + "pp）");
-  console.log("触发 " + alerts.length + " 条，去重后待推 " + fresh.length + " 条" + (dry ? "（dry 模式）" : ""));
+  console.log("已执行仓位 " + execBase + "%（来源 " + execSrc + "）｜档位目标 " + confBase + "%" + (pending ? "（新值 " + curBase + "% 待确认）" : ""));
+  console.log("触发 " + alerts.length + " 条，去重后待推 " + fresh.length + " 条" + (dry ? "（dry 模式）" : "") + (cloud ? "（cloud 模式）" : ""));
   console.log("触发键: " + alerts.map(function (a) { return a.key; }).join(","));
 
   if (!fresh.length) { console.log("无待推送提醒。"); saveJSON(STATE_F, state); return; }
@@ -289,13 +307,21 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
   // 4) 推送
   const title = "红利加仓提醒：" + fresh.length + " 条触发（" + today + "）";
   const gapNow = confBase - execBase;
-  const base = "行情基准：中证红利 " + fmtPx(csiPx) + "（较 " + A.asOfA + " 收盘 " + chgStr(csiPx, c.px) + "）／红利低波 " + fmtPx(lvPx) +
+  // 快照新鲜度：云端 asset.js 由 18:00 的 refresh workflow 提交，若它失败这里会明显滞后
+  const staleDays = A.asOfA ? Math.round((Date.parse(today) - Date.parse(A.asOfA)) / 86400000) : null;
+  const staleNote = (staleDays != null && staleDays > 3)
+    ? "\n⚠ 快照锚 " + A.asOfA + " 已 " + staleDays + " 天未更新（云端刷新可能失败）→ 触发价与利差按旧收盘算，仅供参考"
+    : "";
+  const head = (cloud ? "【云端执行 · GitHub Actions】" : "【本地执行】") +
+    "快照锚 " + A.asOfA + "（" + (staleDays == null ? "?" : staleDays) + " 天前）｜已执行仓位来源：" + execSrc;
+  const base = head + "\n行情基准：中证红利 " + fmtPx(csiPx) + "（较 " + A.asOfA + " 收盘 " + chgStr(csiPx, c.px) + "）／红利低波 " + fmtPx(lvPx) +
     "（" + chgStr(lvPx, l.px) + "）；股息率锚 " + c.dy + "%／" + l.dy + "%（" + (c.dyAsOf || A.asOfA) + "）" +
     "｜档位目标 " + confBase + "%" + (pending ? "（本期新值 " + curBase + "% 待下期确认）" : "") + "／已执行 " + execBase +
     "% → 偏离 " + (gapNow > 0 ? "+" : "") + gapNow + "pp（带宽 " + BAND + "pp，" + (Math.abs(gapNow) >= BAND ? "已达 → 可执行" : "未达 → 不动") + "）";
   const lines = fresh.map((a) => "【" + a.level + "】" + a.title + "\n" + a.detail);
   const note = "口径：百分比=真实跌幅（1−触发价/现价），与日报、页面 ETF 参考价一致；档位触发价 = 分红额÷(目标利差+国债)，" +
-    "分红不变时是固定价位，不随涨跌移动，所以「还需再跌」变小只可能来自盘中价回落、技术位自身滚动、或利差跨档。";
+    "分红不变时是固定价位，不随涨跌移动，所以「还需再跌」变小只可能来自盘中价回落、技术位自身滚动、或利差跨档。" +
+    staleNote;
   const md = title + "\n\n" + base + "\n\n" + lines.join("\n\n") + "\n\n" + note + "\n\n—— 个人投资助理 · 口径与站内「整体投顾」一致，非投资建议";
   console.log("\n" + md + "\n");
 
@@ -313,9 +339,14 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
     console.log(ok ? "✓ 微信推送成功（" + cfg.channel + "）" : "✗ 推送失败（检查 data/alert-config.json）");
     if (ok) fresh.forEach((a) => { state.sent[a.key] = { date: today, done: false }; });
   } else if (!dry) {
-    console.log("未配置推送通道（data/alert-config.json channel=none）——仅打印。申请 Server酱 Key 后填入即可。");
+    console.log("未配置推送通道（channel=none，云端请设置 Secret SERVERCHAN_KEY）——仅打印。申请 Server酱 Key 后填入即可。");
     // 未配通道也记状态：避免配置好后一次性补发堆积
     fresh.forEach((a) => { state.sent[a.key] = { date: today, done: false }; });
+    if (cloud) {                                  // 云端缺密钥 = 配置事故，让 workflow 变红提醒
+      console.error("✗ 云端未检测到 SERVERCHAN_KEY / WECOM_WEBHOOK，无法推送");
+      saveJSON(STATE_F, state);
+      process.exit(1);
+    }
   }
   // 未触发/已解除的旧信号标记 done
   alerts.forEach((a) => { if (!fresh.find((f) => f.key === a.key)) { const s = state.sent[a.key]; if (s && !s.done) s.done = true; } });

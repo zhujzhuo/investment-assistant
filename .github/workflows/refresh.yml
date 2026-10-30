@@ -47,6 +47,11 @@ jobs:
         with:
           node-version: 22
 
+      - name: 刷新资产快照（红利/纳指/货币的技术面与股息率锚）
+        # 云端没有 westock CLI：fetch-asset.js 会自动用东财公开 K 线接口兜底（日/周/月均可），
+        # 只有纳指实时加权 PE 与美股 QQQ 拿不到（沿用旧值）。关键 K 线缺失时脚本不写盘，保留上次快照。
+        run: node fetch-asset.js
+
       - name: 刷新行情快照（腾讯公开接口）
         run: node refresh-data.js
         env:
