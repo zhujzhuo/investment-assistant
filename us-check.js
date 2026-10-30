@@ -169,7 +169,9 @@ const get = c => US.find(s => s.code === c);
 
   const ms = get("usMSFT");
   assert("MSFT 价格已更新为 1050", ms.px === 1050, "现价 " + ms.px);
-  assert("MSFT PE 按 EPS 重算 = 1050/17.95", Math.abs(ms.pe - 1050 / 17.95) < 0.05, "PE " + Number(ms.pe).toFixed(2));
+  // 2026-10-30：EPS 写死 17.95 会随美股快照刷新失效 → 由刷新前的 px/pe 反推 EPS
+  const eps0 = msftBase.px / msftBase.pe;
+  assert("MSFT PE 按 EPS 重算 = 1050/" + eps0.toFixed(2), Math.abs(ms.pe - 1050 / eps0) < 0.05, "PE " + Number(ms.pe).toFixed(2));
   assert("MSFT 股息率随价反向缩小", ms.div < div0, div0 + "% → " + Number(ms.div).toFixed(2) + "%");
   assert("52周位置封顶 100%", ms.pos52 <= 100 && ms.pos52 >= 0, Number(ms.pos52).toFixed(1));
   const ixic = UM.indices.find(i => i.short === "IXIC");
@@ -182,7 +184,7 @@ const get = c => US.find(s => s.code === c);
   await wait(300);
   const ms2 = get("usMSFT");
   assert("重复刷新价格不累积", ms2.px === 1050, "现价 " + ms2.px);
-  assert("重复刷新 PE 不累积", Math.abs(ms2.pe - 1050 / 17.95) < 0.05, "PE " + Number(ms2.pe).toFixed(2));
+  assert("重复刷新 PE 不累积", Math.abs(ms2.pe - 1050 / eps0) < 0.05, "PE " + Number(ms2.pe).toFixed(2));
   const ko = get("usKO");
   assert("无实时数据的美股保持快照", ko.px === SNAP_KO, "现价 " + ko.px + " vs 快照 " + SNAP_KO);
   const ahStock = window.STOCKS.find(s => s.code === "sh600519");

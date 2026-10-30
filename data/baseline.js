@@ -9,17 +9,17 @@ window.IA_BASELINE = {
     {
      "code": "sz000651",
      "name": "格力电器",
-     "reason": "股息率 8.0%，PE 8.4 倍，PB 1.39"
+     "reason": "股息率 7.8%，PE 8.7 倍，PB 1.43"
     },
     {
      "code": "sz000568",
      "name": "泸州老窖",
-     "reason": "股息率 8.3%，PE 13.7 倍，PB 2.24"
+     "reason": "股息率 7.5%，PE 19.8 倍，PB 2.41"
     },
     {
      "code": "sz000858",
      "name": "五粮液",
-     "reason": "股息率 7.2%，PE 22.7 倍，PB 2.34"
+     "reason": "股息率 6.9%，PE 23.8 倍，PB 2.45"
     }
    ],
    "growth": [
@@ -31,12 +31,12 @@ window.IA_BASELINE = {
     {
      "code": "sz300750",
      "name": "宁德时代",
-     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 12.0 倍"
+     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 12.3 倍"
     },
     {
      "code": "sh603259",
      "name": "药明康德",
-     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 16.6 倍"
+     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 16.3 倍"
     }
    ],
    "rotate": [
@@ -69,37 +69,37 @@ window.IA_BASELINE = {
     {
      "code": "sz300750",
      "name": "宁德时代",
-     "dist": -30.3,
+     "dist": -28.4,
      "score": 8.1
     },
     {
      "code": "sz300274",
      "name": "阳光电源",
-     "dist": -23.5,
+     "dist": -26.5,
      "score": 6.9
     },
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "dist": -2.7,
+     "dist": -3.3,
      "score": 8.4
     },
     {
-     "code": "sz000568",
-     "name": "泸州老窖",
-     "dist": 20.4,
-     "score": 7.9
+     "code": "sh600887",
+     "name": "伊利股份",
+     "dist": 22.2,
+     "score": 7.1
     },
     {
      "code": "sh600519",
      "name": "贵州茅台",
-     "dist": 23.1,
+     "dist": 26.9,
      "score": 8.5
     },
     {
      "code": "hk00388",
      "name": "香港交易所",
-     "dist": 28.4,
+     "dist": 29.2,
      "score": 8.2
     }
    ],
@@ -107,22 +107,22 @@ window.IA_BASELINE = {
     {
      "code": "sh601899",
      "name": "紫金矿业",
-     "dist": -6.9
-    },
-    {
-     "code": "hk09992",
-     "name": "泡泡玛特",
-     "dist": -3.5
+     "dist": -8.9
     },
     {
      "code": "sh603259",
      "name": "药明康德",
-     "dist": 0.9
+     "dist": -0.8
     },
     {
      "code": "hk06181",
      "name": "老铺黄金",
-     "dist": 3.3
+     "dist": -0.2
+    },
+    {
+     "code": "hk09992",
+     "name": "泡泡玛特",
+     "dist": 0.1
     }
    ]
   },
@@ -131,58 +131,58 @@ window.IA_BASELINE = {
     {
      "code": "usBRK.B",
      "name": "伯克希尔B",
-     "reason": "不分红，靠留存收益复利 · PE 13.6 倍 · 52周位置 89%"
+     "reason": "不分红，靠留存收益复利 · PE 13.6 倍 · 52周位置 91%"
     },
     {
      "code": "usAAPL",
      "name": "苹果",
-     "reason": "股息率 0.3% · PE 39.4 倍 · 52周位置 93%"
+     "reason": "股息率 0.3% · PE 40.0 倍 · 52周位置 97%"
     },
     {
      "code": "usKO",
      "name": "可口可乐",
-     "reason": "股息率 2.3% · PE 27.1 倍 · 52周位置 88%"
+     "reason": "股息率 2.3% · PE 27.4 倍 · 52周位置 91%"
     }
    ],
    "growth": [
     {
      "code": "usNVDA",
      "name": "英伟达",
-     "reason": "成长分 9.5 · 质量分 9.5 · PE 27.2 倍 · 年内 +12.7%"
+     "reason": "成长分 9.5 · 质量分 9.5 · PE 27.0 倍 · 年内 +11.8%"
     },
     {
      "code": "usMSFT",
      "name": "微软",
-     "reason": "成长分 8.5 · 质量分 9.5 · PE 29.6 倍 · 年内 +23.4%"
+     "reason": "成长分 8.5 · 质量分 9.5 · PE 27.7 倍 · 年内 +23.2%"
     },
     {
      "code": "usMA",
      "name": "万事达",
-     "reason": "成长分 8.5 · 质量分 9.5 · PE 33.6 倍 · 年内 +13.3%"
+     "reason": "成长分 8.5 · 质量分 9.5 · PE 35.0 倍 · 年内 +18.0%"
     }
    ],
    "rotate": [
     {
      "code": "usTSM",
      "name": "台积电",
-     "reason": "综合分 8.4 · 12月 +46.3% · 年化波动 35%"
+     "reason": "综合分 8.4 · 12月 +43.7% · 年化波动 35%"
     },
     {
      "code": "usAVGO",
      "name": "博通",
-     "reason": "综合分 7.9 · 12月 -4.8% · 年化波动 45%"
+     "reason": "综合分 7.9 · 12月 -6.7% · 年化波动 45%"
     }
    ],
    "tenx": [
     {
      "code": "usPLTR",
      "name": "Palantir",
-     "reason": "成长分 9.5 · 年内 +34.3% · 波动 68%，仓位≤5%"
+     "reason": "成长分 9.5 · 年内 +34.0% · 波动 68%，仓位≤5%"
     },
     {
      "code": "usARM",
      "name": "安谋",
-     "reason": "成长分 9.0 · 年内 +123.9% · 波动 99%，仓位≤5%"
+     "reason": "成长分 9.0 · 年内 +117.1% · 波动 100%，仓位≤5%"
     }
    ]
   },

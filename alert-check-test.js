@@ -58,12 +58,31 @@ assert("消息含行情基准与锚日期", /行情基准：中证红利 [\d.]+�
 
 // 2e. 降档减仓提醒（与加仓对称）+ 执行带宽判定
 console.log("== 2e. 降档减仓提醒（对称）==");
-const outT = execFileSync(NODE, [path.join(DIR, "alert-check.js"), "--dry", "--px=sh000922:6350,sh512890:1.45"], { encoding: "utf8", timeout: 60000 });
+// 2026-10-30：原来写死 --px=6350/1.45，快照一刷新（价格/股息率变）就打不到降档价 → 改为按数据动态算触发价
+const A2 = gA.window.ASSET, b2 = A2.bond10y.v;
+const THS = [-99, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5];
+const W_OF_TH = { "-99": 30, "1": 32, "1.5": 35, "2": 40, "2.5": 44, "3": 47, "3.5": 50 };
+function wOf2(s) { return s >= 3.5 ? 50 : s >= 3.0 ? 47 : s >= 2.5 ? 44 : s >= 2.0 ? 40 : s >= 1.5 ? 35 : s >= 1.0 ? 32 : 30; }
+function downTh2(sp) { let ct = THS[0]; for (const t of THS) if (t <= sp && t > ct) ct = t; let d = null; for (const t of THS) if (t < ct && (d === null || t > d)) d = t; return d; }
+const dC = A2.dividend.csi, dL = A2.dividend.lowvol;
+const dtC = downTh2(dC.dy - b2), dtL = downTh2(dL.dy - b2);
+const pxTC = dC.px * dC.dy / (dtC + b2), pxTL = dL.px * dL.dy / (dtL + b2);
+const pxArg = "sh000922:" + (pxTC * 1.05).toFixed(2) + ",sh512890:" + (pxTL * 1.05).toFixed(4);
+const wNowC = wOf2(dC.dy - b2), wToC = W_OF_TH[String(dtC)];
+const baseFinal = Math.round((wToC + W_OF_TH[String(dtL)]) / 2);
+const posNow = JSON.parse(fs.readFileSync(path.join(DIR, "data", "pos.json"), "utf8"));
+const execNow = Math.round(posNow.div);
+const outT = execFileSync(NODE, [path.join(DIR, "alert-check.js"), "--dry", "--px=" + pxArg], { encoding: "utf8", timeout: 60000 });
 assert("演练可覆盖价格（--px）", /价格覆盖（演练）/.test(outT));
-assert("高价触发降档提醒", /触及降档（利差→2\.0pp）/.test(outT), (outT.match(/【[^】]*】[^\n]*/g) || []).slice(0, 3).join(" | "));
-assert("减仓报档位仓与总仓口径", /档位仓 44% → 40%（−4pp），红利总仓 −2\.0pp/.test(outT));
-assert("按两标的合计做带宽判定", /两标的合计后目标 40% vs 已执行 44%/.test(outT));
-assert("达 3pp 带宽 → 实际减仓", /达到 3pp 带宽/.test(outT) && /【实际减仓】/.test(outT));
+assert("高价触发降档提醒", new RegExp("触及降档（利差→" + dtC.toFixed(1) + "pp）").test(outT),
+  "触发价 " + pxTC.toFixed(2) + " / " + pxTL.toFixed(4) + "｜" + (outT.match(/【[^】]*】[^\n]*/g) || []).slice(0, 3).join(" | "));
+assert("减仓报档位仓与总仓口径",
+  new RegExp("档位仓 " + wNowC + "% → " + wToC + "%（−" + (wNowC - wToC) + "pp），红利总仓 −" + ((wNowC - wToC) / 2).toFixed(1) + "pp").test(outT),
+  "期望 " + wNowC + "%→" + wToC + "%");
+assert("按两标的合计做带宽判定", new RegExp("两标的合计后目标 " + baseFinal + "% vs 已执行 " + execNow + "%").test(outT),
+  "期望 目标" + baseFinal + "% / 已执行" + execNow + "%");
+assert("达 3pp 带宽 → 实际减仓", Math.abs(baseFinal - execNow) >= 3 ? (/达到 3pp 带宽/.test(outT) && /【实际减仓】/.test(outT)) : (/未达 3pp 带宽/.test(outT)),
+  "偏离 " + (baseFinal - execNow) + "pp");
 assert("当前价不误触发减仓", !/触及降档/.test(out), "常规 dry 输出不应含降档");
 assert("已执行仓位记录 data/pos.json 存在", fs.existsSync(path.join(DIR, "data", "pos.json")));
 assert("源码含执行带宽常量", /BAND\s*=\s*3/.test(SRC));

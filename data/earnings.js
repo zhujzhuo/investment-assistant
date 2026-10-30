@@ -3,7 +3,7 @@
 // npYoYAcc=累计同比(%)；A股 consCagr=年度预期增速(%)、vsCons=累计同比−预期(pp)；
 // 港股 consNpAnnual=近四季预期净利年化(亿)、npAnnual=单季年化、vsCons=年化偏离(%)
 window.EARNINGS = {
- "asOf": "2026-10-29",
+ "asOf": "2026-10-30",
  "items": [
   {
    "code": "sh600519",
@@ -49,21 +49,21 @@ window.EARNINGS = {
    "code": "sz000568",
    "name": "泸州老窖",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 104.7,
-   "npYi": 43.4,
-   "npQoQ": -83,
-   "npYoY": -79.5,
-   "revQoQ": -69.5,
-   "npQYi": 6.3,
+   "q": "2026Q3",
+   "revYi": 146.7,
+   "npYi": 56.7,
+   "npQoQ": 111.1,
+   "npYoY": -57,
+   "revQoQ": 71.4,
+   "npQYi": 13.3,
    "consYears": [
     2026,
     2027,
     2028
    ],
    "consCagr": 9.4,
-   "npYoYAcc": -43.4,
-   "vsCons": -52.8
+   "npYoYAcc": -47.3,
+   "vsCons": -56.7
   },
   {
    "code": "sh600887",
@@ -101,9 +101,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 15.8,
+   "consCagr": 14.8,
    "npYoYAcc": 20.4,
-   "vsCons": 4.6
+   "vsCons": 5.6
   },
   {
    "code": "sz300760",
@@ -141,9 +141,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 19.3,
+   "consCagr": 19.1,
    "npYoYAcc": 60.6,
-   "vsCons": 41.3
+   "vsCons": 41.5
   },
   {
    "code": "sh600036",
@@ -161,29 +161,29 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 5.6,
+   "consCagr": 5.3,
    "npYoYAcc": 2,
-   "vsCons": -3.6
+   "vsCons": -3.3
   },
   {
    "code": "sh601318",
    "name": "中国平安",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 5751.4,
-   "npYi": 925.9,
-   "npQoQ": 170,
-   "npYoY": 64.7,
-   "revQoQ": 63.3,
-   "npQYi": 675.6,
+   "q": "2026Q3",
+   "revYi": 7281.3,
+   "npYi": 966.5,
+   "npQoQ": -94,
+   "npYoY": -93.7,
+   "revQoQ": -57.1,
+   "npQYi": 40.6,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 9.7,
-   "npYoYAcc": 36.1,
-   "vsCons": 26.4
+   "consCagr": 12.6,
+   "npYoYAcc": -27.3,
+   "vsCons": -39.9
   },
   {
    "code": "sh600900",
@@ -201,9 +201,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 4.9,
+   "consCagr": 4.5,
    "npYoYAcc": 13,
-   "vsCons": 8.1
+   "vsCons": 8.5
   },
   {
    "code": "sz002415",
@@ -221,9 +221,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 13,
+   "consCagr": 13.1,
    "npYoYAcc": 38.5,
-   "vsCons": 25.5
+   "vsCons": 25.4
   },
   {
    "code": "sz002594",
@@ -261,9 +261,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 6.4,
+   "consCagr": 6.2,
    "npYoYAcc": -19.5,
-   "vsCons": -25.9
+   "vsCons": -25.7
   },
   {
    "code": "sz000333",
@@ -321,9 +321,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 16.4,
+   "consCagr": 16.3,
    "npYoYAcc": 51.9,
-   "vsCons": 35.5
+   "vsCons": 35.6
   },
   {
    "code": "hk00700",
@@ -440,9 +440,9 @@ window.EARNINGS = {
     "2025Q4",
     "2026Q3"
    ],
-   "consNpAnnual": 189,
+   "consNpAnnual": 182,
    "npAnnual": 215.2,
-   "vsCons": 13.9,
+   "vsCons": 18.2,
    "npYoYAcc": 24.1
   },
   {
@@ -473,9 +473,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 19.9,
+   "consCagr": 19.8,
    "npYoYAcc": 31.6,
-   "vsCons": 11.7
+   "vsCons": 11.8
   },
   {
    "code": "sz300274",
@@ -577,29 +577,29 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 22.8,
+   "consCagr": 23.1,
    "npYoYAcc": 78.5,
-   "vsCons": 55.7
+   "vsCons": 55.4
   },
   {
    "code": "sz002050",
    "name": "三花智控",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 169,
-   "npYi": 20.4,
-   "npQoQ": 20.4,
-   "npYoY": -7.5,
-   "revQoQ": 17.4,
-   "npQYi": 11.2,
+   "q": "2026Q3",
+   "revYi": 252.7,
+   "npYi": 30.7,
+   "npQoQ": -8.3,
+   "npYoY": -9.6,
+   "revQoQ": -8.2,
+   "npQYi": 10.2,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 19.5,
-   "npYoYAcc": -3.1,
-   "vsCons": -22.6
+   "consCagr": 18.7,
+   "npYoYAcc": -5.4,
+   "vsCons": -24.1
   },
   {
    "code": "sh603986",

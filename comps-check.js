@@ -49,7 +49,13 @@ window.showTab("detail");
 window._onSelChange("hk00700");
 const html = (store["detail-body"] || {}).innerHTML || "";
 assert("腾讯页含可比估值卡", html.indexOf("可比估值 · 对标 Google / Meta / 微软") >= 0);
-assert("三巨头 PE 显示", html.indexOf("16.1") >= 0 || html.indexOf("16.09") >= 0);
+// 2026-10-30：原断言写死 "16.1"（Google PE 当时的值），三巨头 PE 一变就误报 → 改为按数据动态算加权 PE
+const CM = window.COMPS || {};
+const peers = CM.items || CM.peers || [];
+const wpeExp = Number(CM.wpe) || peers.reduce((s, p) => s + (p.w || 0) * (p.pe || 0), 0);
+assert("三巨头 PE 显示（加权可比 PE 按数据动态校验）",
+  peers.length === 3 && wpeExp > 0 && html.indexOf(wpeExp.toFixed(1)) >= 0,
+  "wpe=" + wpeExp.toFixed(2) + " 期望页面出现 " + wpeExp.toFixed(1));
 assert("加仓档表", html.indexOf("理想买点") >= 0 && html.indexOf("二档加仓") >= 0 && html.indexOf("三档加仓") >= 0);
 assert("双口径交叉验证段", html.indexOf("双口径交叉验证") >= 0);
 assert("无 undefined/NaN", !/undefined|NaN/.test(html));

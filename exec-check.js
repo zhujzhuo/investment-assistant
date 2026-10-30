@@ -47,8 +47,19 @@ console.log("== 1. 档位仓执行层（带宽 + 脉冲过滤）==");
 const P = window._planState(), E = P.exec;
 assert("planState 暴露 exec 层", !!E && typeof E.confirmed === "number" && typeof E.exec === "number");
 assert("历史档位序列 ≥24 期", E.hist.length >= 24, E.hist.length + " 期");
-assert("脉冲序列可辨（2026-05=46 / 2026-06=42）", E.hist[31] === 46 && E.hist[32] === 42, E.hist[31] + "/" + E.hist[32]);
-assert("本期与上期一致 → 非待确认", E.pending === false && E.confirmed === E.cur, E.cur + "%");
+// 2026-10-30：月度序列每月滚动，写死索引（E.hist[31]/[32]）会失效 → 按形状动态识别脉冲：上升后 1~2 期内回落
+let pulses = 0, pulseAt = "";
+for (let i = 1; i < E.hist.length; i++) {
+  if (E.hist[i] > E.hist[i - 1]) {
+    for (const j of [i + 1, i + 2]) {
+      if (j < E.hist.length && E.hist[j] < E.hist[i]) { pulses++; if (!pulseAt) pulseAt = "第" + i + "期 ↑→ 第" + j + "期 ↓"; break; }
+    }
+  }
+}
+assert("分红月脉冲可辨（上升后 1~2 期内回落）", pulses >= 1, pulses + " 处｜" + pulseAt);
+const prevH = E.hist[E.hist.length - 2];
+assert("待确认标记与序列自洽", E.pending === (E.cur !== prevH) && (E.pending ? E.confirmed === prevH : E.confirmed === E.cur),
+  "cur " + E.cur + "% / prev " + prevH + "% / pending " + E.pending);
 assert("默认已执行=确认值 → 偏离 0、不动", E.gap === 0 && E.act === false);
 assert("带宽阈值 3pp", E.band === 3);
 
