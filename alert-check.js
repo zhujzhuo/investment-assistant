@@ -104,12 +104,15 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
   const cloud = process.argv.indexOf("--cloud") >= 0;     // 云端（GitHub Actions）运行：标注来源 + 校验快照新鲜度
   const cfg = loadJSON(CFG_F, { channel: "none" });
   // 云端优先用环境变量（Secrets），本地仍走 alert-config.json
-  if (process.env.SERVERCHAN_KEY) { cfg.channel = "serverchan"; cfg.serverChanKey = process.env.SERVERCHAN_KEY; }
-  else if (process.env.WECOM_WEBHOOK) { cfg.channel = "wecom"; cfg.wecomWebhook = process.env.WECOM_WEBHOOK; }
-  if (cloud && cfg.channel === "none") {
+  // ALERT_CHANNEL=none = 显式「只维护去重状态、不推送」（云端刷新链用，推送交给 WorkBuddy 云端任务，避免双发）
+  const FORCE_NONE = String(process.env.ALERT_CHANNEL || "").toLowerCase() === "none";
+  if (process.env.SERVERCHAN_KEY && !FORCE_NONE) { cfg.channel = "serverchan"; cfg.serverChanKey = process.env.SERVERCHAN_KEY; }
+  else if (process.env.WECOM_WEBHOOK && !FORCE_NONE) { cfg.channel = "wecom"; cfg.wecomWebhook = process.env.WECOM_WEBHOOK; }
+  else if (FORCE_NONE) cfg.channel = "none";
+  if (cloud && cfg.channel === "none" && !FORCE_NONE) {
     console.error("⚠ 云端未检测到 SERVERCHAN_KEY / WECOM_WEBHOOK：本轮不会推送。" +
-      "请在仓库 Settings → Secrets and variables → Actions → Secrets 里添加 SERVERCHAN_KEY。" +
-      "（无信号时不影响；一旦有信号会故意让 workflow 失败以便你发现）");
+      "GitHub Actions 请在 Settings → Secrets 里加 SERVERCHAN_KEY；WorkBuddy 云端任务请在命令行里带 SERVERCHAN_KEY=... 。" +
+      "（无信号时不影响）");
   }
   const ENV_EXEC = Number(process.env.ALERT_EXEC_BASE);   // 云端覆盖「已执行仓位」
   const state = loadJSON(STATE_F, { sent: {} });
@@ -312,7 +315,8 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
   const staleNote = (staleDays != null && staleDays > 3)
     ? "\n⚠ 快照锚 " + A.asOfA + " 已 " + staleDays + " 天未更新（云端刷新可能失败）→ 触发价与利差按旧收盘算，仅供参考"
     : "";
-  const head = (cloud ? "【云端执行 · GitHub Actions】" : "【本地执行】") +
+  const runner = process.env.ALERT_RUNNER || "GitHub Actions";   // 云端执行者（WorkBuddy 云端任务 / GitHub Actions）
+  const head = "【云端执行 · " + runner + "】" +
     "快照锚 " + A.asOfA + "（" + (staleDays == null ? "?" : staleDays) + " 天前）｜已执行仓位来源：" + execSrc;
   const base = head + "\n行情基准：中证红利 " + fmtPx(csiPx) + "（较 " + A.asOfA + " 收盘 " + chgStr(csiPx, c.px) + "）／红利低波 " + fmtPx(lvPx) +
     "（" + chgStr(lvPx, l.px) + "）；股息率锚 " + c.dy + "%／" + l.dy + "%（" + (c.dyAsOf || A.asOfA) + "）" +
@@ -342,7 +346,7 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
     console.log("未配置推送通道（channel=none，云端请设置 Secret SERVERCHAN_KEY）——仅打印。申请 Server酱 Key 后填入即可。");
     // 未配通道也记状态：避免配置好后一次性补发堆积
     fresh.forEach((a) => { state.sent[a.key] = { date: today, done: false }; });
-    if (cloud) {                                  // 云端缺密钥 = 配置事故，让 workflow 变红提醒
+    if (cloud && !FORCE_NONE) {                   // 云端缺密钥 = 配置事故，让 workflow 变红提醒
       console.error("✗ 云端未检测到 SERVERCHAN_KEY / WECOM_WEBHOOK，无法推送");
       saveJSON(STATE_F, state);
       process.exit(1);

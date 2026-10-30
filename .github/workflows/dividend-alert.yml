@@ -1,30 +1,19 @@
-# 个人投资助理 · 红利到价提醒（云端定时，不依赖本地开机）
+# 个人投资助理 · 红利到价「去重状态」维护（云端，不依赖本地开机）
 #
-# 与本地 alert-check.js 完全同一套口径（触发价/带宽/分级/去重），只是运行环境换成 GitHub Actions：
-#   · 每个交易日 北京 10:15 / 14:30（UTC 02:15 / 06:30）自动跑一次
-#   · 快照锚来自仓库里的 data/asset.js —— 由 refresh.yml 每天北京 18:00（收盘后）刷新并提交，
-#     所以云端读到的始终是「最近一个交易日收盘」，与本地口径一致，不会用盘中价污染触发价。
-#   · 云端无持久盘：去重状态 data/alert-state.json 用 git commit 回写（[skip ci] 避免触发其它 workflow）
-#
-# ── 启用步骤（只需做一次）────────────────────────────────
-# 1. Settings → Secrets and variables → Actions → Secrets → New repository secret
-#      Name: SERVERCHAN_KEY        Value: 你的 Server酱 Turbo SendKey（SCT 开头）
-#    （可选）Variables → ALERT_EXEC_BASE = 已执行红利总仓（如 44）。不设就读 data/pos.json。
-# 2. Actions 页选本 workflow → Run workflow 手动验证一次：
-#      有信号且推送成功 → 日志出现「✓ 微信推送成功（serverchan）」
-#      没有信号         → 日志出现「无待推送提醒。」（正常，不是故障）
-#      未配 Secret      → 日志出现「未检测到 SERVERCHAN_KEY」
-# 3. 之后每天自动跑；本地那两条 10:15/14:30 的定时任务建议停用，避免重复推送。
-#
-# ── 已知边界 ────────────────────────────────────────────
-# · 云端没有 westock CLI：纳指实时加权 PE、美股（QQQ）技术面这两项拿不到，沿用快照旧值；
-#   红利的 A 股 K 线走东财公开接口（fetch-asset.js 的第三数据源），日/周/月都能拿到。
-# · 周末/节假日 cron 仍会跑，但行情返回的是上一交易日收盘价，不会产生新信号，直接空跑结束。
-name: 红利到价提醒
+# 分工（2026-10-30 起）：
+#   · 推送 = WorkBuddy 云端定时任务（北京 10:15，手机端可管理），见 cloud-alert.js
+#   · 本 workflow = 只维护去重状态 data/alert-state.json（ALERT_CHANNEL=none，不推送），
+#     因为云端沙箱没有持久盘，状态必须由某个能写仓库的地方来记 —— 否则「信号持续期间」会天天重复推。
+#     放在北京 18:30（收盘后、refresh.yml 刷新快照之后）跑：此时当天信号已定型，记录最准。
+#   · 想让 GitHub 也能推送（例如 WorkBuddy 任务挂了要兜底）：把下面 ALERT_CHANNEL 改成 serverchan 即可，
+#     但注意会与 WorkBuddy 云端任务双推，只建议临时切换。
+# 与 alert-check.js 完全同一套口径（触发价/带宽/分级/去重），只是运行环境换成 GitHub Actions。
+# ── 说明 ────────────────────────────────────────────────
+# · 周末/节假日 cron 仍会跑，但行情返回上一交易日收盘价，不会产生新信号，直接空跑结束。
+name: 红利到价提醒（状态维护）
 on:
   schedule:
-    - cron: "15 2 * * 1-5"     # UTC 02:15 = 北京 10:15，周一~周五
-    - cron: "30 6 * * 1-5"     # UTC 06:30 = 北京 14:30，周一~周五
+    - cron: "30 10 * * 1-5"     # UTC 10:30 = 北京 18:30，周一~周五
   workflow_dispatch: {}        # 支持手动触发验证
 permissions:
   contents: write
@@ -42,10 +31,10 @@ jobs:
         with:
           node-version: 22
 
-      - name: 检查红利到价信号并推送微信
+      - name: 检测信号并维护去重状态（不推送，推送由 WorkBuddy 云端任务负责）
         env:
-          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
-          WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
+          ALERT_CHANNEL: "none"                # 显式关闭本 workflow 的推送，避免与云端任务双发
+          ALERT_RUNNER: "GitHub Actions（仅状态维护）"
           ALERT_EXEC_BASE: ${{ vars.ALERT_EXEC_BASE }}
         run: node alert-check.js --cloud
 

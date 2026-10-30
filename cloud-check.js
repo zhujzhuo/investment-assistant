@@ -59,15 +59,15 @@ assert("关键K线缺失时不写盘，保留上次好快照", /关键K线缺失
 const REQ = (FA.match(/const REQUIRED_K = \[([^\]]*)\]/) || ["", ""])[1];
 assert("保护清单含红利日/周/月K（美股不在内，云端本就拿不到）", /csiD/.test(REQ) && /lowvolD/.test(REQ) && /csiW/.test(REQ) && !/nas/.test(REQ), REQ.replace(/\s/g, ""));
 
-// ---------- 3. 工作流 ----------
+// ---------- 3. 工作流（GitHub 侧只维护状态，推送交给 WorkBuddy 云端任务 → 不双推）----------
 const WA = read(path.join(".github", "workflows", "dividend-alert.yml"));
 assert("提醒工作流存在", fs.existsSync(path.join(DIR, ".github", "workflows", "dividend-alert.yml")));
-assert("cron 北京 10:15（UTC 02:15）", /cron: "15 2 \* \* 1-5"/.test(WA));
-assert("cron 北京 14:30（UTC 06:30）", /cron: "30 6 \* \* 1-5"/.test(WA));
-assert("只在周一~周五跑（1-5）", (WA.match(/1-5/g) || []).length === 2);
+assert("cron 改到北京 18:30（UTC 10:30，收盘后维护状态）", /cron: "30 10 \* \* 1-5"/.test(WA));
+assert("不再有盘中 10:15/14:30 的推送 cron", !/cron: "15 2 \* \* 1-5"/.test(WA) && !/cron: "30 6 \* \* 1-5"/.test(WA));
+assert("GitHub 侧显式不推送（ALERT_CHANNEL=none）", /ALERT_CHANNEL: "none"/.test(WA));
+assert("GitHub 侧不再引用 secrets（避免与云端任务双发）", !/secrets\.SERVERCHAN_KEY/.test(WA));
 assert("支持 workflow_dispatch 手动验证", /workflow_dispatch/.test(WA));
 assert("运行 alert-check.js --cloud", /node alert-check\.js --cloud/.test(WA));
-assert("SendKey 从 secrets 读取", /SERVERCHAN_KEY: \$\{\{ secrets\.SERVERCHAN_KEY \}\}/.test(WA));
 assert("状态回写仓库（云端无持久盘）", /git add data\/alert-state\.json/.test(WA));
 assert("状态提交带 [skip ci]（不触发其它 workflow）", /\[skip ci\]/.test(WA));
 assert("回写前先 rebase，避免与 18:00 刷新冲突", /git pull --rebase origin main/.test(WA));
@@ -85,6 +85,31 @@ assert("alert-config.json 未被 git 跟踪", (function () {
   try { execFileSync("git", ["ls-files", "--error-unmatch", "data/alert-config.json"], { cwd: DIR, encoding: "utf8" }); return false; }
   catch (e) { return true; }
 })());
+
+// ---------- 5. 云端一键脚本 cloud-alert.js（WorkBuddy 云端任务用）----------
+const CA = read("cloud-alert.js");
+assert("cloud-alert.js 存在", fs.existsSync(path.join(DIR, "cloud-alert.js")));
+assert("从仓库拉判定脚本（口径唯一真源，不复制逻辑）", /raw\.githubusercontent\.com/.test(CA) && /fetchTo\("alert-check\.js"/.test(CA));
+assert("从仓库拉快照 data/asset.js", /fetchTo\("data\/asset\.js"/.test(CA));
+assert("复用仓库去重状态做基线（信号持续期不重复推）", /fetchTo\("data\/alert-state\.json"/.test(CA));
+assert("演练价强制 dry（防止误发真实推送）", /const forceDry = dry \|\| !!pxArg/.test(CA));
+assert("无密钥时显式 ALERT_CHANNEL=none（不误发）", /env\.ALERT_CHANNEL = "none"/.test(CA));
+assert("不读本地 data/ 目录（纯网络取数）", !/require\(.*data\/asset/.test(CA));
+assert("标注执行来源 ALERT_RUNNER", /ALERT_RUNNER/.test(CA));
+
+// 端到端：在干净临时目录模拟云端沙箱跑一次（dry，绝不推送）
+const TMP = path.join(require("os").tmpdir(), "ia-cloud-check-" + Date.now());
+try {
+  const out = execFileSync(NODE, ["cloud-alert.js", "--dry"], {
+    cwd: DIR, encoding: "utf8", timeout: 120000,
+    env: Object.assign({}, process.env, { IA_DIR: TMP })
+  });
+  assert("云端沙箱端到端跑通（拉脚本+快照+判定）", /快照锚 \d{4}-\d{2}-\d{2}/.test(out) && /触发 \d+ 条/.test(out),
+    (out.match(/快照锚 [^\s｜]+/) || [""])[0] + " " + (out.match(/触发 \d+ 条[^（]*/) || [""])[0]);
+  assert("端到端未报拉取失败", out.indexOf("✗") < 0);
+} catch (e) {
+  assert("云端沙箱端到端跑通（拉脚本+快照+判定）", false, String(e.message).slice(0, 80));
+}
 
 console.log("\n" + (fail ? "✗ " : "✓ ") + "云端自检 " + pass + " 通过 / " + fail + " 失败\n");
 process.exit(fail ? 1 : 0);
