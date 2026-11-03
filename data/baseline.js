@@ -1,42 +1,42 @@
 // 名单归档基线 + 与上期变动（gen-baseline.js 自动生成，每日 18:00 覆盖；请勿手改）
 window.IA_BASELINE = {
  "version": 1,
- "asOf": "2026-11-03",
- "prevAsOf": "2026-11-02",
+ "asOf": "2026-11-02",
+ "prevAsOf": "2026-10-30",
  "lists": {
   "picks": {
    "steady": [
     {
      "code": "sz000651",
      "name": "格力电器",
-     "reason": "股息率 7.7%，PE 8.8 倍，PB 1.46"
+     "reason": "股息率 7.8%，PE 8.7 倍，PB 1.43"
     },
     {
      "code": "sz000568",
      "name": "泸州老窖",
-     "reason": "股息率 7.2%，PE 20.7 倍，PB 2.53"
+     "reason": "股息率 7.2%，PE 20.5 倍，PB 2.50"
     },
     {
      "code": "sz000858",
      "name": "五粮液",
-     "reason": "股息率 6.8%，PE 24.1 倍，PB 2.48"
+     "reason": "股息率 6.9%，PE 23.6 倍，PB 2.43"
     }
    ],
    "growth": [
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 13.3 倍"
+     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 13.2 倍"
     },
     {
      "code": "sz300750",
      "name": "宁德时代",
-     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 13.2 倍"
+     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 12.7 倍"
     },
     {
      "code": "sh603259",
      "name": "药明康德",
-     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 15.5 倍"
+     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 15.9 倍"
     }
    ],
    "rotate": [
@@ -69,60 +69,60 @@ window.IA_BASELINE = {
     {
      "code": "sz300750",
      "name": "宁德时代",
-     "dist": -23.4,
+     "dist": -28.4,
      "score": 8.1
-    },
-    {
-     "code": "sh601899",
-     "name": "紫金矿业",
-     "dist": -9.3,
-     "score": 6.7
-    },
-    {
-     "code": "hk00700",
-     "name": "腾讯控股",
-     "dist": 0.2,
-     "score": 8.4
-    },
-    {
-     "code": "sh600036",
-     "name": "招商银行",
-     "dist": 23.8,
-     "score": 7.5
-    },
-    {
-     "code": "sz002415",
-     "name": "海康威视",
-     "dist": 24.9,
-     "score": 6.8
-    },
-    {
-     "code": "sz000333",
-     "name": "美的集团",
-     "dist": 25.4,
-     "score": 7.4
-    }
-   ],
-   "alts": [
-    {
-     "code": "sh603259",
-     "name": "药明康德",
-     "dist": -5.5
-    },
-    {
-     "code": "hk06181",
-     "name": "老铺黄金",
-     "dist": -0.2
     },
     {
      "code": "sz300274",
      "name": "阳光电源",
-     "dist": 1.9
+     "dist": -26.5,
+     "score": 6.9
+    },
+    {
+     "code": "hk00700",
+     "name": "腾讯控股",
+     "dist": -1.1,
+     "score": 8.4
+    },
+    {
+     "code": "sh600887",
+     "name": "伊利股份",
+     "dist": 22.2,
+     "score": 7.1
+    },
+    {
+     "code": "sz002415",
+     "name": "海康威视",
+     "dist": 22.2,
+     "score": 6.8
+    },
+    {
+     "code": "sh600519",
+     "name": "贵州茅台",
+     "dist": 26.9,
+     "score": 8.5
+    }
+   ],
+   "alts": [
+    {
+     "code": "sh601899",
+     "name": "紫金矿业",
+     "dist": -8.9
+    },
+    {
+     "code": "hk06181",
+     "name": "老铺黄金",
+     "dist": -2.1
+    },
+    {
+     "code": "sh603259",
+     "name": "药明康德",
+     "dist": -0.8
     },
     {
      "code": "hk09992",
      "name": "泡泡玛特",
-     "dist": 3.5
+     "dist": 1.3
     }
    ]
   },
@@ -131,58 +131,58 @@ window.IA_BASELINE = {
     {
      "code": "usBRK.B",
      "name": "伯克希尔B",
-     "reason": "不分红，靠留存收益复利 · PE 14.0 倍 · 52周位置 98%"
+     "reason": "不分红，靠留存收益复利 · PE 13.6 倍 · 52周位置 91%"
     },
     {
      "code": "usAAPL",
      "name": "苹果",
-     "reason": "股息率 0.3% · PE 38.8 倍 · 52周位置 88%"
+     "reason": "股息率 0.3% · PE 40.0 倍 · 52周位置 97%"
     },
     {
      "code": "usKO",
      "name": "可口可乐",
-     "reason": "股息率 2.2% · PE 28.3 倍 · 52周位置 99%"
+     "reason": "股息率 2.3% · PE 27.4 倍 · 52周位置 91%"
     }
    ],
    "growth": [
     {
      "code": "usNVDA",
      "name": "英伟达",
-     "reason": "成长分 9.5 · 质量分 9.5 · PE 25.5 倍 · 年内 +5.7%"
+     "reason": "成长分 9.5 · 质量分 9.5 · PE 27.0 倍 · 年内 +11.8%"
     },
     {
      "code": "usMSFT",
      "name": "微软",
-     "reason": "成长分 8.5 · 质量分 9.5 · PE 26.5 倍 · 年内 +17.9%"
+     "reason": "成长分 8.5 · 质量分 9.5 · PE 27.7 倍 · 年内 +23.2%"
     },
     {
      "code": "usMA",
      "name": "万事达",
-     "reason": "成长分 8.5 · 质量分 9.5 · PE 34.4 倍 · 年内 +22.1%"
+     "reason": "成长分 8.5 · 质量分 9.5 · PE 35.0 倍 · 年内 +18.0%"
     }
    ],
    "rotate": [
     {
      "code": "usTSM",
      "name": "台积电",
-     "reason": "综合分 8.4 · 12月 +36.8% · 年化波动 37%"
+     "reason": "综合分 8.4 · 12月 +43.7% · 年化波动 35%"
     },
     {
      "code": "usAVGO",
      "name": "博通",
-     "reason": "综合分 7.9 · 12月 -20.0% · 年化波动 45%"
+     "reason": "综合分 7.9 · 12月 -6.7% · 年化波动 45%"
     }
    ],
    "tenx": [
     {
      "code": "usPLTR",
      "name": "Palantir",
-     "reason": "成长分 9.5 · 年内 +21.7% · 波动 65%，仓位≤5%"
+     "reason": "成长分 9.5 · 年内 +34.0% · 波动 68%，仓位≤5%"
     },
     {
      "code": "usARM",
      "name": "安谋",
-     "reason": "成长分 9.0 · 年内 +86.8% · 波动 100%，仓位≤5%"
+     "reason": "成长分 9.0 · 年内 +117.1% · 波动 100%，仓位≤5%"
     }
    ]
   },
@@ -440,7 +440,21 @@ window.IA_BASELINE = {
  },
  "changes": {
   "picks": [],
-  "formal": [],
+  "formal": [
+   {
+    "dir": "in",
+    "scope": "formal",
+    "tag": "进入观察窗",
+    "name": "海康威视",
+    "reason": "距老唐买点 +22.2%，综合分 6.8"
+   },
+   {
+    "dir": "out",
+    "scope": "formal",
+    "name": "香港交易所",
+    "reason": "距老唐买点 +31%，超出 30% 观察窗（26 周内够不着）"
+   }
+  ],
   "us": [],
   "pool": []
  }
