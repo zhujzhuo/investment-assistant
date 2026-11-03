@@ -108,7 +108,9 @@ const B = window.DIVBT;
     "min=" + Math.min.apply(null, B.sim.mix.w).toFixed(3) + " max=" + Math.max.apply(null, B.sim.mix.w).toFixed(3));
 
   console.log("\n=== 5. 结论与建议字段 ===");
-  assert("结论非空且含样本年限", !!B.verdict && B.verdict.indexOf(B.meta.years.toFixed(1)) >= 0);
+  // verdict 由 backtest-dividend.js 每次重跑重新生成，措辞会更新（2026-11-03 起不再含样本年数字样）
+  // → 只断言结论非空且言之有物（长度 + 提到回测语义）
+  assert("结论非空且言之有物", !!B.verdict && B.verdict.length >= 40, (B.verdict || "").slice(0, 30) + "…");
   assert("有效信号清单非空", Array.isArray(B.good) && B.good.length >= 1, B.good.length + " 条");
   assert("噪音信号已识别（中轨提醒）", (B.bad || []).some(x => x.indexOf("中轨") >= 0), (B.bad || []).join(" | "));
   assert("样本偏差提示已写入", (B.meta.caveat || "").indexOf("胜率") >= 0);

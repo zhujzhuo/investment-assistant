@@ -2,7 +2,7 @@
 // 来源：westock disclosure「业绩预约披露日」（A股/港股/美股）；预约日可能改期，以交易所公告为准
 // dates[code] = 下次财报预约披露日（YYYY-MM-DD）；页面据此展示财报日历与标的行的「财报」标记
 window.REPORTS = {
-  asOf: "2026-10-30",
+  asOf: "2026-11-03",
   dates: {
   "usCVX": "2026-10-30",
   "usVZ": "2026-10-26",

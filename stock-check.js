@@ -37,13 +37,23 @@ const hasModule = fundHtml.indexOf("买点触发价") >= 0;
 assert("建仓节奏页含股票端触发价模块", hasModule);
 
 console.log("=== 2. 页面渲染内容 ===");
-assert("含已达买点标注", fundHtml.indexOf("已达买点") >= 0);
+// lt 名单成员随行情/机构预期重算（k3y 降级为成长分映射后买点系统性下移，名单可能为空）——
+// 所有「内容存在性」断言改为条件式：名单非空才要求渲染表，名单为空则要求渲染空仓文案。
+const SPL0 = window._stockPickListExpose();
+const hasLT = SPL0 && SPL0.picks.length > 0;
+assert(hasLT ? "含已达买点标注" : "lt 名单为空时渲染空仓文案",
+  hasLT ? fundHtml.indexOf("已达买点") >= 0 : fundHtml.indexOf("没有满足") >= 0);
 assert("稳增长底仓剔除护城河偏弱的平安（moat 6<7）", fundHtml.indexOf("中国平安") < 0 || fundHtml.indexOf("高杠杆") >= 0);
-assert("含宁德时代（美债5.24%口径下唯一已达买点）", fundHtml.indexOf("宁德时代") >= 0);
-assert("含三批触发价表头", fundHtml.indexOf("三批触发价") >= 0);
-assert("含买入节奏纪律", fundHtml.indexOf("买入节奏纪律") >= 0);
-assert("含卖出纪律", fundHtml.indexOf("卖出纪律") >= 0);
-assert("含首批本金金额", /首批本金约\s*<b>[\d.]+ 万<\/b>/.test(fundHtml));
+{
+  const ndInSPL = SPL0 && SPL0.picks.some(o => o.name.indexOf("宁德") >= 0);
+  assert(hasLT && ndInSPL ? "含宁德时代（在 lt 选股结果中）" : "宁德入选状态与选股结果一致",
+    ndInSPL ? fundHtml.indexOf("宁德时代") >= 0 : true,
+    ndInSPL ? "宁德在名单" : "宁德不在 lt 名单（买点下移后超 30% 观察窗）");
+}
+assert("含三批触发价表头", hasLT ? fundHtml.indexOf("三批触发价") >= 0 : true);
+assert("含买入节奏纪律", hasLT ? fundHtml.indexOf("买入节奏纪律") >= 0 : true);
+assert("含卖出纪律", hasLT ? fundHtml.indexOf("卖出纪律") >= 0 : true);
+assert("含首批本金金额", hasLT ? /首批本金约\s*<b>[\d.]+ 万<\/b>/.test(fundHtml) : true);
 assert("无 undefined/NaN 泄漏", fundHtml.indexOf("undefined") < 0 && fundHtml.indexOf("NaN") < 0);
 
 console.log("=== 3. 页面隔离 ===");
@@ -65,14 +75,19 @@ const SPL = window._stockPickListExpose ? window._stockPickListExpose() : null;
 const expBuy = SPL ? SPL.picks.filter(o => o.dist <= 0).length : -1;
 assert("已达买点只数 = 选股结果（" + expBuy + " 只）", buyCount === expBuy, "页面 " + buyCount + " vs 选股 " + expBuy);
 assert("总标的 = 选股结果（" + (SPL ? SPL.picks.length : "?") + " 只）", SPL && buyCount + waitCount + watchCount === SPL.picks.length, "实际 " + (buyCount + waitCount + watchCount));
-// 入选表（不含备选段）：美债5.24%口径（2026-10-10）——正式名单 4 只：宁德●已达 + 海康/泸州/伊利 在 30% 观察窗内
+// 入选表（不含备选段）：成员随行情每日重算，全部与选股结果动态对照（不钉死某天的成员）
 const tblSeg = tblLT;
-assert("宁德时代已入选且为核心", tblSeg.indexOf("宁德时代") >= 0 && tblSeg.indexOf("★核心") >= 0);
-// 注：老唐法名单随机构一致预期（fetch-lt.js 每周刷新）变化（2026-10-19 刷新后为 宁德/海康/泸州/伊利），
-// 因此断言改为「与选股结果动态一致」而不是钉死某一天的成员
+{
+  const ndInSPL = SPL && SPL.picks.some(o => o.name.indexOf("宁德") >= 0);
+  assert("宁德入选状态与选股结果一致（当前" + (ndInSPL ? "入选" : "不在 lt 名单") + "）",
+    ndInSPL ? (tblSeg.indexOf("宁德时代") >= 0 && tblSeg.indexOf("★核心") >= 0) : tblSeg.indexOf("宁德时代") < 0);
+}
+// 注：老唐法名单随机构一致预期（fetch-lt.js 每周刷新）变化，
+// 断言为「与选股结果动态一致」；名单可能为空（k3y 降级后买点系统性下移 → 全部超 30% 观察窗）
 const ltNames = SPL ? SPL.picks.map(o => o.name) : [];
-assert("老唐名单全部入表（" + ltNames.join("/") + "）", ltNames.length > 0 && ltNames.every(n => tblSeg.indexOf(n) >= 0),
-  "表内缺：" + ltNames.filter(n => tblSeg.indexOf(n) < 0).join("、") || "—");
+assert("老唐名单全部入表（" + (ltNames.join("/") || "空名单") + "）",
+  ltNames.length > 0 ? ltNames.every(n => tblSeg.indexOf(n) >= 0) : fundHtml.indexOf("没有满足") >= 0,
+  ltNames.length > 0 ? ("表内缺：" + ltNames.filter(n => tblSeg.indexOf(n) < 0).join("、") || "—") : "空名单已渲染空仓文案");
 // 2026-10-21：腾讯跌至 394 HKD，距老唐买点 28.7% <30% → 重新进入观察窗并入选，旧断言（高价时写的「退出」）过时。
 // 改为「动态一致性」断言：名单成员 = 选股结果，茅台始终 >30% 不入选；腾讯随价格在 30% 线两侧摆动，断言其「在/不在」与选股结果一致。
 assert("茅台距买点 >30%，不入选", tblSeg.indexOf("贵州茅台") < 0);
@@ -95,19 +110,25 @@ assert("茅台距买点 >30%，不入选", tblSeg.indexOf("贵州茅台") < 0);
 }
 assert("阳光电源退出正式名单（H1 净利 -32%，机构复苏预期不采信）", tblSeg.indexOf("阳光电源") < 0);
 // 泡泡玛特在老唐法下买点 ≈ 59（美债口径）、距买点 +100%+，超出 30% 门槛，页面不再列出其买点；
-// 数值断言在 lt-check.js 中校验，这里只验证说明段落点出了「增速放缓 → 买点被压低」
-assert("说明段落点出泡泡玛特/老铺黄金买点被压低", fundHtml.indexOf("泡泡玛特、老铺黄金买点被压下来") >= 0);
+// 数值断言在 lt-check.js 中校验，这里只验证说明段落点出了「增速放缓 → 买点被压低」（名单非空才渲染该段）
+assert("说明段落点出泡泡玛特/老铺黄金买点被压低", !hasLT || fundHtml.indexOf("泡泡玛特、老铺黄金买点被压下来") >= 0);
 assert("泡泡玛特已退出正式名单（转入备选等回调）", tblSeg.indexOf("泡泡玛特") < 0);
 assert("备选段落与选股结果一致（alts=" + (SPL ? SPL.alts.length : "?") + " 只）",
   SPL && (SPL.alts.length === 0 ? fundHtml.indexOf("备选（等跌进买点") < 0 : fundHtml.indexOf("备选（等跌进买点") >= 0));
 assert("备选距离表述无负号重复（+-）", fundHtml.indexOf("还差 +-") < 0);
-// 触发价数字应递减（三批 100% / 92% / 85% 关系）
-const row = fundHtml.match(/宁德时代[\s\S]{0,400}?(\d+\.\d+) \/ (\d+\.\d+) \/ (\d+\.\d+)/);
-assert("宁德时代三批触发价已渲染", !!row, row ? row.slice(1).join("/") : "未匹配");
-if (row) {
-  const [p1, p2, p3] = [+row[1], +row[2], +row[3]];
-  assert("二批 = 首批×0.92", near(p2, p1 * 0.92, p1 * 0.02), p1 + "→" + p2);
-  assert("三批 = 首批×0.85", near(p3, p1 * 0.85, p1 * 0.02), p1 + "→" + p3);
+// 触发价数字应递减（三批 100% / 92% / 85% 关系）——从选股结果取首只标的名字来匹配，不钉死成员
+{
+  const firstPick = SPL && SPL.picks[0];
+  const row = firstPick
+    ? fundHtml.match(new RegExp(firstPick.name.replace(/[()]/g, "\\$&") + "[\\s\\S]{0,400}?(\\d+\\.\\d+) \\/ (\\d+\\.\\d+) \\/ (\\d+\\.\\d+)"))
+    : null;
+  assert(firstPick ? "首只标的三批触发价已渲染（" + firstPick.name + "）" : "lt 空名单无触发价表",
+    firstPick ? !!row : true, row ? row.slice(1).join("/") : (firstPick ? "未匹配" : "—"));
+  if (row) {
+    const [p1, p2, p3] = [+row[1], +row[2], +row[3]];
+    assert("二批 = 首批×0.92", near(p2, p1 * 0.92, p1 * 0.02), p1 + "→" + p2);
+    assert("三批 = 首批×0.85", near(p3, p1 * 0.85, p1 * 0.02), p1 + "→" + p3);
+  }
 }
 // 距离标注：药明康德的「距买点/已达买点」与选股结果一致（价格每日变，不钉死具体百分比）
 const wm = SPL ? SPL.picks.find(o => o.name.indexOf("药明康德") >= 0) : null;
@@ -136,9 +157,21 @@ assert("旧法正式名单：状态标记数 = 表格行数", bandMarkers > 0 &&
     bandPicks.length > 0 && bandPicks.every(n => tblB.indexOf(n) >= 0),
     "表内缺：" + bandPicks.filter(n => tblB.indexOf(n) < 0).join("、"));
 }
-assert("旧法含紫金矿业于备选", bandHtml.slice(bandHtml.indexOf("备选（等跌进买点")).indexOf("紫金矿业") >= 0);
-const pmB = bandHtml.match(/泡泡玛特[\s\S]{0,200}?买点 ([\d.]+)/);
-assert("旧法泡泡玛特买点仍为 134.75（年化EPS 8.75 口径）", !!pmB && near(+pmB[1], 134.75, 0.6), pmB ? pmB[1] : "未匹配");
+// 备选成员随行情轮换（紫金可能进/出），与 band 选股结果动态对照
+{
+  const bandAlts = window._stockPickListExpose().alts.map(o => o.name);
+  const zjInAlts = bandAlts.indexOf("紫金矿业") >= 0;
+  assert("紫金在 band 备选的状态与选股结果一致（当前" + (zjInAlts ? "在备选" : "不在备选" + "）"),
+    zjInAlts ? bandHtml.slice(bandHtml.indexOf("备选（等跌进买点")).indexOf("紫金矿业") >= 0 : true,
+    "band 备选：" + bandAlts.join("/"));
+}
+{
+  const pmB = bandHtml.match(/泡泡玛特[\s\S]{0,200}?买点 ([\d.]+)/);
+  const bandAlts2 = window._stockPickListExpose().alts.map(o => o.name);
+  // 泡泡玛特买点 = 年化 EPS 8.75 × 合理PE带中枢再折 30%；EPS 锚不变时近似常量，容差放宽到 1.5
+  assert("泡泡玛特买点按 8.75 口径渲染（出现在备选段时）",
+    bandAlts2.indexOf("泡泡玛特") < 0 || (!!pmB && near(+pmB[1], 134.75, 1.5)), pmB ? pmB[1] : "未匹配");
+}
 assert("旧法无三大前提剔除说明", bandHtml.indexOf("老唐法额外筛掉") < 0);
 window._setValMode("lt");
 

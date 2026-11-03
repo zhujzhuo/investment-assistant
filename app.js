@@ -134,7 +134,7 @@
 
   // ---------- 标签页 ----------
   // 2026-10-10 合并：市场雷达 / 好公司筛选 / 每日推荐 / 投资组合 四页并成一个「🧺 A股港股」页（版式同「美股组合」）
-  var tabs = ["plan", "divcmp", "fund", "ah", "us", "backtest", "report", "history", "detail"];
+  var tabs = ["plan", "divcmp", "fund", "playbook", "ah", "us", "backtest", "report", "history", "detail"];
   // 旧页面名兼容映射（页面内旧链接、历史书签与测试脚本仍可用）
   var TAB_ALIAS = { radar: "ah", screen: "ah", pick: "ah", portfolio: "ah" };
   var curTab = "plan";
@@ -152,6 +152,7 @@
     if (t === "plan") safe(renderPlan);
     if (t === "divcmp") safe(renderDivCmp);
     if (t === "fund") safe(renderFund);
+    if (t === "playbook") safe(renderPlaybook);
     if (t === "ah") safe(renderAH);
     if (t === "us") safe(renderUS);
     if (t === "backtest") safe(renderBacktest);
@@ -2470,6 +2471,294 @@
     return P && P.why && P.why.length ? P.why.join("、") : "无";
   }
 
+  // ==================== 📋 个股操作手册（2026-11-03）====================
+  // 背景：股票池「移入移出」只是 dist≤30% 的观察窗二值信号——只说明「够不够得着」，
+  //       不含买多少、什么价卖；财报数据此前只展示、完全不参与判断。
+  //       本页把每只标的落成四块可执行内容：建仓档位 / 持仓管理 / 止盈阶梯 / 财报重估。
+  // 口径（2026-11-03 确认）：
+  //   ① 持仓手动录入（成本价 + 持仓市值，本机 localStorage），不录也能看建仓/止盈计划；
+  //   ② 止盈三档 1/3：T1=卖出参考价 卖1/3 → T2=×1.10 再卖1/3 → T3=×1.20 清仓；
+  //     ★核心资产（护城河≥8.5 且综合分≥8）T3 留 1/3 长持不止盈，仅逻辑证伪才清仓；
+  //   ③ 财报只给结论不改买点：超预期/符合/低于 × 改善/走平/恶化 → 给倾向动作，
+  //     fairPE / epsBase 的修改去「标的调研」页人工确认，避免数据源噪音直接改买卖价；
+  //   ④ 深度跌破买点（dist < −25%）不一次打满：三批触发价不变，但拉长 3 周每周一批（防接飞刀）。
+  var PB_HOLD_KEY = "ia_holdings";
+  function loadHoldings() {
+    try { var d = JSON.parse(window.localStorage.getItem(PB_HOLD_KEY) || "{}"); return d || {}; } catch (e) { return {}; }
+  }
+  window._pbSetHold = function (code, field, val) {
+    var d = loadHoldings(), o = d[code] || {};
+    var n = Number(val);
+    o[field] = (isFinite(n) && n > 0) ? n : 0;
+    if (!o.cost && !o.mv) delete d[code]; else d[code] = o;
+    try { window.localStorage.setItem(PB_HOLD_KEY, JSON.stringify(d)); } catch (e) { }
+    if (curTab === "playbook") renderPlaybook();
+    flash(field === "cost" ? "成本价已保存" : "持仓市值已保存");
+  };
+
+  // 财报重估结论（只出结论与动作，不改任何买点数字）
+  function earningsVerdict(e) {
+    if (!e || !e.q) return null;
+    var o = { q: e.q, yoy: e.npYoY, qoq: e.npQoQ, vs: e.vsCons, npQ: e.npQYi };
+    if (e.qUnreliable) {
+      o.tag = "na"; o.label = "不可靠"; o.chip = "v-na";
+      o.act = "财报差分不可靠（财年错位），本期不参与重估。";
+      return o;
+    }
+    var beat = (o.vs != null) ? (o.vs > 5 ? 1 : (o.vs < -5 ? -1 : 0)) : null;
+    var badTrend = (o.yoy != null && o.yoy < -10) && (o.qoq == null || o.qoq < 0);
+    var goodTrend = (o.yoy != null && o.yoy > 10) || (o.qoq != null && o.qoq > 5);
+    if (beat === 1 && goodTrend) {
+      o.tag = "up"; o.label = "超预期·改善"; o.chip = "v1";
+      o.act = "业绩上修：单季净利超机构预期 +" + num(o.vs, 1) + "pp、同比 " + num(o.yoy, 1) + "% → 前瞻 EPS 可能偏低，买点/卖出参考或需上移。" +
+        "按口径约定本页不动买点数字——去「标的调研」复核 fairPE/epsBase，确认后手动调整；确认前按原买点执行。";
+    } else if (beat === 1) {
+      o.tag = "up2"; o.label = "超预期"; o.chip = "v2";
+      o.act = "超出机构预期 +" + num(o.vs, 1) + "pp，但单季环比未同步走强 → 暂按原计划，等下一期确认再上修。";
+    } else if (beat === -1 && badTrend) {
+      o.tag = "down"; o.label = "低于预期·恶化"; o.chip = "v5";
+      o.act = "逻辑预警：低于机构预期 " + num(o.vs, 1) + "pp 且单季同比 " + num(o.yoy, 1) + "% 恶化 → 立即复核护城河/盈利质量评分；" +
+        "评分下调 ≥2 分、或下一期继续低于预期 → 减仓至半仓乃至清仓（逻辑证伪止损，不扛单）。";
+    } else if (beat === -1) {
+      o.tag = "down2"; o.label = "低于预期"; o.chip = "v4";
+      o.act = "低于机构预期 " + num(o.vs, 1) + "pp（趋势尚可）→ 观察，暂不动，下一期定去留；持有期间跌破成本 −15% 无条件先减半。";
+    } else if (badTrend) {
+      o.tag = "weak"; o.label = "趋势恶化"; o.chip = "v4";
+      o.act = "单季同比 " + num(o.yoy, 1) + "%、环比 " + num(o.qoq, 1) + "% → 复核盈利质量，确认是否一次性因素；连续两期恶化即按逻辑证伪处理。";
+    } else if (goodTrend) {
+      o.tag = "good"; o.label = "改善"; o.chip = "v2";
+      o.act = "单季同比 " + num(o.yoy, 1) + "% → 盈利趋势向好，按原计划执行。" + (o.vs == null ? "（港股无年度一致预期，仅看趋势）" : "");
+    } else {
+      o.tag = "hold"; o.label = "符合预期"; o.chip = "v3";
+      o.act = (o.vs != null ? "偏离机构预期 " + (o.vs >= 0 ? "+" : "") + num(o.vs, 1) + "pp，在 ±5pp 内 → " : "机构预期未覆盖，单季平稳 → ") + "按原计划执行。";
+    }
+    return o;
+  }
+
+  // 建仓档位（沿用 stockPlan 三批 40/30/30；深跌标的拉长 3 周防接飞刀）
+  function pbBuildRows(o) {
+    var each = o.amt, deep = (o.dist != null && o.dist < -25), px = o.px, rows = [];
+    rows.push({ k: "首批 40%", p: o.buy, amt: each * 0.40, hit: px <= o.buy,
+      note: deep ? "深跌模式：本周只买这一批" : (px <= o.buy ? "已触发" : "挂条件单") });
+    rows.push({ k: "二批 30%", p: o.buy * 0.92, amt: each * 0.30, hit: px <= o.buy * 0.92,
+      note: deep ? "深跌模式：第 2 周执行" : "较买点再跌 8%" });
+    rows.push({ k: "三批 30%", p: o.buy * 0.85, amt: each * 0.30, hit: px <= o.buy * 0.85,
+      note: deep ? "深跌模式：第 3 周执行" : "较买点再跌 15%" });
+    return rows;
+  }
+  // 止盈阶梯（三档 1/3；★核心 T3 留 1/3 长持）
+  function pbTrimRows(o) {
+    if (!o.hi) return [];
+    var core = o.core === true, hi = o.hi, px = o.px, rows = [];
+    rows.push({ k: "T1 触及卖出参考", p: hi, act: "卖出 1/3", hit: px >= hi });
+    rows.push({ k: "T2 再涨 10%", p: hi * 1.10, act: "再卖 1/3", hit: px >= hi * 1.10 });
+    rows.push({ k: "T3 再涨 20%", p: hi * 1.20, act: core ? "★核心：留 1/3 长持，不止盈" : "清仓剩余 1/3", hit: px >= hi * 1.20 });
+    return rows;
+  }
+  // 持仓态：浮盈 / 距目标仓 / 超配
+  function pbHoldRow(o, h) {
+    if (!h || !(h.mv > 0)) return { has: false };
+    var pnl = h.cost > 0 ? (o.px / h.cost - 1) * 100 : null;
+    var room = o.amt != null ? o.amt - h.mv : null;
+    return {
+      has: true, mv: h.mv, cost: h.cost, pnl: pnl, room: room,
+      over: (room != null && o.amt > 0 && room < -o.amt * 0.5),           // 持仓 > 目标 1.5 倍 = 超配
+      cutLine: h.cost > 0 ? h.cost * 0.85 : null                          // 逻辑证伪前置线：成本 −15% 先减半
+    };
+  }
+  // 本周动作（一段话：现在到底做什么）
+  function pbAction(o, hold, ev) {
+    var acts = [];
+    var deep = (o.dist != null && o.dist < -25);
+    var br = pbBuildRows(o);
+    if (hold.has) {
+      if (hold.room != null && hold.room > 0.05) {
+        var nextB = br.filter(function (r) { return !r.hit; })[0];
+        acts.push("补仓 " + num(hold.room, 1) + " 万到目标仓" + (nextB ? "，在下一档触发价 " + num(nextB.p, 2) + " 补齐" : "（三档已全触发，拉长 3 周每周一批）"));
+      } else if (hold.over) {
+        acts.push("已超配（" + num(hold.mv, 1) + " 万 > 目标 " + num(o.amt, 1) + " 万 × 1.5）→ 触及 T1 时优先减回目标仓，其余按阶梯");
+      } else if (hold.room != null && hold.room <= 0.05 && hold.room >= -o.amt * 0.5) {
+        acts.push("已持仓达标（浮盈 " + (hold.pnl != null ? (hold.pnl >= 0 ? "+" : "") + num(hold.pnl, 1) + "%" : "—") + "）→ 拿住，等 T1 " + num(o.hi, 2) + " 或财报信号" + (hold.cutLine ? "；跌破 " + num(hold.cutLine, 2) + "（成本 −15%）先复核逻辑再决定" : ""));
+      } else {
+        acts.push("持有中（浮盈 " + (hold.pnl != null ? (hold.pnl >= 0 ? "+" : "") + num(hold.pnl, 1) + "%" : "—") + "）→ 按止盈阶梯执行");
+      }
+    } else {
+      if (o.state === "buy") {
+        var hits = br.filter(function (r) { return r.hit; }).length;
+        var hitAmt = 0; br.forEach(function (r) { if (r.hit) hitAmt += r.amt; });
+        if (deep) {
+          acts.push("深跌验证：价已低于买点 " + num(-o.dist, 1) + "%，防接飞刀 → 三批拉开 3 周，本周只买首批 " + num(br[0].amt, 1) + " 万 @" + num(br[0].p, 2) + "（跌得深往往有基本面原因，第 2 周买前先看财报结论有无恶化）");
+        } else if (hits >= 2) {
+          acts.push("现价已触发 " + hits + "/3 批（共 " + num(hitAmt, 1) + " 万）：本周分 2~3 天买完，不单日打满；剩余 " + (3 - hits) + " 批挂条件单等更深触发");
+        } else {
+          acts.push("本周买首批 " + num(br[0].amt, 1) + " 万 @" + num(br[0].p, 2) + "（现价已 ≤ 买点）");
+        }
+      } else {
+        acts.push("未到买点：挂条件单 @" + num(o.buy, 2) + "（现价距 +" + num(o.dist, 1) + "%），不到不买");
+      }
+    }
+    if (ev) acts.push("财报结论【" + ev.label + "】：" + ev.act);
+    return acts;
+  }
+
+  function playbookData() {
+    var cap = getCap();
+    var F = A ? fundPlan(cap) : null;
+    var amt = F ? F.amt.stock : Math.round(cap * 0.10);
+    var SP = stockPlan(amt);
+    var E = (window.EARNINGS || {}).items || [];
+    var emap = {}; for (var i = 0; i < E.length; i++) emap[E[i].code] = E[i];
+    var hold = loadHoldings();
+    var picks = [], alts = [];
+    for (var i = 0; i < (SP.picks || []).length; i++) {
+      var o = SP.picks[i];
+      var st = S.find(function (x) { return x.code === o.code; }) || {};
+      picks.push({
+        code: o.code, name: o.name, catKey: o.catKey, grade: o.grade, score: o.score, moat: st.moat,
+        core: o.core === true, px: o.px, mid: o.mid, buy: o.buy, hi: o.hi, dist: o.dist, state: o.state,
+        amt: o.amt, valPct: (function () { var cv = curVal(st); return cv ? cv.mix : null; })(),
+        hold: pbHoldRow(o, hold[o.code] || null),
+        ev: earningsVerdict(emap[o.code] || null)
+      });
+    }
+    for (var i = 0; i < (SP.alts || []).length; i++) {
+      var a = SP.alts[i];
+      alts.push({ code: a.code, name: a.name, px: a.px, buy: a.buy, hi: a.hi, dist: a.dist, state: a.state,
+        ev: earningsVerdict(emap[a.code] || null) });
+    }
+    // 已持仓但不在当前名单/备选 → 止损复核视角
+    var outOfList = [];
+    var inList = {}; picks.forEach(function (p) { inList[p.code] = 1; }); alts.forEach(function (p) { inList[p.code] = 1; });
+    for (var code in hold) {
+      if (!hold[code] || !hold[code].mv || inList[code]) continue;
+      var st2 = S.find(function (x) { return x.code === code; }) || WATCH.find(function (x) { return x.code === code; }) || null;
+      if (!st2) continue;
+      outOfList.push({ code: code, name: st2.name, px: st2.px, mv: hold[code].mv, cost: hold[code].cost,
+        pnl: hold[code].cost > 0 ? (st2.px / hold[code].cost - 1) * 100 : null,
+        ev: earningsVerdict(emap[code] || null) });
+    }
+    return { cap: cap, amt: amt, picks: picks, alts: alts, outOfList: outOfList,
+      eAsOf: (window.EARNINGS || {}).asOf || "—" };
+  }
+  window._playbookExpose = playbookData;
+  window._pbTools = { earningsVerdict: earningsVerdict, pbBuildRows: pbBuildRows, pbTrimRows: pbTrimRows, pbHoldRow: pbHoldRow, pbAction: pbAction, loadHoldings: loadHoldings };
+
+  function renderPlaybook() {
+    var D = playbookData();
+    var isLT = VAL_MODE === "lt";
+    var h = '<div class="asof">个股操作手册 · 建仓 / 持仓 / 止盈 / 财报重估 · A股 ' + mktAsOf("A") + ' / 美股 ' + mktAsOf("US") +
+      ' · 财报锚 ' + esc(D.eAsOf) + ' <button class="btn btn-mini" onclick="window.refreshLive()">↻ 刷新行情</button></div>';
+    h += '<div class="card"><h3>📋 个股操作手册 <span class="muted small">名单只是观察范围，不是买卖信号 —— 真正触发买卖的是下面的档位价</span></h3>';
+    // 总览
+    var nBuy = D.picks.filter(function (p) { return p.state === "buy"; }).length;
+    var nTrimHit = 0; D.picks.forEach(function (p) { if (p.hi && p.px >= p.hi) nTrimHit++; });
+    var nReval = D.picks.filter(function (p) { return p.ev && (p.ev.tag === "up" || p.ev.tag === "down" || p.ev.tag === "down2" || p.ev.tag === "weak"); }).length;
+    var holdMv = 0; D.picks.forEach(function (p) { if (p.hold.has) holdMv += p.hold.mv; });
+    D.outOfList.forEach(function (p) { holdMv += p.mv; });
+    h += '<div class="note verdict"><b>总览：</b>入选 ' + D.picks.length + ' 只（已达买点 ' + nBuy + '）· 股票端预算 ' + num(D.amt, 1) + ' 万 · ' +
+      '已录入持仓 ' + num(holdMv, 1) + ' 万 · 待重估（财报信号）' + nReval + ' 只 · 触及止盈 T1 ' + nTrimHit + ' 只。' +
+      '<span class="small">估值法：' + (isLT ? '老唐法' : '合理PE带法') + '，切到「建仓节奏」页可改。</span></div>';
+    // 持仓录入
+    h += '<div style="margin-top:10px"><b>我的持仓录入</b> <span class="muted small">（本机保存；成本价用于算浮盈与 −15% 复核线，市值用于算超配/补仓额度。不录也能看建仓与止盈计划）</span></div>';
+    h += '<div class="tbl-scroll"><table class="tbl"><thead><tr><th>标的</th><th>现价</th><th>成本价（元）</th><th>持仓市值（万）</th><th>浮盈</th></tr></thead><tbody>';
+    var allRows = D.picks.concat(D.alts.map(function (a) { return { code: a.code, name: a.name, px: a.px, hold: pbHoldRow({ px: a.px, amt: null }, loadHoldings()[a.code] || null) }; }));
+    for (var i = 0; i < allRows.length; i++) {
+      var r = allRows[i], hd = r.hold || { has: false };
+      h += '<tr><td><b>' + esc(r.name) + '</b> <span class="muted small">' + fmtCode(r.code) + '</span></td><td>' + num(r.px, 2) + '</td>' +
+        '<td><input type="number" step="0.01" min="0" style="width:90px" value="' + (hd.has && hd.cost ? hd.cost : "") + '" placeholder="— 可空" onchange="window._pbSetHold(\'' + r.code + '\',\'cost\',this.value)"></td>' +
+        '<td><input type="number" step="0.1" min="0" style="width:90px" value="' + (hd.has && hd.mv ? hd.mv : "") + '" placeholder="— 可空" onchange="window._pbSetHold(\'' + r.code + '\',\'mv\',this.value)"></td>' +
+        '<td class="small">' + (hd.has && hd.pnl != null ? '<span class="' + (hd.pnl >= 0 ? "c-up" : "c-down") + '">' + (hd.pnl >= 0 ? "+" : "") + num(hd.pnl, 1) + '%</span>' : '—') + '</td></tr>';
+    }
+    h += '</tbody></table></div>';
+    h += '</div>';
+
+    // 每只入选标的一张操作卡
+    for (var i = 0; i < D.picks.length; i++) {
+      var p = D.picks[i];
+      h += '<div class="card" style="margin-top:12px"><h3>' + esc(p.name) + ' <span class="muted small">' + fmtCode(p.code) + ' · ' + CAT[p.catKey].label + ' · ' + p.grade + num(p.score, 1) + '</span>' +
+        (p.core ? '<span class="core-chip">★核心</span>' : '') + ' <span class="muted small">现价 ' + num(p.px, 2) + '</span></h3>';
+      if (p.hold.has) {
+        h += '<div class="small" style="margin-bottom:6px"><b>持仓：</b>' + num(p.hold.mv, 1) + ' 万 / 目标 ' + num(p.amt, 1) + ' 万 · 浮盈 <span class="' + (p.hold.pnl >= 0 ? "c-up" : "c-down") + '">' + (p.hold.pnl >= 0 ? "+" : "") + num(p.hold.pnl, 1) + '%</span>' +
+          (p.hold.cutLine ? ' · −15% 复核线 ' + num(p.hold.cutLine, 2) : '') + (p.hold.over ? ' · <span class="c-warn">超配</span>' : '') + '</div>';
+      }
+      // ① 建仓档位
+      var br = pbBuildRows(p);
+      h += '<div class="small" style="margin-top:4px"><b>① 建仓档位</b>（目标 ' + num(p.amt, 1) + ' 万，' + (isLT ? '老唐买点' : '合理PE带中枢×70%（30% 安全边际）') + ' ' + num(p.buy, 2) +
+        (p.dist != null ? '，现价' + (p.dist <= 0 ? ' 已低于买点 ' + num(-p.dist, 1) + '%' : ' 距 +' + num(p.dist, 1) + '%') : '') + '）</div>';
+      h += '<div class="tbl-scroll"><table class="tbl"><thead><tr><th>批次</th><th>触发价</th><th>金额(万)</th><th>状态</th><th>备注</th></tr></thead><tbody>';
+      for (var j = 0; j < br.length; j++) {
+        h += '<tr><td class="small">' + br[j].k + '</td><td>' + num(br[j].p, 2) + '</td><td>' + num(br[j].amt, 1) + '</td>' +
+          '<td class="small">' + (br[j].hit ? '<span class="c-up">● 已触发</span>' : '<span class="muted">○ 需再跌 ' + num((1 - br[j].p / p.px) * 100, 1) + '%</span>') + '</td>' +
+          '<td class="small wrapcol">' + br[j].note + '</td></tr>';
+      }
+      h += '</tbody></table></div>';
+      // ② 止盈阶梯
+      var tr = pbTrimRows(p);
+      if (tr.length) {
+        h += '<div class="small" style="margin-top:6px"><b>② 止盈阶梯</b>（三档 1/3' + (p.core ? '，★核心资产 T3 留 1/3 长持' : '') + (p.valPct != null ? '；当前估值分位 ' + num(p.valPct, 0) + '%（' + valTag(p.valPct).t + '），&gt;80% 且财报转差则 T1 直接卖一半' : '') + '）</div>';
+        h += '<div class="tbl-scroll"><table class="tbl"><thead><tr><th>档位</th><th>价位</th><th>动作</th><th>状态</th></tr></thead><tbody>';
+        for (var j = 0; j < tr.length; j++) {
+          h += '<tr><td class="small">' + tr[j].k + '</td><td>' + num(tr[j].p, 2) + '</td><td class="small">' + tr[j].act + '</td>' +
+            '<td class="small">' + (tr[j].hit ? '<span class="c-warn">● 已到</span>' : '<span class="muted">○ 还需涨 ' + num((tr[j].p / p.px - 1) * 100, 1) + '%</span>') + '</td></tr>';
+        }
+        h += '</tbody></table></div>';
+      }
+      // ③ 财报重估
+      if (p.ev) {
+        h += '<div class="small" style="margin-top:6px"><b>③ 财报重估</b>（' + esc(p.ev.q) + '：单季同比 ' + (p.ev.yoy != null ? num(p.ev.yoy, 1) + '%' : '—') +
+          ' · 环比 ' + (p.ev.qoq != null ? num(p.ev.qoq, 1) + '%' : '—') + ' · ' + (p.ev.vs != null ? '偏离机构预期 ' + (p.ev.vs >= 0 ? "+" : "") + num(p.ev.vs, 1) + 'pp' : '无机构预期覆盖') + '）' +
+          ' <span class="vchip ' + p.ev.chip + '">' + p.ev.label + '</span></div>';
+        h += '<div class="note small" style="margin-top:4px">' + esc(p.ev.act) + '</div>';
+      } else {
+        h += '<div class="muted small" style="margin-top:6px">③ 财报重估：暂无财报数据。</div>';
+      }
+      // ④ 本周动作
+      var acts = pbAction(p, p.hold, p.ev);
+      h += '<div class="note verdict" style="margin-top:8px"><b>现在做什么：</b><br>· ' + acts.map(esc).join('<br>· ') + '</div>';
+      h += '</div>';
+    }
+
+    // 备选（简表）
+    if (D.alts.length) {
+      h += '<div class="card" style="margin-top:12px"><h3>备选（够得着但没进配额）</h3>';
+      h += '<div class="muted small">备用金专用：跌进买点后按同样三批执行，金额从备用金走，不挤占正式名单配额。</div>';
+      h += '<div class="tbl-scroll"><table class="tbl"><thead><tr><th>标的</th><th>现价</th><th>买点</th><th>距离</th><th>卖出参考</th><th>财报结论</th></tr></thead><tbody>';
+      for (var i = 0; i < D.alts.length; i++) {
+        var a = D.alts[i];
+        h += '<tr><td><b>' + esc(a.name) + '</b> <span class="muted small">' + fmtCode(a.code) + '</span></td><td>' + num(a.px, 2) + '</td><td>' + num(a.buy, 2) + '</td>' +
+          '<td class="small">' + (a.dist <= 0 ? '<span class="c-up">低于买点 ' + num(-a.dist, 1) + '%</span>' : '+' + num(a.dist, 1) + '%') + '</td>' +
+          '<td>' + (a.hi ? num(a.hi, 2) : '—') + '</td><td class="small">' + (a.ev ? '<span class="vchip ' + a.ev.chip + '">' + a.ev.label + '</span>' : '—') + '</td></tr>';
+      }
+      h += '</tbody></table></div></div>';
+    }
+
+    // 已持仓但不在名单（止损复核视角）
+    if (D.outOfList.length) {
+      h += '<div class="card" style="margin-top:12px;border-left:3px solid #e65100"><h3>⚠ 已持仓但不在当前名单 —— 复核去留</h3>';
+      h += '<div class="muted small">这些标的已移出名单（超出观察窗或质量/前提不达标），但仍有持仓。按纪律：复核逻辑是否证伪 —— 证伪则清仓，只是贵了则留仓等止盈档。</div>';
+      h += '<div class="tbl-scroll"><table class="tbl"><thead><tr><th>标的</th><th>现价</th><th>持仓(万)</th><th>浮盈</th><th>财报结论</th><th>建议</th></tr></thead><tbody>';
+      for (var i = 0; i < D.outOfList.length; i++) {
+        var q = D.outOfList[i];
+        h += '<tr><td><b>' + esc(q.name) + '</b> <span class="muted small">' + fmtCode(q.code) + '</span></td><td>' + num(q.px, 2) + '</td><td>' + num(q.mv, 1) + '</td>' +
+          '<td class="small">' + (q.pnl != null ? '<span class="' + (q.pnl >= 0 ? "c-up" : "c-down") + '">' + (q.pnl >= 0 ? "+" : "") + num(q.pnl, 1) + '%</span>' : '—') + '</td>' +
+          '<td class="small">' + (q.ev ? '<span class="vchip ' + q.ev.chip + '">' + q.ev.label + '</span>' : '—') + '</td>' +
+          '<td class="small wrapcol">财报恶化/证伪 → 清仓；仅估值贵 → 按止盈阶梯等 T1</td></tr>';
+      }
+      h += '</tbody></table></div></div>';
+    }
+
+    h += '<div class="note" style="margin-top:10px"><b>口径与纪律：</b>' +
+      '① 移入/移出名单只代表观察范围变化，本身不是买卖信号；触发买卖的只有上表的档位价。<br>' +
+      '② 建仓：首批 40% 在现价≤买点时执行，二批/三批挂条件单；深度跌破买点（&gt;25%）一律拉长 3 周，防接飞刀。<br>' +
+      '③ 止盈：三档 1/3；★核心资产（护城河≥8.5 且分≥8）留 1/3 长持。估值分位 &gt;80% 且财报转差 → T1 直接卖一半（落袋一半）。<br>' +
+      '④ 止损（逻辑证伪）：财报连续两期低于预期且恶化、或护城河/盈利质量评分下调 ≥2 分 → 无条件减半乃至清仓；成本 −15% 是强制复核线，不是死守线。<br>' +
+      '⑤ 财报只给结论，不改买点数字 —— 超预期需要上修时去「标的调研」改 fairPE/epsBase（改完全站买点自动联动）。<br>' +
+      '⑥ 已执行动作（买了/卖了）记得回来更新持仓表，超配与补仓额度都以它为准。</div>';
+    h += '<div class="muted small">' + window.DISCLAIMER + '</div>';
+    $("playbook-body").innerHTML = h;
+  }
+
+
   // 红利提醒策略回测（数据来源：backtest-dividend.js 生成的 data/divbt.js）
   function renderDivBT() {
     var B = window.DIVBT;
@@ -3430,6 +3719,7 @@
     if (curTab === "plan") renderPlan();
     else if (curTab === "divcmp") renderDivCmp();
     else if (curTab === "fund") renderFund();
+    else if (curTab === "playbook") renderPlaybook();
     else if (curTab === "ah") renderAH();
     else if (curTab === "us") renderUS();
     else if (curTab === "backtest") renderBacktest();

@@ -3,27 +3,27 @@
 // npYoYAcc=累计同比(%)；A股 consCagr=年度预期增速(%)、vsCons=累计同比−预期(pp)；
 // 港股 consNpAnnual=近四季预期净利年化(亿)、npAnnual=单季年化、vsCons=年化偏离(%)
 window.EARNINGS = {
- "asOf": "2026-10-30",
+ "asOf": "2026-11-03",
  "items": [
   {
    "code": "sh600519",
    "name": "贵州茅台",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 907,
-   "npYi": 445.2,
-   "npQoQ": -36.6,
-   "npYoY": -6.9,
-   "revQoQ": -31.7,
-   "npQYi": 172.7,
+   "q": "2026Q3",
+   "revYi": 1309.7,
+   "npYi": 644.7,
+   "npQoQ": 15.5,
+   "npYoY": 3.8,
+   "revQoQ": 9.4,
+   "npQYi": 199.5,
    "consYears": [
     2026,
     2027,
     2028
    ],
    "consCagr": 6.1,
-   "npYoYAcc": -2,
-   "vsCons": -8.1
+   "npYoYAcc": -0.2,
+   "vsCons": -6.3
   },
   {
    "code": "sz000858",
@@ -41,9 +41,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 11.6,
+   "consCagr": 11.7,
    "npYoYAcc": 50,
-   "vsCons": 38.4
+   "vsCons": 38.3
   },
   {
    "code": "sz000568",
@@ -61,29 +61,29 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 9.4,
+   "consCagr": 11.1,
    "npYoYAcc": -47.3,
-   "vsCons": -56.7
+   "vsCons": -58.4
   },
   {
    "code": "sh600887",
    "name": "伊利股份",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 643.3,
-   "npYi": 57.6,
-   "npQoQ": -93.3,
-   "npYoY": -84.4,
-   "revQoQ": -14.8,
-   "npQYi": 3.6,
+   "q": "2026Q3",
+   "revYi": 935.8,
+   "npYi": 88,
+   "npQoQ": 736.6,
+   "npYoY": -5.6,
+   "revQoQ": -1.1,
+   "npQYi": 30.5,
    "consYears": [
     2026,
     2027,
     2028
    ],
    "consCagr": 17.6,
-   "npYoYAcc": -20,
-   "vsCons": -37.6
+   "npYoYAcc": -15.6,
+   "vsCons": -33.2
   },
   {
    "code": "sh600276",
@@ -101,29 +101,29 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 14.8,
+   "consCagr": 15.8,
    "npYoYAcc": 20.4,
-   "vsCons": 5.6
+   "vsCons": 4.6
   },
   {
    "code": "sz300760",
    "name": "迈瑞医疗",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 177.5,
-   "npYi": 48,
-   "npQoQ": 5.9,
-   "npYoY": 1.1,
-   "revQoQ": 12.5,
-   "npQYi": 24.7,
+   "q": "2026Q3",
+   "revYi": 271,
+   "npYi": 71.8,
+   "npQoQ": -3.2,
+   "npYoY": -4.6,
+   "revQoQ": -0.5,
+   "npQYi": 23.9,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 13.7,
-   "npYoYAcc": -5.4,
-   "vsCons": -19.1
+   "consCagr": 14.4,
+   "npYoYAcc": -5.1,
+   "vsCons": -19.5
   },
   {
    "code": "sh603259",
@@ -141,29 +141,29 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 19.1,
+   "consCagr": 18.9,
    "npYoYAcc": 60.6,
-   "vsCons": 41.5
+   "vsCons": 41.7
   },
   {
    "code": "sh600036",
    "name": "招商银行",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 1781.8,
-   "npYi": 764.5,
-   "npQoQ": 2,
-   "npYoY": 2.5,
-   "revQoQ": 4.9,
-   "npQYi": 385.9,
+   "q": "2026Q3",
+   "revYi": 2648.5,
+   "npYi": 1164.8,
+   "npQoQ": 3.7,
+   "npYoY": 3.1,
+   "revQoQ": -5,
+   "npQYi": 400.3,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 5.3,
-   "npYoYAcc": 2,
-   "vsCons": -3.3
+   "consCagr": 4.9,
+   "npYoYAcc": 2.4,
+   "vsCons": -2.5
   },
   {
    "code": "sh601318",
@@ -181,29 +181,29 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 12.6,
+   "consCagr": 13,
    "npYoYAcc": -27.3,
-   "vsCons": -39.9
+   "vsCons": -40.3
   },
   {
    "code": "sh600900",
    "name": "长江电力",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 379.3,
-   "npYi": 147.6,
-   "npQoQ": 18.2,
-   "npYoY": 1.5,
-   "revQoQ": 9.4,
-   "npQYi": 79.9,
+   "q": "2026Q3",
+   "revYi": 630.6,
+   "npYi": 263.4,
+   "npQoQ": 44.9,
+   "npYoY": -23.4,
+   "revQoQ": 26.8,
+   "npQYi": 115.9,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 4.5,
-   "npYoYAcc": 13,
-   "vsCons": 8.5
+   "consCagr": 4.8,
+   "npYoYAcc": -6.6,
+   "vsCons": -11.4
   },
   {
    "code": "sz002415",
@@ -221,29 +221,29 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 13.1,
+   "consCagr": 13.7,
    "npYoYAcc": 38.5,
-   "vsCons": 25.4
+   "vsCons": 24.8
   },
   {
    "code": "sz002594",
    "name": "比亚迪",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 3448.2,
-   "npYi": 123.3,
-   "npQoQ": 101.8,
-   "npYoY": 29.7,
-   "revQoQ": 29.5,
-   "npQYi": 82.4,
+   "q": "2026Q3",
+   "revYi": 5663,
+   "npYi": 223.4,
+   "npQoQ": 21.6,
+   "npYoY": 28.1,
+   "revQoQ": 13.8,
+   "npQYi": 100.2,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 27.8,
-   "npYoYAcc": -20.5,
-   "vsCons": -48.3
+   "consCagr": 28.1,
+   "npYoYAcc": -4.2,
+   "vsCons": -32.3
   },
   {
    "code": "sz000651",
@@ -261,29 +261,29 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 6.2,
+   "consCagr": 6.3,
    "npYoYAcc": -19.5,
-   "vsCons": -25.7
+   "vsCons": -25.8
   },
   {
    "code": "sz000333",
    "name": "美的集团",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 2600.4,
-   "npYi": 264.5,
-   "npQoQ": 8.7,
-   "npYoY": 1.3,
-   "revQoQ": -1.6,
-   "npQYi": 137.7,
+   "q": "2026Q3",
+   "revYi": 3673.6,
+   "npYi": 413.9,
+   "npQoQ": 8.5,
+   "npYoY": 25.9,
+   "revQoQ": -16.8,
+   "npQYi": 149.5,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 6.3,
-   "npYoYAcc": 1.7,
-   "vsCons": -4.6
+   "consCagr": 5.4,
+   "npYoYAcc": 9.3,
+   "vsCons": 3.9
   },
   {
    "code": "sh688981",
@@ -321,9 +321,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 16.3,
+   "consCagr": 15.8,
    "npYoYAcc": 51.9,
-   "vsCons": 35.6
+   "vsCons": 36.1
   },
   {
    "code": "hk00700",
@@ -358,7 +358,7 @@ window.EARNINGS = {
     "2026Q3",
     "2027Q2"
    ],
-   "consNpAnnual": 935,
+   "consNpAnnual": 937,
    "npYoYAcc": -72.6
   },
   {
@@ -388,9 +388,9 @@ window.EARNINGS = {
     "2025Q4",
     "2026Q3"
    ],
-   "consNpAnnual": 270,
+   "consNpAnnual": 267,
    "npAnnual": 439.3,
-   "vsCons": 62.7,
+   "vsCons": 64.5,
    "npYoYAcc": -34.8
   },
   {
@@ -449,13 +449,13 @@ window.EARNINGS = {
    "code": "hk00939",
    "name": "建设银行",
    "mkt": "HK",
-   "q": "2026Q2",
-   "revYi": 4908.6,
-   "npYi": 1952.3,
-   "npQoQ": -0.2,
-   "npYoY": 11.5,
-   "revQoQ": 10,
-   "npQYi": 975
+   "q": "2026Q3",
+   "revYi": 7264,
+   "npYi": 3194.5,
+   "npQoQ": 27.4,
+   "npYoY": 19.3,
+   "revQoQ": -8.4,
+   "npQYi": 1242.3
   },
   {
    "code": "sz300750",
@@ -481,21 +481,21 @@ window.EARNINGS = {
    "code": "sz300274",
    "name": "阳光电源",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 309.1,
-   "npYi": 52.6,
-   "npQoQ": 29.5,
-   "npYoY": -24.1,
-   "revQoQ": -1.3,
-   "npQYi": 29.7,
+   "q": "2026Q3",
+   "revYi": 488.6,
+   "npYi": 66,
+   "npQoQ": -54.8,
+   "npYoY": -67.7,
+   "revQoQ": 16.9,
+   "npQYi": 13.4,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 26.8,
-   "npYoYAcc": -32,
-   "vsCons": -58.8
+   "consCagr": 26.6,
+   "npYoYAcc": -44.5,
+   "vsCons": -71.1
   },
   {
    "code": "hk09992",
@@ -537,9 +537,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 16.6,
+   "consCagr": 16.5,
    "npYoYAcc": -15,
-   "vsCons": -31.6
+   "vsCons": -31.5
   },
   {
    "code": "sz002901",
@@ -565,21 +565,21 @@ window.EARNINGS = {
    "code": "sh605117",
    "name": "德业股份",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 106.4,
-   "npYi": 27.2,
-   "npQoQ": 28.8,
-   "npYoY": 87.3,
-   "revQoQ": 38.6,
-   "npQYi": 15.3,
+   "q": "2026Q3",
+   "revYi": 171.8,
+   "npYi": 42.7,
+   "npQoQ": 1.6,
+   "npYoY": 88.5,
+   "revQoQ": 5.8,
+   "npQYi": 15.5,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 23.1,
-   "npYoYAcc": 78.5,
-   "vsCons": 55.4
+   "consCagr": 24,
+   "npYoYAcc": 82,
+   "vsCons": 58
   },
   {
    "code": "sz002050",
@@ -597,29 +597,29 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 18.7,
+   "consCagr": 18.5,
    "npYoYAcc": -5.4,
-   "vsCons": -24.1
+   "vsCons": -23.9
   },
   {
    "code": "sh603986",
    "name": "兆易创新",
    "mkt": "A",
-   "q": "2026Q2",
-   "revYi": 115.7,
-   "npYi": 68.6,
-   "npQoQ": 269.2,
-   "npYoY": 1483,
-   "revQoQ": 76.2,
-   "npQYi": 54,
+   "q": "2026Q3",
+   "revYi": 203,
+   "npYi": 110.7,
+   "npQoQ": -22,
+   "npYoY": 728.9,
+   "revQoQ": 18.4,
+   "npQYi": 42.1,
    "consYears": [
     2026,
     2027,
     2028
    ],
-   "consCagr": 15.9,
-   "npYoYAcc": 1091.5,
-   "vsCons": 1075.6
+   "consCagr": 11.2,
+   "npYoYAcc": 921.5,
+   "vsCons": 910.3
   }
  ]
 };

@@ -73,11 +73,23 @@ assert("每日推荐表新增「财报」列", pickHtml.indexOf("<th>财报</th>
 assert("每日推荐行含披露日标记（repchip）", pickHtml.indexOf("repchip") >= 0);
 const screenHtml = store["screen-body"].innerHTML;
 assert("好公司清单表新增「财报」列", screenHtml.indexOf("<th>财报</th>") >= 0);
-// 好公司清单 28 行 / reports.js 覆盖度随 refresh 变化（曾 18~19 只，2026-10-29 降到 15 只，未覆盖的显示 —）
-// → 按「绝对下限」断言：字段接入坏掉时 chips 会掉到 0，仍能捕获；不再用百分比（数据源波动会误报）
+// 好公司清单 28 行 / reports.js 覆盖度随 refresh 与**财报季节**变化：
+//   Q3 集中披露刚结束时绝大多数标的是「已披露」（days<0 显示已披露、不带 repchip），
+//   财报季前则大量带 repchip —— 写死下限会季节性翻红。
+//   → 改为动态自洽：页面 repchip 数 = 主池+观察池中「披露日在今天及以后」的标的数（与 repLabel 口径一致）
 const screenRows = (screenHtml.match(/<tr/g) || []).length - 1;
 const screenChips = (screenHtml.match(/repchip/g) || []).length;
-assert("好公司清单行含披露日标记（repchip）", screenChips >= 12, screenChips + "/" + screenRows + " 行");
+{
+  const today = new Date();
+  const todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+  const dates = (window.REPORTS || {}).dates || {};
+  const pool = (window.STOCKS || []).concat(window.WATCH || []);
+  const expectChips = pool.filter(s => dates[s.code] && dates[s.code] >= todayStr).length;
+  assert("好公司清单 repchip 数 = 披露日在未来的标的数（自洽）", screenChips === expectChips,
+    "页面 " + screenChips + "/" + screenRows + " 行 vs 数据 " + expectChips + " 只（财报季空窗属正常）");
+  assert("披露日字段已接入（数据侧至少 1 只未来披露或已全覆盖）", expectChips > 0 || Object.keys(dates).length >= 28,
+    "dates 覆盖 " + Object.keys(dates).length + " 键");
+}
 
 console.log("=== 4. 美股页（财报日历 + 四象限 / 标的池标记） ===");
 window.showTab("us");
