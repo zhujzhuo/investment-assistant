@@ -96,7 +96,18 @@ const holder = {};
 new Function("window", fresh)(holder);
 const NB = holder.IA_BASELINE;
 assert("重跑后基线仍可解析", !!NB);
-assert("同日重跑不伪造 prevAsOf（保持原值）", NB.prevAsOf === B.prevAsOf, NB.prevAsOf + " vs " + B.prevAsOf);
+// 「同日重跑」防护只在测试当天日期 == 数据 asOf 时可验；跨日重跑 prevAsOf 更新为旧 asOf 是正确行为
+// （2026-11-03 合并云端数据 asOf=11-02 而当天是 11-03 → prev 前移不违反「不伪造」语义）
+{
+  const todayStr = new Date().toISOString().slice(0, 10);
+  if (B.asOf === todayStr) {
+    assert("同日重跑不伪造 prevAsOf（保持原值 " + B.prevAsOf + "）", NB.prevAsOf === B.prevAsOf, NB.prevAsOf + " vs " + B.prevAsOf);
+  } else {
+    const prevOk = NB.prevAsOf === B.asOf || NB.prevAsOf === B.prevAsOf;
+    assert("跨日重跑 prevAsOf 前移到旧 asOf（" + B.prevAsOf + " → " + NB.prevAsOf + "）", prevOk,
+      "数据 asOf=" + B.asOf + " 早于今天 " + todayStr + "，prev 更新属正常");
+  }
+}
 assert("名单四要素完整", NB.lists && NB.changes && NB.lists.picks && NB.changes.picks);
 
 console.log("\n结果：" + pass + " 通过 / " + fail + " 失败");

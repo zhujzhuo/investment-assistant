@@ -163,6 +163,12 @@ function emSecid(code) {
   if (!m) return null;
   if (m[1] === "sh") return "1." + m[2];
   if (m[1] === "sz") return "0." + m[2];
+  if (m[1] === "us") {
+    // 美股 secid：105=NASDAQ、106=NYSE、100=指数。本项目 K 线只用 usQQQ（NASDAQ）；
+    // 其它美股若在 NYSE 会拿到空数组 → kline 返回 []，与「拉不到」同语义。
+    if (/^NDX$/i.test(m[2])) return "100.NDX";
+    return "105." + m[2];
+  }
   return null;
 }
 async function klineViaEM(code, period, n, fq) {
@@ -379,6 +385,25 @@ function peSeries(prices, epsGrowthPerYear) {
     } catch (e) { console.log("nasPELive ERR", e.message); }
   }
   await fetchNasPELive();
+
+  // 纳指实时 PE 的「降级不覆盖」：fetchNasPELive 依赖 westock CLI（本地独有），云端永远拉不到。
+  // 若照样写盘，asset.js 的 peLive/peScen 会每天被冲成 null（2026-11-03 实测：云端连续多晚如此，
+  // 合并时差点把本地的好数据换坏）→ 本次未取到时沿用上次 asset.js 的快照值，页面以 peLiveAsOf 标注口径日期。
+  if (!(raw.kline.nasPELive > 0)) {
+    try {
+      const g2 = { window: {} };
+      new Function("window", fs.readFileSync(path.join(__dirname, "data", "asset.js"), "utf8"))(g2.window);
+      const prev = g2.window.ASSET && g2.window.ASSET.nasdaq;
+      if (prev && prev.peLive > 0) {
+        raw.kline.nasPELive = prev.peLive;
+        raw.kline.nasPELiveAsOf = prev.peLiveAsOf || null;
+        raw.kline.nasPELiveCov = prev.peLiveCov || null;
+        console.log("nasPELive: 本次未取到（无 westock CLI / 限频）→ 沿用上次快照 " + prev.peLive + "（" + prev.peLiveAsOf + "）");
+      } else {
+        console.log("nasPELive: 本次未取到，且无上次快照可沿用 → 保持 null");
+      }
+    } catch (e) { console.log("nasPELive: 读上次快照失败", e.message); }
+  }
 
   // 「降级不覆盖」保护：关键 K 线缺失时不写盘，保留上一次的好快照。
   // 场景：云端东财接口临时不可用 / 本地 CLI 限频 → 若照样写盘，会把 asset.js 里的

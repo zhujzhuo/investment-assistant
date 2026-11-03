@@ -84,18 +84,24 @@ assert("全部 pick 的财报标签合法", D.picks.every(p => !p.ev || ["up", "
 
 // ---------- 4. 持仓录入链路 ----------
 assert("持仓录入输入框存在", H.indexOf("window._pbSetHold(") >= 0);
-// 保存一只不在名单的持仓（如 sh600519）→ 出现「复核去留」区
-window._pbSetHold("sh600519", "mv", 5);
-window._pbSetHold("sh600519", "cost", 1500);
-const D2 = window._playbookExpose();
-assert("持仓保存后 outOfList 出现", D2.outOfList.some(o => o.code === "sh600519" && o.mv === 5),
-  D2.outOfList.map(o => o.name).join(",") || "空");
-window.showTab("playbook");
-const H2 = store["playbook-body"].innerHTML;
-assert("页面出现「已持仓但不在当前名单」复核区", H2.indexOf("已持仓但不在当前名单") >= 0);
-assert("浮盈出现在录入表", /c-up|c-down/.test(H2));
+// 保存一只「确不在名单也不在备选」的持仓 → 出现「复核去留」区
+// （候选不能写死：茅台可能随行情进入 band 备选 dist≤20 → 从选股结果反推真正落榜者）
+{
+  const inLst = {}; D.picks.forEach(p => inLst[p.code] = 1); D.alts.forEach(p => inLst[p.code] = 1);
+  const outCode = (window.STOCKS || []).find(s => !inLst[s.code] && s.code !== "sh600519") ? ((window.STOCKS || []).find(s => !inLst[s.code])).code : "sh600519";
+  window._pbSetHold(outCode, "mv", 5);
+  window._pbSetHold(outCode, "cost", 100);
+  var D2b = window._playbookExpose();
+  assert("持仓保存后 outOfList 出现", D2b.outOfList.some(o => o.code === outCode && o.mv === 5),
+    D2b.outOfList.map(o => o.name).join(",") || "空（候选 " + outCode + "）");
+  window.showTab("playbook");
+  var H2 = store["playbook-body"].innerHTML;
+  assert("页面出现「已持仓但不在当前名单」复核区", H2.indexOf("已持仓但不在当前名单") >= 0);
+  assert("浮盈出现在录入表", /c-up|c-down/.test(H2));
+  var HOLD_CODE = outCode;
+}
 // 在名单内的持仓 → 补仓额度
-const pick1 = D2.picks[0];
+const pick1 = D2b.picks[0];
 window._pbSetHold(pick1.code, "mv", Math.max(0.1, (pick1.amt || 3) * 0.3));
 window._pbSetHold(pick1.code, "cost", pick1.px);
 const D3 = window._playbookExpose();
@@ -109,7 +115,7 @@ const D4 = window._playbookExpose();
 assert("持仓 > 目标 1.5× → 超配标记", D4.picks.find(x => x.code === pick1.code).hold.over === true);
 // 清理
 window._pbSetHold(pick1.code, "mv", 0); window._pbSetHold(pick1.code, "cost", 0);
-window._pbSetHold("sh600519", "mv", 0); window._pbSetHold("sh600519", "cost", 0);
+window._pbSetHold(HOLD_CODE, "mv", 0); window._pbSetHold(HOLD_CODE, "cost", 0);
 
 // ---------- 5. 动作文案 ----------
 const deepPick = D.picks.find(p => p.dist != null && p.dist < -25);
