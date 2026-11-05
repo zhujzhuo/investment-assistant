@@ -4026,10 +4026,25 @@
 
   // ---------- PWA：注册 Service Worker（离线可用 + 添加到主屏幕）----------
   // 注：不显示任何安装引导条，安装由用户在浏览器菜单中自行完成
+  // v44：主动查更新 + 新 SW 接管时自动刷新一次。旧版只 register 一次，手机端 PWA 会长期
+  // 停留在旧外壳（新 tab 看不见）；updateViaCache:"none" 保证 sw.js 本身不被 HTTP 缓存挡住更新。
   function setupPWA() {
     var nav = window.navigator || {};
     if (nav.serviceWorker && location.protocol === "https:") {
-      try { nav.serviceWorker.register("sw.js").catch(function () {}); } catch (e) {}
+      try {
+        var hadController = !!nav.serviceWorker.controller;
+        nav.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function (reg) {
+          if (reg && typeof reg.update === "function") { try { reg.update(); } catch (e) {} }
+        }).catch(function () {});
+        nav.serviceWorker.addEventListener("controllerchange", function () {
+          if (!hadController) return;                 // 首次安装不算「换版本」，不要刷新
+          var done = false;
+          try { done = sessionStorage.getItem("ia-sw-reload") === "1"; } catch (e) {}
+          if (done) return;
+          try { sessionStorage.setItem("ia-sw-reload", "1"); } catch (e) {}
+          try { window.location.reload(); } catch (e) {}
+        });
+      } catch (e) {}
     }
   }
 

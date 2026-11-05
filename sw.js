@@ -1,10 +1,10 @@
 // 投资助理 Service Worker
-// 双层策略：
-//  · 数据文件（data.js / data/*.js）—— 网络优先 + no-store，每次页面加载都向服务器取最新，
-//    无需为数据更新而 bump 版本；只有数据真变了且已部署，刷新页面即可见（离线时回退缓存）。
-//  · 应用外壳（html/css/app.js/icons/manifest）—— 缓存优先，保证离线可用；仅在 shell 真正
-//    变更时 bump 下方 CACHE 版本号即可生效。
-const CACHE = "ia-cache-v43";
+// 策略（v44，2026-11-03）：**全部同源资源「网络优先 + 离线回退缓存」**。
+// 旧版把「应用外壳（html/css/app.js）」设为缓存优先，导致手机端 PWA / 添加到主屏长期停在
+// 旧 index.html + 旧 app.js：新功能（如「📋 操作手册」tab）上线后手机端看不见；更糟的是
+// 带 ?t= 时间戳打开能拿到新 HTML，但 app.js 仍命中旧缓存，出现「新导航 + 旧代码」不匹配，
+// 点新 tab 直接空白。统一网络优先后，在线时每次打开都取最新，离线时用缓存兜底（PWA 仍可用）。
+const CACHE = "ia-cache-v44";
 const SHELL = [
   "./",
   "./index.html",
@@ -16,7 +16,7 @@ const SHELL = [
   "./icons/icon-maskable-512.png",
   "./icons/icon.svg"
 ];
-// 数据文件仍预缓存一份，仅作离线回退（在线时 fetch 走 no-store 永远取最新）
+// 数据文件仍预缓存一份，仅作离线回退（在线时永远走网络取最新）
 const DATA_ASSETS = [
   "./data.js",
   "./data/lt.js",
@@ -50,8 +50,13 @@ self.addEventListener("activate", function (e) {
   );
 });
 
-function isData(reqUrl) {
-  return reqUrl.indexOf("/data/") >= 0 || reqUrl.slice(-8) === "/data.js";
+// 导航请求（含带 ?t= 时间戳的首页 URL）统一把缓存 key 规范化为 ./index.html，避免缓存膨胀
+function isNavigation(req) {
+  if (req.mode === "navigate" || req.destination === "document") return true;
+  try {
+    var p = new URL(req.url).pathname;
+    return p === "/" || /\.html$/.test(p);
+  } catch (e) { return false; }
 }
 
 self.addEventListener("fetch", function (e) {
@@ -60,27 +65,20 @@ self.addEventListener("fetch", function (e) {
   // 行情接口（JSONP）与跨域资源不缓存、直连
   if (url.indexOf("gtimg.cn") >= 0 || url.indexOf(self.location.origin) !== 0) return;
 
-  if (isData(url)) {
-    // 数据文件：no-store 绕过浏览器 HTTP 缓存，永远向网络取最新；成功则更新缓存，失败回退缓存
-    e.respondWith(
-      fetch(e.request, { cache: "no-store" }).then(function (resp) {
-        if (resp && resp.ok) {
-          var copy = resp.clone();
-          caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
-        }
-        return resp;
-      }).catch(function () {
-        return caches.match(e.request, { ignoreSearch: true }).then(function (r) {
-          return r || caches.match("./index.html");
-        });
-      })
-    );
-  } else {
-    // 应用外壳：缓存优先，离线可用；缺失则回源并回退首页
-    e.respondWith(
-      caches.match(e.request).then(function (r) {
-        return r || fetch(e.request).catch(function () { return caches.match("./index.html"); });
-      })
-    );
-  }
+  e.respondWith(
+    // no-store 同时绕过浏览器 HTTP 缓存与 CDN 旧副本；在线时永远拿服务器当前版本
+    fetch(e.request, { cache: "no-store" }).then(function (resp) {
+      if (resp && resp.ok) {
+        var copy = resp.clone();
+        var key = isNavigation(e.request) ? "./index.html" : e.request;
+        caches.open(CACHE).then(function (c) { c.put(key, copy); });
+      }
+      return resp;
+    }).catch(function () {
+      // 离线：忽略查询串找缓存，再依次回退首页
+      return caches.match(e.request, { ignoreSearch: true }).then(function (r) {
+        return r || caches.match("./index.html") || caches.match("./");
+      });
+    })
+  );
 });

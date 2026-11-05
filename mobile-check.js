@@ -17,7 +17,8 @@ console.log("[2] sw.js");
 const sw = fs.readFileSync(__dirname + "/sw.js", "utf8");
 assert("缓存所有核心资源", ["./index.html", "./app.js", "./data.js", "./data/valuation.js", "./manifest.json"].every(a => sw.includes('"' + a + '"')));
 assert("行情接口不缓存（gtimg）", sw.includes("gtimg.cn"));
-assert("network-first 策略", sw.includes("fetch(e.request)") && sw.includes("caches.match"));
+assert("network-first 策略（在线取最新、离线回退缓存）", sw.includes('fetch(e.request, { cache: "no-store" })') && sw.includes("caches.match"));
+assert("外壳不再缓存优先（避免手机端停在旧版）", !/caches\.match\(e\.request\)\.then/.test(sw));
 assert("旧版本缓存清理", sw.includes("caches.delete"));
 
 console.log("[3] index.html");
@@ -54,7 +55,8 @@ assert("iOS 独立状态栏样式", css.includes("black-translucent") || html.in
 
 console.log("[5] app.js PWA 逻辑");
 const app = fs.readFileSync(__dirname + "/app.js", "utf8");
-assert("SW 注册（仅 https）", app.includes('serviceWorker.register("sw.js")') && app.includes('location.protocol === "https:"'));
+assert("SW 注册（仅 https）", app.includes('serviceWorker.register("sw.js"') && app.includes('location.protocol === "https:"'));
+assert("SW 主动查更新 + 新版本自动刷新（防旧外壳）", app.includes("updateViaCache: \"none\"") && app.includes("controllerchange") && app.includes("ia-sw-reload"));
 assert("未残留安装引导逻辑", !app.includes("pwa-hint") && !app.includes("beforeinstallprompt"));
 assert("推荐页理由列 wrapcol", app.includes('small wrapcol'));
 assert("页面已使用成对键值网格 kvg", (app.match(/kvg k[24]/g) || []).length >= 5, (app.match(/kvg k[24]/g) || []).length + " 处");
