@@ -22,15 +22,15 @@ assert("输出含行情行", /行情: 中证红利 [\d.]+ \/ 红利低波 [\d.]+
 assert("输出含利差口径", /利差 [\d.]+ \/ [\d.]+pp/.test(out));
 assert("触发条数行", /触发 \d+ 条/.test(out));
 assert("消息分级（观察提示 或 实际加仓）", /【观察提示】|【实际加仓】/.test(out));
-assert("观察项含「距真实加仓还有」", out.indexOf("距真实加仓还有") >= 0 || out.indexOf("实际加仓") >= 0);
+assert("观察项含「距加仓」", out.indexOf("距加仓：") >= 0 || out.indexOf("实际加仓") >= 0);
 assert("含免责声明", out.indexOf("非投资建议") >= 0);
 
 // 消息分级口径：档位升档加仓 N/2、技术有效加仓全额 N——从代码逻辑核验（构造快照算一遍）
 console.log("== 2b. 加仓 pp 口径（与 app.js addPlanRows/DIV_ADD 一致）==");
 const SRC = fs.readFileSync(path.join(DIR, "alert-check.js"), "utf8");
 assert("档位增量贡献 N/2（脚本含 dW/2）", SRC.indexOf("dW / 2") >= 0);
-assert("技术全额进总仓（脚本含全额加到红利总仓）", SRC.indexOf("全额加到红利总仓") >= 0);
-assert("观察级含距真实加仓锚点", SRC.indexOf("距真实加仓还有") >= 0);
+assert("技术全额进总仓（脚本含技术加仓 +）", SRC.indexOf("技术加仓 +") >= 0);
+assert("观察级含距加仓锚点", SRC.indexOf("距加仓：") >= 0);
 
 // 2c. 全信号覆盖：wklow（周BOLL下轨 +5pp）与 wkup（组合确认）已纳入
 console.log("== 2c. 有效点位全景覆盖 ==");
@@ -53,8 +53,8 @@ const expNext = [2.5, 3.0, 3.5].find((t) => t > spC);
 const expGap = (expNext - spC).toFixed(2);
 assert("档位项缺口为最近一档 " + expNext + "pp（+ " + expGap + "pp）", out.indexOf("利差需再走宽 " + expGap + "pp") >= 0,
   "实际输出档位缺口片段：" + (out.match(/利差需再走宽 [\d.]+pp/g) || []).join(" | "));
-assert("距离用真实跌幅口径（含口径说明）", out.indexOf("百分比=真实跌幅") >= 0);
-assert("消息含行情基准与锚日期", /行情基准：中证红利 [\d.]+（较 \d{4}-\d{2}-\d{2} 收盘 [+-][\d.]+%）/.test(out));
+assert("距离用真实跌幅口径（输出含再跌%）", out.indexOf("再跌") >= 0);
+assert("消息含行情基准与锚日期", /中证红利 [\d.]+（[+-][\d.]+%）\/ 低波 [\d.]+（[+-][\d.]+%）· 利差 [\d.]+\/[\d.]+pp · 锚 \d{4}-\d{2}-\d{2}/.test(out));
 
 // 2e. 降档减仓提醒（与加仓对称）+ 执行带宽判定
 console.log("== 2e. 降档减仓提醒（对称）==");
@@ -77,11 +77,11 @@ assert("演练可覆盖价格（--px）", /价格覆盖（演练）/.test(outT))
 assert("高价触发降档提醒", new RegExp("触及降档（利差→" + dtC.toFixed(1) + "pp）").test(outT),
   "触发价 " + pxTC.toFixed(2) + " / " + pxTL.toFixed(4) + "｜" + (outT.match(/【[^】]*】[^\n]*/g) || []).slice(0, 3).join(" | "));
 assert("减仓报档位仓与总仓口径",
-  new RegExp("档位仓 " + wNowC + "% → " + wToC + "%（−" + (wNowC - wToC) + "pp），红利总仓 −" + ((wNowC - wToC) / 2).toFixed(1) + "pp").test(outT),
+  new RegExp("档位仓 " + wNowC + "%→" + wToC + "%（红利总仓 −" + ((wNowC - wToC) / 2).toFixed(1) + "pp）").test(outT),
   "期望 " + wNowC + "%→" + wToC + "%");
-assert("按两标的合计做带宽判定", new RegExp("两标的合计后目标 " + baseFinal + "% vs 已执行 " + execNow + "%").test(outT),
+assert("按两标的合计做带宽判定", new RegExp("合计目标 " + baseFinal + "% vs 已执行 " + execNow + "%").test(outT),
   "期望 目标" + baseFinal + "% / 已执行" + execNow + "%");
-assert("达 3pp 带宽 → 实际减仓", Math.abs(baseFinal - execNow) >= 3 ? (/达到 3pp 带宽/.test(outT) && /【实际减仓】/.test(outT)) : (/未达 3pp 带宽/.test(outT)),
+assert("达 3pp 带宽 → 实际减仓", Math.abs(baseFinal - execNow) >= 3 ? (/达 3pp 带宽→执行/.test(outT) && /【实际减仓】/.test(outT)) : (/未达 3pp 带宽→不动/.test(outT)),
   "偏离 " + (baseFinal - execNow) + "pp");
 assert("当前价不误触发减仓", !/触及降档/.test(out), "常规 dry 输出不应含降档");
 assert("已执行仓位记录 data/pos.json 存在", fs.existsSync(path.join(DIR, "data", "pos.json")));

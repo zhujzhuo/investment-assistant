@@ -219,7 +219,7 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
       const next = LADDER.find((x) => x.th > spread);
       if (next) {
         const pxT = d.px * d.dy / (next.th + bondY);
-        lines.push("档位升档触发价 " + fmtPx(pxT) + "（还需再跌 " + dropPct(px, pxT).toFixed(1) + "%，利差需再走宽 " + (next.th - spread).toFixed(2) + "pp）");
+        lines.push("档位价 " + fmtPx(pxT) + "（再跌 " + dropPct(px, pxT).toFixed(1) + "%，利差需再走宽 " + (next.th - spread).toFixed(2) + "pp）");
       }
       // 该标的所有有效技术位（增益>0）的距离
       for (const tk of ["ma250", "rsi", "wklow"]) {
@@ -227,21 +227,20 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
         if (!g2 || tk === key) continue;
         const tPx = tk === "ma250" ? d.ma250 : (tk === "rsi" ? (d.rsi30 && d.rsi30.price) : (d.wk && d.wk.lower));
         if (tPx == null) continue;
-        const nm = tk === "ma250" ? "年线" : (tk === "rsi" ? "RSI30 触发价" : "周BOLL下轨");
-        lines.push(nm + " " + fmtPx(tPx) + "（" + (tPx < px ? "还需再跌 " + dropPct(px, tPx).toFixed(1) + "%" : "也已触发，可叠加") + "，+" + g2 + "pp）");
+        const nm = tk === "ma250" ? "年线" : (tk === "rsi" ? "RSI30 价" : "周BOLL下轨");
+        lines.push(nm + " " + fmtPx(tPx) + "（" + (tPx < px ? "再跌 " + dropPct(px, tPx).toFixed(1) + "%" : "已触发可叠加") + " +" + g2 + "pp）");
       }
       // 组合确认项（wkup 对两标的都是组合条件）：单独报是否已满足
       alerts.push({ key: "tech_" + name + "_" + key, level: "观察提示",
         title: name + " " + (key === "ma250" ? "跌破年线（观察项）" : key === "rsi" ? "RSI 超卖（观察项）" : "周K状态（组合确认项）"),
-        detail: txt + (key === "wkup" ? " —— 组合确认项（不单独加仓）：与年线/RSI 同时满足时构成「技术三重买点」。" : " —— 该标的此项回测无增益，仅提示不加仓。") + "\n" +
-          (lines.length ? "距真实加仓还有：\n· " + lines.join("\n· ") : "该标的已无在途加仓触发（等档位或分位）。") });
+        detail: txt + (key === "wkup" ? "，组合确认项（不单独加仓）" : "，仅观察不加仓") +
+          (lines.length ? "\n距加仓：" + lines.join("；") : "；已无在途加仓触发") });
     } else {
       // 实际加仓级（有增益）：给出加仓 pp
       alerts.push({ key: "tech_" + name + "_" + key, level: "实际加仓",
         title: name + " " + (key === "ma250" ? "跌破年线（有效信号）" : key === "rsi" ? "RSI 超卖（有效信号）" : "周BOLL下轨以下（有效信号）"),
-        detail: txt + "\n加仓动作：技术性加仓 +" + add + "pp（全额加到红利总仓 ≈ " +
-          Math.round(add * 10000).toLocaleString() + " 元，按 100 万总资产）——时机性加仓，回补后可撤回。" +
-          (key === "ma250" && cfgT.wkup === 0 && d.wkUp ? "\n组合提示：本周周K收阳 → 与年线构成「技术三重买点」的一部分。" : "") });
+        detail: txt + " → 技术加仓 +" + add + "pp（时机仓，回补可撤回）" +
+          (key === "ma250" && cfgT.wkup === 0 && d.wkUp ? "；本周周K收阳，构成三重买点" : "") });
     }
   }
 
@@ -274,12 +273,10 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
       key: (up ? "ladder_" : "trim_") + s.name + "_" + s.th,
       level: actFinal ? (up ? "实际加仓" : "实际减仓") : "观察提示",
       title: s.name + (up ? " 触及加仓档位（利差→" : " 触及降档（利差→") + s.th.toFixed(1) + "pp）",
-      detail: "现价 " + fmtPx(s.px) + (up ? " ≤ " : " ≥ ") + (up ? "触发价 " : "减仓触发价 ") + fmtPx(s.pxT) + "，当前利差 " + s.spread.toFixed(2) + "pp。\n" +
-        "该标的档位仓 " + s.from + "% → " + s.to + "%（" + (up ? "+" : "−") + s.dW + "pp），红利总仓 " + (up ? "+" : "−") + s.dTot.toFixed(1) + "pp ≈ " +
-        Math.round(s.dTot * 10000).toLocaleString() + " 元（按 100 万总资产）。\n" +
-        "执行判定：两标的合计后目标 " + baseFinal + "% vs 已执行 " + execBase + "% → 偏离 " + (gapFinal > 0 ? "+" : "") + gapFinal + "pp，" +
-        (actFinal ? "达到 " + BAND + "pp 带宽 → **执行**（分 2~3 批，从" + (up ? "货币端划入红利" : "红利端划回货币") + "；执行后请更新页面「已执行仓位」）"
-          : "未达 " + BAND + "pp 带宽（还差 " + (BAND - Math.abs(gapFinal)).toFixed(1) + "pp）→ **本次不动**，累计到 " + BAND + "pp 再一次执行。")
+      detail: "现价 " + fmtPx(s.px) + (up ? " ≤ " : " ≥ ") + "触发价 " + fmtPx(s.pxT) + "（利差 " + s.spread.toFixed(2) + "pp）\n" +
+        "档位仓 " + s.from + "%→" + s.to + "%（红利总仓 " + (up ? "+" : "−") + s.dTot.toFixed(1) + "pp）；" +
+        "合计目标 " + baseFinal + "% vs 已执行 " + execBase + "% → " +
+        (actFinal ? "达 " + BAND + "pp 带宽→执行（分2批，执行后更新「已执行仓位」）" : "未达 " + BAND + "pp 带宽→不动")
     });
   }
   // 红利低波（全部有效位 + 组合确认）
@@ -307,26 +304,23 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
 
   if (!fresh.length) { console.log("无待推送提醒。"); saveJSON(STATE_F, state); return; }
 
-  // 4) 推送
-  const title = "红利加仓提醒：" + fresh.length + " 条触发（" + today + "）";
+  // 4) 推送（精简版：标题定级 + 两行行情 + 每条信号两行 + 一行页脚，一眼看明白）
+  const hasAct = fresh.some((a) => a.level !== "观察提示");
+  const title = "红利提醒【" + (hasAct ? "执行" : "观察") + "】" + fresh.length + " 条 " + today.slice(5);
   const gapNow = confBase - execBase;
   // 快照新鲜度：云端 asset.js 由 18:00 的 refresh workflow 提交，若它失败这里会明显滞后
   const staleDays = A.asOfA ? Math.round((Date.parse(today) - Date.parse(A.asOfA)) / 86400000) : null;
   const staleNote = (staleDays != null && staleDays > 3)
-    ? "\n⚠ 快照锚 " + A.asOfA + " 已 " + staleDays + " 天未更新（云端刷新可能失败）→ 触发价与利差按旧收盘算，仅供参考"
+    ? "\n⚠ 快照锚 " + A.asOfA + " 已 " + staleDays + " 天未更新，数据偏旧仅供参考"
     : "";
   const runner = process.env.ALERT_RUNNER || "GitHub Actions";   // 云端执行者（WorkBuddy 云端任务 / GitHub Actions）
-  const head = "【云端执行 · " + runner + "】" +
-    "快照锚 " + A.asOfA + "（" + (staleDays == null ? "?" : staleDays) + " 天前）｜已执行仓位来源：" + execSrc;
-  const base = head + "\n行情基准：中证红利 " + fmtPx(csiPx) + "（较 " + A.asOfA + " 收盘 " + chgStr(csiPx, c.px) + "）／红利低波 " + fmtPx(lvPx) +
-    "（" + chgStr(lvPx, l.px) + "）；股息率锚 " + c.dy + "%／" + l.dy + "%（" + (c.dyAsOf || A.asOfA) + "）" +
-    "｜档位目标 " + confBase + "%" + (pending ? "（本期新值 " + curBase + "% 待下期确认）" : "") + "／已执行 " + execBase +
-    "% → 偏离 " + (gapNow > 0 ? "+" : "") + gapNow + "pp（带宽 " + BAND + "pp，" + (Math.abs(gapNow) >= BAND ? "已达 → 可执行" : "未达 → 不动") + "）";
+  const base = "中证红利 " + fmtPx(csiPx) + "（" + (chgStr(csiPx, c.px) || "—") + "）/ 低波 " + fmtPx(lvPx) + "（" + (chgStr(lvPx, l.px) || "—") +
+    "）· 利差 " + (c.dy - bondY).toFixed(2) + "/" + (l.dy - bondY).toFixed(2) + "pp · 锚 " + A.asOfA +
+    "\n目标仓 " + confBase + "% / 已执行 " + execBase + "% → " +
+    (Math.abs(gapNow) >= BAND ? "达带宽，可执行" : "偏离 " + (gapNow > 0 ? "+" : "") + gapNow + "pp，不动");
   const lines = fresh.map((a) => "【" + a.level + "】" + a.title + "\n" + a.detail);
-  const note = "口径：百分比=真实跌幅（1−触发价/现价），与日报、页面 ETF 参考价一致；档位触发价 = 分红额÷(目标利差+国债)，" +
-    "分红不变时是固定价位，不随涨跌移动，所以「还需再跌」变小只可能来自盘中价回落、技术位自身滚动、或利差跨档。" +
-    staleNote;
-  const md = title + "\n\n" + base + "\n\n" + lines.join("\n\n") + "\n\n" + note + "\n\n—— 个人投资助理 · 口径与站内「整体投顾」一致，非投资建议";
+  const md = title + "\n\n" + base + staleNote + "\n\n" + lines.join("\n\n") +
+    "\n\n—— 云端执行 · " + runner + " · 非投资建议";
   console.log("\n" + md + "\n");
 
   if (!dry && cfg.channel !== "none") {
