@@ -1,42 +1,42 @@
 // 名单归档基线 + 与上期变动（gen-baseline.js 自动生成，每日 18:00 覆盖；请勿手改）
 window.IA_BASELINE = {
  "version": 1,
- "asOf": "2026-11-18",
- "prevAsOf": "2026-11-17",
+ "asOf": "2026-11-19",
+ "prevAsOf": "2026-11-18",
  "lists": {
   "picks": {
    "steady": [
     {
      "code": "sz000651",
      "name": "格力电器",
-     "reason": "股息率 7.3%，PE 9.2 倍，PB 1.52"
+     "reason": "股息率 7.3%，PE 9.3 倍，PB 1.53"
     },
     {
      "code": "sz000568",
      "name": "泸州老窖",
-     "reason": "股息率 7.1%，PE 20.9 倍，PB 2.55"
+     "reason": "股息率 7.0%，PE 21.0 倍，PB 2.56"
     },
     {
      "code": "sz000858",
      "name": "五粮液",
-     "reason": "股息率 7.0%，PE 23.4 倍，PB 2.40"
+     "reason": "股息率 7.0%，PE 23.4 倍，PB 2.41"
     }
    ],
    "growth": [
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 12.3 倍"
+     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 11.5 倍"
     },
     {
      "code": "sz300750",
      "name": "宁德时代",
-     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 12.7 倍"
+     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 12.4 倍"
     },
     {
      "code": "sh603259",
      "name": "药明康德",
-     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 16.5 倍"
+     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 16.6 倍"
     }
    ],
    "rotate": [
@@ -75,14 +75,20 @@ window.IA_BASELINE = {
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "dist": -7.3,
+     "dist": -13.4,
      "score": 8.4
     },
     {
-     "code": "sh601899",
-     "name": "紫金矿业",
-     "dist": -3.4,
-     "score": 6.7
+     "code": "hk06181",
+     "name": "老铺黄金",
+     "dist": -3.2,
+     "score": 6.8
+    },
+    {
+     "code": "hk09988",
+     "name": "阿里巴巴",
+     "dist": 23.3,
+     "score": 7
     },
     {
      "code": "sh600036",
@@ -95,19 +101,13 @@ window.IA_BASELINE = {
      "name": "美的集团",
      "dist": 24.1,
      "score": 7.4
-    },
-    {
-     "code": "sz002415",
-     "name": "海康威视",
-     "dist": 24.4,
-     "score": 6.8
     }
    ],
    "alts": [
     {
-     "code": "hk06181",
-     "name": "老铺黄金",
-     "dist": 1.7
+     "code": "sh601899",
+     "name": "紫金矿业",
+     "dist": -3.4
     },
     {
      "code": "sh603259",
@@ -117,7 +117,7 @@ window.IA_BASELINE = {
     {
      "code": "hk09992",
      "name": "泡泡玛特",
-     "dist": 7
+     "dist": 5.7
     },
     {
      "code": "sz300274",
@@ -440,7 +440,34 @@ window.IA_BASELINE = {
  },
  "changes": {
   "picks": [],
-  "formal": [],
+  "formal": [
+   {
+    "dir": "in",
+    "scope": "formal",
+    "tag": "已达买点",
+    "name": "老铺黄金",
+    "reason": "距老唐买点 已跌进（-3.2%），综合分 6.8"
+   },
+   {
+    "dir": "in",
+    "scope": "formal",
+    "tag": "进入观察窗",
+    "name": "阿里巴巴",
+    "reason": "距老唐买点 +23.3%，综合分 7.0"
+   },
+   {
+    "dir": "out",
+    "scope": "formal",
+    "name": "紫金矿业",
+    "reason": "触发三大前提剔除：护城河 6 < 6.5：利润可持续存疑"
+   },
+   {
+    "dir": "out",
+    "scope": "formal",
+    "name": "海康威视",
+    "reason": "象限配额内被反超，转入备选池（距买点 +24.4%）"
+   }
+  ],
   "us": [],
   "pool": []
  }
