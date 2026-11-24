@@ -1,32 +1,32 @@
 // 名单归档基线 + 与上期变动（gen-baseline.js 自动生成，每日 18:00 覆盖；请勿手改）
 window.IA_BASELINE = {
  "version": 1,
- "asOf": "2026-11-23",
- "prevAsOf": "2026-11-20",
+ "asOf": "2026-11-24",
+ "prevAsOf": "2026-11-23",
  "lists": {
   "picks": {
    "steady": [
     {
      "code": "sz000651",
      "name": "格力电器",
-     "reason": "股息率 7.4%，PE 9.2 倍，PB 1.51"
+     "reason": "股息率 7.4%，PE 9.1 倍，PB 1.51"
     },
     {
      "code": "sz000568",
      "name": "泸州老窖",
-     "reason": "股息率 7.3%，PE 20.4 倍，PB 2.49"
+     "reason": "股息率 7.3%，PE 20.2 倍，PB 2.47"
     },
     {
      "code": "sz000858",
      "name": "五粮液",
-     "reason": "股息率 7.1%，PE 23.1 倍，PB 2.38"
+     "reason": "股息率 7.2%，PE 22.7 倍，PB 2.34"
     }
    ],
    "growth": [
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 11.4 倍"
+     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 11.3 倍"
     },
     {
      "code": "sz300750",
@@ -36,7 +36,7 @@ window.IA_BASELINE = {
     {
      "code": "sh603259",
      "name": "药明康德",
-     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 16.8 倍"
+     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 16.5 倍"
     }
    ],
    "rotate": [
@@ -75,7 +75,7 @@ window.IA_BASELINE = {
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "dist": -14.4,
+     "dist": -15,
      "score": 8.4
     },
     {
@@ -91,33 +91,33 @@ window.IA_BASELINE = {
      "score": 7.5
     },
     {
-     "code": "hk00388",
-     "name": "香港交易所",
-     "dist": 23.8,
-     "score": 8.2
-    },
-    {
      "code": "sz000333",
      "name": "美的集团",
      "dist": 24.1,
      "score": 7.4
+    },
+    {
+     "code": "hk00388",
+     "name": "香港交易所",
+     "dist": 24.3,
+     "score": 8.2
     }
    ],
    "alts": [
     {
      "code": "hk09988",
      "name": "阿里巴巴",
-     "dist": -21.2
+     "dist": -21.9
     },
     {
      "code": "hk06181",
      "name": "老铺黄金",
-     "dist": -2.9
+     "dist": -0.8
     },
     {
      "code": "hk09992",
      "name": "泡泡玛特",
-     "dist": 3.7
+     "dist": 2.6
     },
     {
      "code": "sh603259",
@@ -440,21 +440,7 @@ window.IA_BASELINE = {
  },
  "changes": {
   "picks": [],
-  "formal": [
-   {
-    "dir": "in",
-    "scope": "formal",
-    "tag": "已达买点",
-    "name": "紫金矿业",
-    "reason": "距老唐买点 已跌进（-3.4%），综合分 6.7"
-   },
-   {
-    "dir": "out",
-    "scope": "formal",
-    "name": "老铺黄金",
-    "reason": "象限配额内被反超，转入备选池（距买点 +-2.9%）"
-   }
-  ],
+  "formal": [],
   "us": [],
   "pool": []
  }
