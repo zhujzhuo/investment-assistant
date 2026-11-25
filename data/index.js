@@ -2266,8 +2266,8 @@ window.BROAD = {
    "erp": 2.72,
    "pos52": 0,
    "chg1y": -23.6,
-   "chg60d": -26,
-   "sampleDays": 2647,
+   "chg60d": -26.4,
+   "sampleDays": 2648,
    "sampleFrom": "20160101",
    "sampleShort": false,
    "tierIdx": 0
