@@ -17,6 +17,7 @@ global.window = {};
 global.navigator = {};
 
 eval(fs.readFileSync(path.join(dir, "data.js"), "utf8"));
+eval(fs.readFileSync(path.join(dir, "data/index.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "app.js"), "utf8"));
 
 function check(label) {

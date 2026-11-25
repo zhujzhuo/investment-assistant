@@ -3,7 +3,7 @@
 // npYoYAcc=累计同比(%)；A股 consCagr=年度预期增速(%)、vsCons=累计同比−预期(pp)；
 // 港股 consNpAnnual=近四季预期净利年化(亿)、npAnnual=单季年化、vsCons=年化偏离(%)
 window.EARNINGS = {
- "asOf": "2026-11-04",
+ "asOf": "2026-11-25",
  "items": [
   {
    "code": "sh600519",
@@ -21,9 +21,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 6.1,
+   "consCagr": 6,
    "npYoYAcc": -0.2,
-   "vsCons": -6.3
+   "vsCons": -6.2
   },
   {
    "code": "sz000858",
@@ -41,9 +41,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 11.6,
+   "consCagr": 11.3,
    "npYoYAcc": 50,
-   "vsCons": 38.4
+   "vsCons": 38.7
   },
   {
    "code": "sz000568",
@@ -61,9 +61,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 11.1,
+   "consCagr": 10,
    "npYoYAcc": -47.3,
-   "vsCons": -58.4
+   "vsCons": -57.3
   },
   {
    "code": "sh600887",
@@ -81,9 +81,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 17.7,
+   "consCagr": 17.8,
    "npYoYAcc": -15.6,
-   "vsCons": -33.3
+   "vsCons": -33.4
   },
   {
    "code": "sh600276",
@@ -121,9 +121,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 14.8,
+   "consCagr": 15.2,
    "npYoYAcc": -5.1,
-   "vsCons": -19.9
+   "vsCons": -20.3
   },
   {
    "code": "sh603259",
@@ -161,9 +161,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 4.7,
+   "consCagr": 4.6,
    "npYoYAcc": 2.4,
-   "vsCons": -2.3
+   "vsCons": -2.2
   },
   {
    "code": "sh601318",
@@ -181,9 +181,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 13.2,
+   "consCagr": 13.5,
    "npYoYAcc": -27.3,
-   "vsCons": -40.5
+   "vsCons": -40.8
   },
   {
    "code": "sh600900",
@@ -201,9 +201,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 5.1,
+   "consCagr": 5.4,
    "npYoYAcc": -6.6,
-   "vsCons": -11.7
+   "vsCons": -12
   },
   {
    "code": "sz002415",
@@ -221,9 +221,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 13.9,
+   "consCagr": 13.6,
    "npYoYAcc": 38.5,
-   "vsCons": 24.6
+   "vsCons": 24.9
   },
   {
    "code": "sz002594",
@@ -241,9 +241,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 28.5,
+   "consCagr": 29.1,
    "npYoYAcc": -4.2,
-   "vsCons": -32.7
+   "vsCons": -33.3
   },
   {
    "code": "sz000651",
@@ -261,9 +261,9 @@ window.EARNINGS = {
     2027,
     2028
    ],
-   "consCagr": 6.3,
+   "consCagr": 5.8,
    "npYoYAcc": -19.5,
-   "vsCons": -25.8
+   "vsCons": -25.3
   },
   {
    "code": "sz000333",
@@ -275,15 +275,7 @@ window.EARNINGS = {
    "npQoQ": 8.5,
    "npYoY": 25.9,
    "revQoQ": -16.8,
-   "npQYi": 149.5,
-   "consYears": [
-    2026,
-    2027,
-    2028
-   ],
-   "consCagr": 5,
-   "npYoYAcc": 9.3,
-   "vsCons": 4.3
+   "npQYi": 149.5
   },
   {
    "code": "sh688981",
@@ -367,53 +359,19 @@ window.EARNINGS = {
    "code": "hk06181",
    "name": "老铺黄金",
    "mkt": "HK",
-   "q": "2026Q2",
-   "revYi": 228.1,
-   "npYi": 49.1,
-   "npQoQ": -8.8,
-   "npYoY": 97.6,
-   "revQoQ": -24.6,
-   "npQYi": 49.1
+   "err": "财务数据不足"
   },
   {
    "code": "sh600660",
    "name": "福耀玻璃",
    "mkt": "A",
-   "q": "2026Q3",
-   "revYi": 341.2,
-   "npYi": 60.1,
-   "npQoQ": -9.9,
-   "npYoY": -9.9,
-   "revQoQ": 5.1,
-   "npQYi": 20.4,
-   "consYears": [
-    2026,
-    2027,
-    2028
-   ],
-   "consCagr": 16.5,
-   "npYoYAcc": -15,
-   "vsCons": -31.5
+   "err": "财务数据不足"
   },
   {
    "code": "sz002901",
    "name": "大博医疗",
    "mkt": "A",
-   "q": "2026Q3",
-   "revYi": 20.8,
-   "npYi": 4.7,
-   "npQoQ": -42.9,
-   "npYoY": -34.6,
-   "revQoQ": 5.5,
-   "npQYi": 1.2,
-   "consYears": [
-    2026,
-    2027,
-    2028
-   ],
-   "consCagr": 10.1,
-   "npYoYAcc": 11,
-   "vsCons": 0.9
+   "err": "财务数据不足"
   },
   {
    "code": "sh605117",

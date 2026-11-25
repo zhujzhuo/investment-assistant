@@ -66,6 +66,7 @@ eval(fs.readFileSync(path.join(dir, "data/valuation.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "data/us.js"), "utf8"));
 // KO 快照价随 fetch-us.js 每日刷新变化，测试不钉死具体数字（曾因钉死 86.17 在刷新后误报失败）
 const SNAP_KO = (window.US_STOCKS.find(s => s.code === "usKO") || {}).px;
+eval(fs.readFileSync(path.join(dir, "data/index.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "app.js"), "utf8"));
 
 const wait = ms => new Promise(r => setTimeout(r, ms));

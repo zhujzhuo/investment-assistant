@@ -13,7 +13,7 @@ global.document = {
 global.window = global; global.window.localStorage = global.localStorage; global.navigator = {};
 global.Blob = class {}; const RU = require("url").URL; RU.createObjectURL = () => "blob:"; global.URL = RU;
 global.FileReader = class {}; global.location = { protocol: "https:" };
-["data.js", "data/lt.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "app.js"].forEach(f => eval(fs.readFileSync(f, "utf8")));
+["data.js", "data/lt.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "data/index.js", "app.js"].forEach(f => eval(fs.readFileSync(f, "utf8")));
 
 // 页面默认估值法已切回「合理PE带法」（band），本套断言针对老唐法名单口径，显式切到 lt 验证其选股逻辑不回归
 window._setValMode("lt");

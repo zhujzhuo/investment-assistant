@@ -52,6 +52,10 @@ jobs:
         # 只有纳指实时加权 PE 与美股 QQQ 拿不到（沿用旧值）。关键 K 线缺失时脚本不写盘，保留上次快照。
         run: node fetch-asset.js
 
+      - name: 刷新宽基指数估值（中证官网 10 年日频 PE → data/index.js）
+        # 数据源为中证指数官网；云端偶发网络失败时脚本保留上次快照、退出码 0，不阻断日链。
+        run: node fetch-index.js
+
       - name: 刷新行情快照（腾讯公开接口）
         run: node refresh-data.js
         env:

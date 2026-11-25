@@ -13,7 +13,7 @@ global.document = {
 global.window = global; global.window.localStorage = global.localStorage; global.navigator = {};
 global.Blob = class {}; const RU = require("url").URL; RU.createObjectURL = () => "blob:"; global.URL = RU;
 global.FileReader = class {}; global.location = { protocol: "https:" };
-["data.js", "data/lt.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "app.js"].forEach(f => eval(fs.readFileSync(f, "utf8")));
+["data.js", "data/lt.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "data/index.js", "app.js"].forEach(f => eval(fs.readFileSync(f, "utf8")));
 
 let pass = 0, fail = 0;
 function assert(name, cond, detail) {

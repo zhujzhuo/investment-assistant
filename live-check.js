@@ -69,6 +69,7 @@ const csiLivePx = +(csiSnapPx * 0.9985).toFixed(2), lvLivePx = etfLivePx["512890
 FIXTURE.v_sh000922 = mkQuote("1", "中证红利", "000922", String(csiLivePx), String(csiSnapPx), "5612.23", "20261012120545", ["7.38", "0.13", "5656.61", "5600.30"]);
 const snap = {};
 window.STOCKS.forEach(s => { snap[s.code] = { px: s.px, pe: s.pe, pb: s.pb, div: s.div }; });
+eval(fs.readFileSync(path.join(dir, "data/index.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "app.js"), "utf8"));
 // 记录红利刷新前的快照值，用于验证实时行情覆盖了哪些字段（loadLive 为异步，此刻尚未执行 applyLive）
 const snapDiv = {

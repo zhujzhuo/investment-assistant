@@ -30,8 +30,9 @@
     <button class="nav-btn" id="nav-us" onclick="showTab('us')"><span class="ic">🇺🇸</span><span class="lb">美股组合</span></button>
     <button class="nav-btn" id="nav-backtest" onclick="showTab('backtest')"><span class="ic">📈</span><span class="lb">策略回测</span></button>
     <button class="nav-btn" id="nav-report" onclick="showTab('report')"><span class="ic">📝</span><span class="lb">每日总结</span></button>
-    <button class="nav-btn" id="nav-history" onclick="showTab('history')"><span class="ic">🗂</span><span class="lb">历史留档</span></button>
-  </nav>
+  <button class="nav-btn" id="nav-history" onclick="showTab('history')"><span class="ic">🗂</span><span class="lb">历史留档</span></button>
+  <button class="nav-btn" id="nav-broad" onclick="showTab('broad')"><span class="ic">📐</span><span class="lb">宽基指数</span></button>
+</nav>
 </header>
 
 <main class="wrap">
@@ -57,6 +58,7 @@
     </div>
   </section>
   <section id="tab-history" style="display:none"><div id="history-body"></div></section>
+  <section id="tab-broad" style="display:none"><div id="broad-body"></div></section>
 </main>
 
 <div id="flash" class="flash"></div>
@@ -78,6 +80,7 @@
 <script src="data/earnings.js"></script>
 <script src="data/comps.js"></script>
 <script src="data/snap-all.js"></script>
+<script src="data/index.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -44,6 +44,7 @@ global.setInterval = function () { return 0; }; global.setTimeout = function (f,
 global.flash = function () { };
 const load = (f) => eval(fs.readFileSync(path.join(DIR, f), "utf8"));
 ["data.js", "data/lt.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "data/etf.js", "data/reports.js", "data/earnings.js", "data/comps.js"].forEach(load);
+load("data/index.js");
 load("app.js");
 window.showTab("detail");
 window._onSelChange("hk00700");

@@ -14,7 +14,8 @@ const FILES = [
   "data/etf.js",
   "data/baseline.js",
   "data/reports.js",
-  "data/snap-all.js"
+  "data/snap-all.js",
+  "data/index.js"
 ];
 
 const h = crypto.createHash("sha256");

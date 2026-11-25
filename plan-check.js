@@ -32,6 +32,7 @@ eval(fs.readFileSync(path.join(dir, "data/valuation.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "data/us.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "data/asset.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "data/etf.js"), "utf8"));
+eval(fs.readFileSync(path.join(dir, "data/index.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "app.js"), "utf8"));
 
 function assert(name, cond, extra) {

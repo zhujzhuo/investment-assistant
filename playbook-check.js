@@ -15,7 +15,7 @@ global.document = {
 global.localStorage = { _d: {}, getItem(k) { return this._d[k] || null; }, setItem(k, v) { this._d[k] = v; }, removeItem(k) { delete this._d[k]; } };
 global.window = global; global.Blob = function () {}; global.FileReader = function () {};
 global.location = { href: "", search: "" }; global.setTimeout = () => 0; global.requestAnimationFrame = () => 0;
-["data.js", "data/lt.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "data/etf.js", "data/earnings.js", "app.js"].forEach(f => {
+["data.js", "data/lt.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "data/etf.js", "data/earnings.js", "data/index.js", "app.js"].forEach(f => {
   eval(fs.readFileSync(path.join(dir, f), "utf8"));
 });
 let pass = 0, fail = 0;

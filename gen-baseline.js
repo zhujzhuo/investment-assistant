@@ -25,7 +25,7 @@ global.document = {
 global.window = global; global.window.localStorage = global.localStorage; global.navigator = {};
 global.Blob = class {}; const RU = require("url").URL; RU.createObjectURL = () => "blob:"; global.URL = RU;
 global.FileReader = class {}; global.location = { protocol: "https:" };
-["data.js", "data/lt.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "data/divbt-sell.js", "data/etf.js", "app.js"].forEach(f => eval(fs.readFileSync(path.join(DIR, f), "utf8")));
+["data.js", "data/lt.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "data/divbt-sell.js", "data/etf.js", "data/index.js", "app.js"].forEach(f => eval(fs.readFileSync(path.join(DIR, f), "utf8")));
 
 const CAT_LABEL = { steady: "稳增长", growth: "高增长", rotate: "热点轮动", tenx: "十倍空间" };
 const OUT = path.join(DIR, "data", "baseline.js");

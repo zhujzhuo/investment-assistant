@@ -16,7 +16,7 @@ global.document = {
 global.window = global; global.window.localStorage = global.localStorage; global.navigator = {};
 global.Blob = class {}; const RU = require("url").URL; RU.createObjectURL = () => "blob:"; global.URL = RU;
 global.FileReader = class {}; global.location = { protocol: "https:" };
-["data.js", "data/lt.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "data/divbt-sell.js", "data/etf.js", "data/baseline.js", "data/reports.js", "app.js"].forEach(f => eval(fs.readFileSync(path.join(DIR, f), "utf8")));
+["data.js", "data/lt.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "data/divbt-sell.js", "data/etf.js", "data/baseline.js", "data/reports.js", "data/index.js", "app.js"].forEach(f => eval(fs.readFileSync(path.join(DIR, f), "utf8")));
 
 let pass = 0, fail = 0;
 function assert(name, cond, detail) {
@@ -70,7 +70,19 @@ assert("页顶含「财报日历」卡", ahHtml.indexOf("财报日历") >= 0 && 
 assert("日历卡列出披露安排（repitem）", ahHtml.indexOf("repitem") >= 0 && ahHtml.indexOf("天后") >= 0);
 const pickHtml = store["pick-body"].innerHTML;
 assert("每日推荐表新增「财报」列", pickHtml.indexOf("<th>财报</th>") >= 0);
-assert("每日推荐行含披露日标记（repchip）", pickHtml.indexOf("repchip") >= 0);
+// 财报季空窗时（所有披露日都在过去）推荐表本就不该有 repchip；有未来披露才要求出现。
+// 与下方「好公司清单 repchip 数自洽」同一口径，避免写死下限季节性翻红。
+{
+  const d0 = new Date();
+  const today0 = d0.getFullYear() + "-" + String(d0.getMonth() + 1).padStart(2, "0") + "-" + String(d0.getDate()).padStart(2, "0");
+  const dates0 = (window.REPORTS || {}).dates || {};
+  const future0 = Object.keys(dates0).filter((k) => dates0[k] >= today0).length;
+  // 推荐表是主池的**子集**：未来披露的标的不一定入选当日推荐，所以不能要求 repchip > 0。
+  // 正确性由下方「好公司清单 repchip 数 = 未来披露标的数」严格自洽断言保证；这里只校验不超额。
+  assert("每日推荐表财报列有效且 repchip 不超过未来披露标的数",
+    (pickHtml.match(/repchip/g) || []).length <= future0,
+    "未来披露 " + future0 + " 只 / 推荐表 repchip " + (pickHtml.match(/repchip/g) || []).length);
+}
 const screenHtml = store["screen-body"].innerHTML;
 assert("好公司清单表新增「财报」列", screenHtml.indexOf("<th>财报</th>") >= 0);
 // 好公司清单 28 行 / reports.js 覆盖度随 refresh 与**财报季节**变化：

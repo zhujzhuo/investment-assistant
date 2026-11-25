@@ -28,7 +28,7 @@ global.URL = RU;
 global.FileReader = class { readAsText() {} };
 global.location = { protocol: "https:" };
 
-["data.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "app.js"].forEach(function (f) {
+["data.js", "data/valuation.js", "data/us.js", "data/asset.js", "data/divbt.js", "data/index.js", "app.js"].forEach(function (f) {
   eval(fs.readFileSync(path.join(dir, f), "utf8"));
 });
 

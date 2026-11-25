@@ -22,6 +22,7 @@ global.localStorage = { getItem() { return null; }, setItem() {} };
 
 eval(fs.readFileSync(path.join(dir, "data.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "data/valuation.js"), "utf8"));
+eval(fs.readFileSync(path.join(dir, "data/index.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "app.js"), "utf8"));
 
 let pass = 0;

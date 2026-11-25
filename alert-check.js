@@ -289,6 +289,52 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
   addTech("中证红利", "wklow", c, csiPx);    // +5pp
   addTech("中证红利", "wkup", c, csiPx);     // 组合确认项
 
+  // ---------- 宽基指数「低估定投」提醒（与红利信号共用推送通道）----------
+  // 口径唯一真源：data/index.js 的 BROAD.ladder / list[].tierIdx（fetch-index.js 生成，10 年 PE 分位定档）。
+  // 只在「分位跨档」当天推一次；同档不重推（估值分位在小范围内抖动很常见，天天推就是骚扰）。
+  // 首次运行只建立档位基线、不推送，避免上线当天把历史信号一次性补发。
+  let broadAsOf = null;
+  function addBroadAlert() {
+    const BF = path.join(DIR, "data", "index.js");
+    if (!fs.existsSync(BF)) { console.log("宽基快照缺失（data/index.js），跳过定投提醒"); return; }
+    let B;
+    try {
+      const g2 = { window: {} };
+      new Function("window", fs.readFileSync(BF, "utf8"))(g2.window);
+      B = g2.window.BROAD;
+    } catch (e) { console.log("宽基快照解析失败，跳过定投提醒：" + e.message); return; }
+    if (!B || !B.list || !B.list.length || !B.ladder || !B.ladder.length) return;
+    broadAsOf = B.asOf;
+    const prev = (state.broad && typeof state.broad === "object") ? state.broad : null;
+    const cur = {}, changes = [];
+    for (const o of B.list) {
+      const t = (o.tierIdx != null) ? B.ladder[o.tierIdx] : null;
+      const lv = t ? t.level : null;
+      cur[o.code] = lv;
+      if (!prev) continue;
+      const pv = prev[o.code];
+      if (pv == null || lv == null || pv === lv) continue;
+      changes.push({ name: o.name, pct: o.pePct10y, from: pv, to: lv, t: t, prevT: B.ladder[pv] || null });
+    }
+    if (!dry) state.broad = cur;                 // dry 演练不污染去重状态
+    if (!prev) { console.log("宽基档位基线已建立（" + B.list.length + " 只，本次不推送）"); return; }
+    if (!changes.length) return;
+    const down = changes.filter((x) => x.to < x.from), up = changes.filter((x) => x.to > x.from);
+    const seg = [];
+    if (down.length) seg.push(down.length + " 只转便宜");
+    if (up.length) seg.push(up.length + " 只转贵");
+    const lines = changes.map((x) =>
+      (x.to < x.from ? "↓ " : "↑ ") + x.name + " PE分位 " + (x.pct == null ? "—" : x.pct.toFixed(1)) + "% → " +
+      x.t.label + " " + x.t.mult + "×（原 " + (x.prevT ? x.prevT.label : "—") + "）");
+    alerts.push({
+      key: "broad_" + today,
+      level: "定投提醒",
+      title: "宽基档位变化：" + seg.join("、"),
+      detail: lines.join("\n") + "\n按新档位调整本期扣款（页面「宽基指数」可改基准金额）；同档不重推。"
+    });
+  }
+  addBroadAlert();
+
   // 3) 去重：当日已推过同 key 的不再推；状态清除（回升到触发价上方）后记 done 允许下次再触发时重推
   const fresh = alerts.filter((a) => {
     const s = state.sent[a.key];
@@ -305,8 +351,11 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
   if (!fresh.length) { console.log("无待推送提醒。"); saveJSON(STATE_F, state); return; }
 
   // 4) 推送（精简版：标题定级 + 两行行情 + 每条信号两行 + 一行页脚，一眼看明白）
+  const broadOnly = fresh.length > 0 && fresh.every((a) => a.level === "定投提醒");
+  const mixed = fresh.some((a) => a.level === "定投提醒") && !broadOnly;
   const hasAct = fresh.some((a) => a.level !== "观察提示");
-  const title = "红利提醒【" + (hasAct ? "执行" : "观察") + "】" + fresh.length + " 条 " + today.slice(5);
+  const title = (broadOnly ? "宽基定投" : mixed ? "到价提醒" : "红利提醒") + "【" +
+    (hasAct ? "执行" : "观察") + "】" + fresh.length + " 条 " + today.slice(5);
   const gapNow = confBase - execBase;
   // 快照新鲜度：云端 asset.js 由 18:00 的 refresh workflow 提交，若它失败这里会明显滞后
   const staleDays = A.asOfA ? Math.round((Date.parse(today) - Date.parse(A.asOfA)) / 86400000) : null;
@@ -314,12 +363,14 @@ function saveJSON(f, o) { fs.writeFileSync(f, JSON.stringify(o, null, 1), "utf8"
     ? "\n⚠ 快照锚 " + A.asOfA + " 已 " + staleDays + " 天未更新，数据偏旧仅供参考"
     : "";
   const runner = process.env.ALERT_RUNNER || "GitHub Actions";   // 云端执行者（WorkBuddy 云端任务 / GitHub Actions）
-  const base = "中证红利 " + fmtPx(csiPx) + "（" + (chgStr(csiPx, c.px) || "—") + "）/ 低波 " + fmtPx(lvPx) + "（" + (chgStr(lvPx, l.px) || "—") +
-    "）· 利差 " + (c.dy - bondY).toFixed(2) + "/" + (l.dy - bondY).toFixed(2) + "pp · 锚 " + A.asOfA +
-    "\n目标仓 " + confBase + "% / 已执行 " + execBase + "% → " +
-    (Math.abs(gapNow) >= BAND ? "达带宽，可执行" : "偏离 " + (gapNow > 0 ? "+" : "") + gapNow + "pp，不动");
+  const base = broadOnly
+    ? "宽基估值锚 " + (broadAsOf || "?") + " · 国债 " + bondY.toFixed(2) + "% · 10 年 PE 分位跨档触发"
+    : "中证红利 " + fmtPx(csiPx) + "（" + (chgStr(csiPx, c.px) || "—") + "）/ 低波 " + fmtPx(lvPx) + "（" + (chgStr(lvPx, l.px) || "—") +
+      "）· 利差 " + (c.dy - bondY).toFixed(2) + "/" + (l.dy - bondY).toFixed(2) + "pp · 锚 " + A.asOfA +
+      "\n目标仓 " + confBase + "% / 已执行 " + execBase + "% → " +
+      (Math.abs(gapNow) >= BAND ? "达带宽，可执行" : "偏离 " + (gapNow > 0 ? "+" : "") + gapNow + "pp，不动");
   const lines = fresh.map((a) => "【" + a.level + "】" + a.title + "\n" + a.detail);
-  const md = title + "\n\n" + base + staleNote + "\n\n" + lines.join("\n\n") +
+  const md = title + "\n\n" + base + (broadOnly ? "" : staleNote) + "\n\n" + lines.join("\n\n") +
     "\n\n—— 云端执行 · " + runner + " · 非投资建议";
   console.log("\n" + md + "\n");
 

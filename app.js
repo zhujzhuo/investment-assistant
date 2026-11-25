@@ -5,6 +5,8 @@
   var CAT = window.CAT_META, DEF = window.PORTFOLIO_DEFAULT;
   var US = window.US_STOCKS || [], UM = window.US_MKT || { indices: [], asOfUS: "" };
   var UDEF = window.US_PORTFOLIO_DEFAULT || { steady: 40, growth: 35, rotate: 20, tenx: 5 };
+  // 宽基指数估值与定投档位（data/index.js；缺失时给空壳，页面会提示数据未加载）
+  var BR = window.BROAD || { asOf: "", bond10y: 1.75, ladder: [], list: [] };
   // 观察池：与主池同结构但 watch 标记（不进推荐/建仓/组合），行情同样实时刷新；去重防呆
   var WATCH = (window.WATCH || []).filter(function (w) { return w && w.code && !S.some(function (s) { return s.code === w.code; }); });
 
@@ -134,7 +136,7 @@
 
   // ---------- 标签页 ----------
   // 2026-10-10 合并：市场雷达 / 好公司筛选 / 每日推荐 / 投资组合 四页并成一个「🧺 A股港股」页（版式同「美股组合」）
-  var tabs = ["plan", "divcmp", "fund", "playbook", "ah", "us", "backtest", "report", "history", "detail"];
+  var tabs = ["plan", "divcmp", "fund", "playbook", "ah", "us", "backtest", "report", "history", "detail", "broad"];
   // 旧页面名兼容映射（页面内旧链接、历史书签与测试脚本仍可用）
   var TAB_ALIAS = { radar: "ah", screen: "ah", pick: "ah", portfolio: "ah" };
   var curTab = "plan";
@@ -162,6 +164,7 @@
     // 用户看到的是离开前的旧标的/旧估值法内容（「估值法切了但下面内容不变」的根源之一）。
     // 现在统一重渲染：nav 回来时若有 curDetail 则渲染它，无则渲染默认标的。
     if (t === "detail") safe(renderDetail);
+  if (t === "broad") safe(renderBroad);
     // 移动端底部 tab 栏可横向滚动：把当前项滚到可见位置
     var nb = $("nav-" + t);
     if (nb && nb.scrollIntoView) { try { nb.scrollIntoView({ block: "nearest", inline: "center" }); } catch (e) { } }
@@ -197,6 +200,212 @@
       '二者与 A 股相关性较低，可用于观察海外风险偏好与科技产业周期。</div></div>';
     return h;
   }
+
+  // ---------- 宽基指数：历史 PE 分位 + 低估定投策略 ----------
+  // 数据来自 data/index.js（fetch-index.js 从中证指数官网抓 10 年日频收盘 + 滚动市盈率 peg）。
+  // 分位 = 历史 PE 序列中「≤ 当前 PE」的占比，与站内 refresh-data.js pctOfSeries 同口径。
+  var TIER_COLOR = ["#1746b3", "#3b82f6", "#5b6472", "#f59e0b", "#dc2626"];
+  var DCA_UNIVERSES = {
+    core:   { name: "推荐：中证800 + 中证1000（避免成分重叠）", codes: ["000906", "000852"] },
+    simple: { name: "大盘+小盘：沪深300 + 中证1000", codes: ["000300", "000852"] },
+    three:  { name: "三档：沪深300 + 中证500 + 中证1000", codes: ["000300", "000905", "000852"] },
+    all:    { name: "全部 6 只等权（含重叠，仅作参考）", codes: null }
+  };
+  function lsGet(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+  function dcaBase() { var v = Number(lsGet("ia_dca_base", "5000")); return (isFinite(v) && v > 0) ? v : 5000; }
+  function dcaUni() { var k = lsGet("ia_dca_uni", "core"); return DCA_UNIVERSES[k] ? k : "core"; }
+  window._dcaSetBase = function (v) { var n = Number(v); if (isFinite(n) && n > 0) { lsSet("ia_dca_base", n); rerender(); } };
+  window._dcaSetUni = function (k) { if (DCA_UNIVERSES[k]) { lsSet("ia_dca_uni", k); rerender(); } };
+  function broadTier(o) {
+    var L = BR.ladder || [];
+    return (o && o.tierIdx != null && L.length) ? (L[o.tierIdx] || null) : null;
+  }
+  function tierColor(t) { return t ? (TIER_COLOR[t.level] || "#5b6472") : "#8a93a3"; }
+  function tierTag(t) {
+    if (!t) return '<span style="color:#8a93a3">样本不足</span>';
+    return '<b style="color:' + tierColor(t) + '">' + esc(t.label) + ' · ' + t.mult + '×</b>';
+  }
+  function broadSpark(hist, cur, color) {
+    if (!hist || hist.length < 2) return '<span class="muted small">历史序列不足</span>';
+    var vals = hist.map(function (x) { return x[1]; });
+    var mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), rg = (mx - mn) || 1;
+    var W = 220, H = 46, P = 3;
+    var pts = vals.map(function (v, i) {
+      var x = P + i / (vals.length - 1) * (W - 2 * P);
+      var y = H - P - (v - mn) / rg * (H - 2 * P);
+      return x.toFixed(1) + "," + y.toFixed(1);
+    }).join(" ");
+    var ly = H - P - (vals[vals.length - 1] - mn) / rg * (H - 2 * P);
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="46" preserveAspectRatio="none" aria-hidden="true">' +
+      '<polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<circle cx="' + (W - P).toFixed(1) + '" cy="' + ly.toFixed(1) + '" r="2.8" fill="' + color + '"/></svg>';
+  }
+  // 暴露给测试：返回每个指数的档位与本期定投金额（口径唯一真源）
+  window._broadExpose = function () {
+    var list = BR.list || [], base = dcaBase(), uni = DCA_UNIVERSES[dcaUni()];
+    var sel = uni.codes ? list.filter(function (o) { return uni.codes.indexOf(o.code) >= 0; }) : list.slice();
+    var per = sel.length ? base / sel.length : 0;
+    return {
+      base: base, uni: dcaUni(), total: sel.reduce(function (s, o) {
+        var t = broadTier(o); return s + (t ? Math.round(per * t.mult) : 0);
+      }, 0),
+      rows: sel.map(function (o) {
+        var t = broadTier(o);
+        return { code: o.code, name: o.name, pct10y: o.pePct10y, tier: t ? t.label : null,
+          mult: t ? t.mult : null, amount: t ? Math.round(per * t.mult) : 0 };
+      })
+    };
+  };
+  function renderBroad() {
+    var list = BR.list || [];
+    if (!list.length) { $("broad-body").innerHTML = '<div class="card">宽基指数估值数据未加载（data/index.js 缺失，请运行 node fetch-index.js）</div>'; return; }
+    var L = BR.ladder || [], bond = BR.bond10y;
+    var h = '<div class="asof">宽基指数 · 历史市盈率分位与低估定投 · 估值锚 ' + esc(BR.asOf) +
+      '（收盘） <button class="btn btn-mini" onclick="window.refreshLive()">↻ 刷新行情</button>' +
+      ' <button class="btn btn-mini" onclick="showTab(\'plan\')">← 回整体投顾</button></div>';
+
+    // ① 一句话结论：直接回答「沪深300 / 中证500 / 中证800 / 中证1000 是否低估」
+    var core4 = ["000300", "000905", "000906", "000852"].map(function (c) {
+      return list.filter(function (o) { return o.code === c; })[0];
+    }).filter(Boolean);
+    var sortedByPct = list.slice().filter(function (o) { return o.pePct10y != null; })
+      .sort(function (a, b) { return a.pePct10y - b.pePct10y; });
+    var low = sortedByPct[0], high = sortedByPct[sortedByPct.length - 1];
+    var cheap = list.filter(function (o) { var t = broadTier(o); return t && t.level <= 1; });
+    var dear = list.filter(function (o) { var t = broadTier(o); return t && t.level >= 3; });
+    var erpTop = list.slice().filter(function (o) { return o.erp != null; }).sort(function (a, b) { return b.erp - a.erp; })[0];
+    var erpLow = list.slice().filter(function (o) { return o.erp != null; }).sort(function (a, b) { return a.erp - b.erp; })[0];
+    var allCheap = list.length > 0 && list.every(function (o) { return o.pePct10y != null && o.pePct10y <= 40; });
+    var c4txt = core4.map(function (o) {
+      var t = broadTier(o);
+      return esc(o.name) + ' <b style="color:' + tierColor(t) + '">' + num(o.pePct10y, 1) + '%</b>（' + esc(t ? t.label : "样本不足") + '）';
+    }).join('、');
+    h += '<div class="card verdict"><b>当前结论：' + (allCheap ? '宽基整体处于偏低估区。' : '没有全面低估，是「结构性偏低 + 近一年低位」。') + '</b>' +
+      '<div class="small" style="margin-top:6px">按 <b>10 年 PE 分位</b>：' + c4txt + '。' +
+      '全样本最低是 <b>' + esc(low ? low.name : "—") + '</b>（' + num(low ? low.pePct10y : null, 1) + '%），最高是 <b>' +
+      esc(high ? high.name : "—") + '</b>（' + num(high ? high.pePct10y : null, 1) + '%）。<br>' +
+      '<b>值得加码：</b>' + (cheap.length ? cheap.map(function (o) { return esc(o.name); }).join('、') : '无') +
+      '　<b>应减半或暂停：</b>' + (dear.length ? dear.map(function (o) { return esc(o.name); }).join('、') : '无') + '<br>' +
+      '<b>两个背离要看懂：</b>① 5 年分位普遍高于 10 年分位（近 5 年估值中枢下移），10 年分位「偏低」不等于绝对便宜；' +
+      '② 股债性价比 ERP 最高的是 <b>' + esc(erpTop ? erpTop.name : "—") + '</b>（' + num(erpTop ? erpTop.erp : null, 2) + 'pp），' +
+      '最低的是 <b>' + esc(erpLow ? erpLow.name : "—") + '</b>（' + num(erpLow ? erpLow.erp : null, 2) + 'pp）—— 分位低不等于性价比高。' +
+      '<br><b>52 周位置普遍贴近 0%</b>，说明是在下跌趋势里定投，分批扣款、不要一次抄底。</div></div>';
+
+    // ② 估值总览表
+    h += '<div class="card"><h3>估值总览（PE 与分位为收盘锚，价格随行情实时刷新）</h3><div class="tbl-scroll"><table class="tbl">' +
+      '<thead><tr><th>指数</th><th>现价</th><th>今日</th><th>PE(TTM)</th><th>10年分位</th><th>5年分位</th><th>3年分位</th>' +
+      '<th>ERP</th><th>52周位置</th><th>近1年</th><th>定投档位</th></tr></thead><tbody>';
+    for (var i = 0; i < list.length; i++) {
+      var o = list[i], t = broadTier(o);
+      h += '<tr><td><b>' + esc(o.name) + '</b><div class="muted small">' + esc(o.cat) + ' · ' + esc(o.code) + '</div></td>' +
+        '<td>' + num(o.close, 2) + '</td>' +
+        '<td class="' + cls(o.chg) + '">' + (o.chg > 0 ? "+" : "") + pct(o.chg) + '</td>' +
+        '<td><b>' + num(o.pe, 2) + '</b></td>' +
+        '<td><b style="color:' + tierColor(t) + '">' + num(o.pePct10y, 1) + '%</b></td>' +
+        '<td>' + num(o.pePct5y, 1) + '%</td>' +
+        '<td>' + num(o.pePct3y, 1) + '%</td>' +
+        '<td>' + num(o.erp, 2) + 'pp</td>' +
+        '<td>' + (o.pos52 == null ? "—" : o.pos52 + '%') + '</td>' +
+        '<td class="' + cls(o.chg1y) + '">' + pct(o.chg1y, 1) + '</td>' +
+        '<td>' + tierTag(t) + (o.sampleShort ? '<div class="muted small">仅 ' + o.sampleDays + ' 日样本</div>' : '') + '</td></tr>';
+    }
+    h += '</tbody></table></div>' +
+      '<div class="muted small" style="margin-top:8px">分位＝历史日频 PE 中「≤ 当前 PE」的占比（0% 最便宜、100% 最贵）；' +
+      'ERP＝盈利收益率 100/PE − 10Y 国债 ' + num(bond, 2) + '%，越高越有吸引力；10 年分位为定投主口径。</div></div>';
+
+    // ③ 10 年 PE 走势（月末采样）
+    h += '<div class="card"><h3>10 年 PE 走势（月末采样，点＝当前值）</h3><div class="grid3">';
+    for (var s = 0; s < list.length; s++) {
+      var q = list[s], tq = broadTier(q), col = tierColor(tq);
+      h += '<div class="card-inner"><div class="muted small"><b>' + esc(q.name) + '</b> · PE ' + num(q.pe, 2) +
+        ' · 10年分位 ' + num(q.pePct10y, 1) + '%</div>' +
+        broadSpark(q.peHist, q.pe, col) +
+        '<div class="muted small">区间 ' + num(q.peStats.min, 1) + ' ~ ' + num(q.peStats.max, 1) +
+        '　中位 ' + num(q.peStats.med, 1) + '　P25 ' + num(q.peStats.p25, 1) + ' / P75 ' + num(q.peStats.p75, 1) +
+        '<br>样本 ' + q.sampleDays + ' 日（自 ' + esc(String(q.sampleFrom).slice(0, 4)) + '）</div></div>';
+    }
+    h += '</div></div>';
+
+    // ④ 定投档位策略表
+    h += '<div class="card"><h3>低估定投档位（唯一真源在 data/index.js，页面与微信提醒共用）</h3>' +
+      '<div class="tbl-scroll"><table class="tbl"><thead><tr><th>10年 PE 分位</th><th>判断</th><th>定投倍数</th><th>动作</th></tr></thead><tbody>';
+    var prev = 0;
+    for (var li = 0; li < L.length; li++) {
+      var t2 = L[li];
+      h += '<tr><td>' + (li === 0 ? '≤ ' : '> ' + prev + '% ~ ') + num(t2.max, 0) + '%' + '</td>' +
+        '<td><b style="color:' + TIER_COLOR[t2.level] + '">' + esc(t2.label) + '</b></td>' +
+        '<td><b>' + t2.mult + '×</b></td><td>' + esc(t2.action) + '</td></tr>';
+      prev = t2.max;
+    }
+    h += '</tbody></table></div>' +
+      '<div class="note" style="margin-top:10px"><b>规则只用「10 年 PE 分位」定档，不叠加主观修正</b>，这样每档都能复核、跨档才提醒。' +
+      '5 年分位 / ERP / 52 周位置是并列展示的<b>参考列</b>，用来识别背离（例如上证50 的 10 年分位很高但 ERP 也最高），' +
+      '不参与自动档位——避免多指标叠出一个谁都算不清的倍数。<br>' +
+      '<b>低估不等于马上涨。</b>分位是相对自身历史的位置，不代表未来收益；档位只决定「这一期投多少钱」，不预测点位。</div></div>';
+
+    // ⑤ 本期执行清单（可改基准金额与组合）
+    var base = dcaBase(), uniKey = dcaUni(), uni = DCA_UNIVERSES[uniKey];
+    var sel = uni.codes ? list.filter(function (o) { return uni.codes.indexOf(o.code) >= 0; }) : list.slice();
+    var per = sel.length ? base / sel.length : 0, total = 0;
+    h += '<div class="card"><h3>本期执行清单（每月一期，从新增资金 / 货币端划入）</h3>' +
+      '<div class="kvg k2" style="margin:4px 0 10px">' +
+      '<div class="muted">每期基准金额</div><div><input id="dca-base" type="number" min="100" step="100" value="' + base +
+      '" onchange="window._dcaSetBase(this.value)" style="width:130px;padding:5px 8px;border:1px solid #c7d2fe;border-radius:6px;font-family:inherit"> 元</div>' +
+      '<div class="muted">定投组合</div><div><select id="dca-uni" onchange="window._dcaSetUni(this.value)" style="padding:5px 8px;border:1px solid #c7d2fe;border-radius:6px;font-family:inherit;max-width:100%">';
+    for (var uk in DCA_UNIVERSES) {
+      if (!Object.prototype.hasOwnProperty.call(DCA_UNIVERSES, uk)) continue;
+      h += '<option value="' + uk + '"' + (uk === uniKey ? ' selected' : '') + '>' + esc(DCA_UNIVERSES[uk].name) + '</option>';
+    }
+    h += '</select></div></div><div class="tbl-scroll"><table class="tbl"><thead><tr>' +
+      '<th>指数</th><th>均分基准</th><th>档位 / 倍数</th><th>本期金额</th><th>场内 ETF</th></tr></thead><tbody>';
+    for (var r = 0; r < sel.length; r++) {
+      var o2 = sel[r], t3 = broadTier(o2), amt = t3 ? Math.round(per * t3.mult) : 0;
+      total += amt;
+      h += '<tr><td><b>' + esc(o2.name) + '</b></td><td>' + Math.round(per).toLocaleString() + ' 元</td>' +
+        '<td>' + tierTag(t3) + '</td><td><b>¥ ' + amt.toLocaleString() + '</b></td>' +
+        '<td class="muted small">' + esc(o2.etfName) + '（' + esc(o2.etf.replace(/^sh|^sz/, "")) + '）</td></tr>';
+    }
+    h += '</tbody></table></div>' +
+      '<div class="verdict" style="margin-top:10px;padding:10px 12px;border-radius:8px"><b>本期合计：¥ ' + total.toLocaleString() +
+      '</b>（基准 ' + base.toLocaleString() + ' 元 × 各档倍数，按 ' + sel.length + ' 只均分）。' +
+      '金额只是按档位算出的扣款建议，不是必须一次买满；分 2~3 批在月内扣完更稳。</div>' +
+      '<div class="muted small" style="margin-top:8px">默认组合说明：<b>中证800 = 沪深300 + 中证500</b>、上证50 ⊂ 沪深300，' +
+      '同时定投 300/500/800/50 会重复暴露同一批大盘股；科创50 与上证50 当前一个 ERP 极薄、一个 10 年分位很高，' +
+      '所以默认只投「中证800（大中盘）+ 中证1000（小盘）」。想投别的用上方下拉切换。</div></div>';
+
+    // ⑥ 低估定投提醒策略（微信）
+    var changed = list.filter(function (o) { var t = broadTier(o); return t && t.level <= 1; });
+    var sampleMsg = '宽基定投【' + (changed.length ? '加码' : '常规') + '】' + esc(String(BR.asOf).slice(5)) + '\\n' +
+      changed.map(function (o) { var t = broadTier(o); return esc(o.name) + ' PE分位 ' + num(o.pePct10y, 1) + '% → ' + esc(t.label) + ' ' + t.mult + '×'; }).join('\\n');
+    h += '<div class="card"><h3>低估定投提醒（微信，沿用红利提醒的云端通道）</h3>' +
+      '<div class="kvg k2">' +
+      kvRow("触发条件", "任一指数的 <b>10 年 PE 分位跨档</b>（进入更低档＝更便宜→提示加码；升入更高档＝变贵→提示减码）") +
+      kvRow("执行时间", "每交易日 <b>10:15</b>（北京时间），WorkBuddy 云端任务，不依赖本机开机") +
+      kvRow("去重", "<b>同档不重推</b>：记录上次档位，只在跨档当天推一次；分红/行情抖动造成的同档微动不打扰") +
+      kvRow("资金口径", "提醒只给<b>档位与本期金额</b>，执行后去「整体投顾 → 红利资产」更新已执行仓位；宽基独立记账，不动存量") +
+      kvRow("数据源", "中证指数官网每日收盘 PE → data/index.js；云端任务从 GitHub 实时拉取，口径由脚本唯一决定") +
+      '</div><div class="note" style="margin-top:10px"><b>消息长这样（精简到一眼看完）：</b><pre style="white-space:pre-wrap;margin:6px 0 0;font-family:inherit;font-size:12.5px">' +
+      sampleMsg + '</pre></div></div>';
+
+    // ⑦ 与现有组合的关系
+    h += '<div class="card"><h3>怎么接进现在的组合</h3>' +
+      '<div class="kvg k2">' +
+      kvRow("存量仓位", "<b>不动</b>：红利资产（利差档位仓）、纳指、A股个股、美股各自的仓位规则照旧") +
+      kvRow("资金来源", "宽基定投走<b>新增资金 / 货币端</b>独立通道，每期按上表金额划入，不从存量里卖出腾挪") +
+      kvRow("权益上限", "宽基与红利、个股都属 A 股权益，合计暴露要一起看；若整体权益已高，优先降低定投基准而不是砍存量") +
+      kvRow("重叠提醒", "沪深300 / 中证500 / 中证800 / 上证50 成分高度重叠，红利策略也含大量大盘价值股 —— 别用「多买几只」当分散") +
+      kvRow("财报重估", "PE 分母是滚动盈利，财报季会自然更新；本页每日跟收盘 PE 走，无需像个股那样手工重估买点") +
+      '</div></div>';
+
+    h += '<div class="note"><b>口径与风险：</b>PE 采用中证指数官网「滚动市盈率 peg」日频收盘序列，' +
+      '与腾讯行情自带的 PE 字段口径不同，本页<b>只用官网序列</b>、不与其它页估值混用；分位为相对自身历史的位置，不是绝对便宜证明。' +
+      '样本不足 3 年的指数不给档位结论。10 年分位与 5 年分位、ERP 可能背离，看结论卡的两条提示。' +
+      '定投不预测点位，下跌趋势中请坚持分批、控制单期金额。</div>';
+    h += '<div class="muted small" style="margin:8px 0">' + window.DISCLAIMER + '</div>';
+    $("broad-body").innerHTML = h;
+  }
+  window.renderBroad = renderBroad;
 
   // ---------- 市场雷达（已并入「🧺 A股港股」页，作为首屏板块） ----------
   function radarHTML() {
@@ -3725,8 +3934,9 @@
     else if (curTab === "backtest") renderBacktest();
     else if (curTab === "report") buildReport();
     else if (curTab === "history") renderHistory();
-    else if (curTab === "detail") renderDetail();
-  }
+  else if (curTab === "detail") renderDetail();
+  else if (curTab === "broad") renderBroad();
+}
   function parseQuote(code) {
     var raw = window["v_" + code];
     if (!raw || typeof raw !== "string" || raw.indexOf("~") < 0) return null;
@@ -3827,6 +4037,18 @@
       }
       mark("A", qi.time);
       hit++;
+    }
+    // 宽基指数：只回写现价/涨跌；PE、分位、档位、本期金额全部保持收盘锚（定投信号不随盘中抖动）
+    if (BR.list) {
+      for (var bj = 0; bj < BR.list.length; bj++) {
+        var bo = BR.list[bj];
+        if (!bo.qt) continue;
+        var qb = parseQuote(bo.qt);
+        if (!qb) continue;
+        bo.close = qb.px; bo.chg = qb.chg;
+        mark("A", qb.time);
+        hit++;
+      }
     }
     // 美股：EPS 已知 → PE 直接由最新价重算，比按比例缩放更准确
     for (var u = 0; u < US.length; u++) {
@@ -3957,6 +4179,8 @@
     // 红利标的也纳入实时刷新：中证红利指数 sh000922 + 红利低波ETF sh512890，
     // 以及可投工具 4 只红利 ETF（sh515180 / sh515080 / sh563020 / sh512890）+ 6 只纳指 ETF（513100/513300/513870/159632/159941/159513）
     codes.push("sh000922", "sh512890");
+    // 宽基指数（6 个）也实时刷新现价/涨跌；PE 与历史分位保持收盘锚，避免盘中抖动改变定投档位
+    if (BR.list) for (var bq = 0; bq < BR.list.length; bq++) if (BR.list[bq].qt) codes.push(BR.list[bq].qt);
     if (window.DIV_ETF) {
       ["csi", "lowvol", "nas"].forEach(function (k) {
         var lst = window.DIV_ETF[k] || [];

@@ -76,7 +76,9 @@ async function fetchTo(rel, dest) {
   if (!n) { console.error("✗ 拿不到 data/asset.js，终止"); process.exit(2); }
   // 3) 已执行仓位（可选，缺则用默认锚）
   await fetchTo("data/pos.json", path.join(DIR, "data", "pos.json"));
-  // 4) 去重状态基线（可选）
+  // 4) 宽基指数估值快照（可选，缺则 alert-check.js 跳过定投提醒，不影响红利提醒）
+  await fetchTo("data/index.js", path.join(DIR, "data", "index.js"));
+  // 5) 去重状态基线（可选）
   const stF = path.join(DIR, "data", "alert-state.json");
   if (fresh || !fs.existsSync(stF)) await fetchTo("data/alert-state.json", stF);
 

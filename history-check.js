@@ -51,6 +51,7 @@ global.FileReader = class { readAsText() {} };
 
 eval(fs.readFileSync(path.join(dir, "data.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "data/lt.js"), "utf8"));
+eval(fs.readFileSync(path.join(dir, "data/index.js"), "utf8"));
 eval(fs.readFileSync(path.join(dir, "app.js"), "utf8"));
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
