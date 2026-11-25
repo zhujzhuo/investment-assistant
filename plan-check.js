@@ -50,6 +50,7 @@ const A = window.ASSET;
   assert("股息率历史序列 36 个月", A.dividend.csi.dyHist.length === 36 && A.dividend.lowvol.dyHist.length === 36);
   assert("纳斯达克 PE 有效", A.nasdaq.pe > 0, A.nasdaq.pe + " 倍");
   assert("纳斯达克 PE 情景齐全", ["g15", "g20", "g25", "g30"].every(k => A.nasdaq.peScen[k] != null));
+  assert("fetch-asset 有纳指衍生字段降级沿用保护（云端无 K 线时不写 null）", /纳指衍生字段沿用上次快照/.test(fs.readFileSync(path.join(dir, "fetch-asset.js"), "utf8")));
   assert("回测序列长度 36", ["csi", "lowvol", "nasdaq", "hs300", "stock"].every(k => A.kline[k].length === 36));
   assert("个股序列 ≥4 只", Object.keys(A.kline.stocks).length >= 4, Object.keys(A.kline.stocks).length + " 只");
   assert("10年国债已配置", A.bond10y && A.bond10y.v > 0);

@@ -567,6 +567,32 @@ function peSeries(prices, epsGrowthPerYear) {
     }
   };
 
+  // 「降级不覆盖」保护（纳指衍生字段）：云端无 westock CLI → QQQ 月/日/周 K 全取不到，
+  // peScen/peStats/peHist/ma250/wk/RSI 会被算成 null/空；若照样写盘会把本地好数据冲掉
+  // （2026-11-26 实测：云端刷新 37298fe 把 peScen 四项全冲成 null）。本次为空且上次快照
+  // 有值 → 沿用上次快照；能取到时仍以本次为准。
+  try {
+    const gP = { window: {} };
+    new Function("window", fs.readFileSync(OUT, "utf8"))(gP.window);
+    const prevN = gP.window.ASSET && gP.window.ASSET.nasdaq;
+    if (prevN) {
+      const carry = ["peScen", "peStats", "peHist", "ma250", "distMA250", "rsi14", "rsi30", "wk", "wkUp",
+        "distWkMid", "distWkLow", "hi52", "lo52", "pos52", "pePct"];
+      const isEmpty = (v, k) => v == null || (Array.isArray(v) && !v.length) ||
+        (v && typeof v === "object" && !Array.isArray(v) && !Object.keys(v).length) ||
+        (k === "peScen" && v && Object.values(v).every(x => x == null));
+      const filled = [];
+      for (const k of carry) {
+        if (isEmpty(asset.nasdaq[k], k) && !isEmpty(prevN[k], k)) { asset.nasdaq[k] = prevN[k]; filled.push(k); }
+      }
+      if (asset.kline.nasdaq.every(v => v == null)) {
+        const gK = gP.window.ASSET.kline && gP.window.ASSET.kline.nasdaq;
+        if (gK && gK.some(v => v != null)) { asset.kline.nasdaq = gK; filled.push("kline.nasdaq"); }
+      }
+      if (filled.length) console.log("纳指衍生字段沿用上次快照（本次 K 线缺失）：" + filled.join(","));
+    }
+  } catch (e) { console.log("纳指衍生字段沿用失败（忽略）", e.message); }
+
   const banner = "// 整体投顾组合数据（自动生成，勿手改）\n"
     + "// 生成脚本：fetch-asset.js | 数据源：腾讯公开行情 qt.gtimg.cn + westock CLI（K线，ifzq 已被 WAF 拦截时的替代）\n"
     + "// 股息率 / PE 现值与历史分位：锚定法模型估算（假设见 ref.dpsGrowth / ref.epsGrowth）\n";

@@ -17,6 +17,12 @@ assert("alert-check.js 存在", fs.existsSync(path.join(DIR, "alert-check.js")))
 assert("data/alert-config.json 存在（模板）", fs.existsSync(path.join(DIR, "data", "alert-config.json")));
 
 console.log("== 2. 判定口径与消息分级（dry 跑一次）==");
+// 自洽：云端任务每日把「已推信号」写回 data/alert-state.json（[skip ci] 提交）。
+// 若沿用该状态，本节 dry 会输出「无待推送提醒」→ 消息分级/文案断言全部翻红（2026-11-26 实测）。
+// 先备份并用空状态跑，测试末尾恢复备份：既不误判，也不破坏仓库里的云端去重状态。
+const STATE_BAK = path.join(DIR, "data", "alert-state.json");
+const stateBak = fs.existsSync(STATE_BAK) ? fs.readFileSync(STATE_BAK, "utf8") : null;
+if (stateBak != null) fs.writeFileSync(STATE_BAK, JSON.stringify({ sent: {} }));
 const out = execFileSync(NODE, [path.join(DIR, "alert-check.js"), "--dry"], { encoding: "utf8", timeout: 60000 });
 assert("输出含行情行", /行情: 中证红利 [\d.]+ \/ 红利低波 [\d.]+/.test(out), out.split("\n")[0]);
 assert("输出含利差口径", /利差 [\d.]+ \/ [\d.]+pp/.test(out));
@@ -117,7 +123,7 @@ fs.writeFileSync(STATE_F, JSON.stringify(st2));
 const out3 = execFileSync(NODE, [path.join(DIR, "alert-check.js"), "--dry"], { encoding: "utf8", timeout: 60000 });
 const m3 = out3.match(/触发 (\d+) 条，去重后待推 (\d+) 条/);
 assert("已解除(done)信号允许重推", m3 && m3[2] !== "0", m3 && ("待推" + m3[2]));
-fs.writeFileSync(STATE_F, JSON.stringify({ sent: {} }));   // 清回
+if (stateBak != null) fs.writeFileSync(STATE_F, stateBak);   // 恢复仓库去重状态（测试不留脏数据）
 
 console.log("\n结果：" + (pass + fail) + " 项 · " + pass + " 通过 / " + fail + " 失败");
 process.exit(fail ? 1 : 0);
