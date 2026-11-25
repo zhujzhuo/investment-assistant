@@ -60,7 +60,12 @@ assert("index.html 有 tab-broad / broad-body", /id="tab-broad"/.test(IDX_HTML) 
 assert("index.html 引入 data/index.js", /<script src="data\/index\.js"><\/script>/.test(IDX_HTML));
 assert("app.js tabs 数组含 broad", /var tabs = \[[^\]]*"broad"[^\]]*\]/.test(APP));
 assert("showTab / rerender 都有 broad 分支", /t === "broad"\) safe\(renderBroad\)/.test(APP) && /curTab === "broad"\) renderBroad\(\)/.test(APP));
-assert("SW 升到 v45 且预缓存 data/index.js", /ia-cache-v45/.test(fs.readFileSync(path.join(DIR, "sw.js"), "utf8")) && /data\/index\.js/.test(fs.readFileSync(path.join(DIR, "sw.js"), "utf8")));
+const SW_SRC = fs.readFileSync(path.join(DIR, "sw.js"), "utf8");
+const SW_VER = Number((SW_SRC.match(/ia-cache-v(\d+)/) || [])[1] || 0);
+assert("SW 版本 >=45（外壳改动须 bump）且预缓存 data/index.js", SW_VER >= 45 && /data\/index\.js/.test(SW_SRC));
+assert("导航顺序：宽基指数紧跟 A股港股（在红利对比之前）",
+  /id="nav-ah"[\s\S]{0,300}id="nav-broad"[\s\S]{0,300}id="nav-divcmp"/.test(IDX_HTML));
+assert("app.js tabs 顺序与导航一致：plan / ah / broad 连续", /var tabs = \["plan", "ah", "broad"/.test(APP));
 assert("data-hash.js 登记 index.js", /data\/index\.js/.test(fs.readFileSync(path.join(DIR, "data-hash.js"), "utf8")));
 assert("refresh.yml 纳入 fetch-index.js", /node fetch-index\.js/.test(fs.readFileSync(path.join(DIR, ".github", "workflows", "refresh.yml"), "utf8")));
 assert("cloud-alert.js 拉取 data/index.js", /fetchTo\("data\/index\.js"/.test(fs.readFileSync(path.join(DIR, "cloud-alert.js"), "utf8")));

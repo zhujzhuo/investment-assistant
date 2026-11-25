@@ -99,7 +99,7 @@ assert("重跑后基线仍可解析", !!NB);
 // 「同日重跑」防护只在测试当天日期 == 数据 asOf 时可验；跨日重跑 prevAsOf 更新为旧 asOf 是正确行为
 // （2026-11-03 合并云端数据 asOf=11-02 而当天是 11-03 → prev 前移不违反「不伪造」语义）
 {
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const _d = new Date(), _p = n => ("0" + n).slice(-2), todayStr = _d.getFullYear() + "-" + _p(_d.getMonth() + 1) + "-" + _p(_d.getDate()); // 本地日期，与 gen-baseline.js 一致；UTC 在北京 00:00–08:00 会错一天
   if (B.asOf === todayStr) {
     assert("同日重跑不伪造 prevAsOf（保持原值 " + B.prevAsOf + "）", NB.prevAsOf === B.prevAsOf, NB.prevAsOf + " vs " + B.prevAsOf);
   } else {

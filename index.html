@@ -23,6 +23,7 @@
   <nav class="wrap nav" id="main-nav">
     <button class="nav-btn active" id="nav-plan" onclick="showTab('plan')"><span class="ic">🧭</span><span class="lb">整体投顾</span></button>
     <button class="nav-btn" id="nav-ah" onclick="showTab('ah')"><span class="ic">🧺</span><span class="lb">A股港股</span></button>
+    <button class="nav-btn" id="nav-broad" onclick="showTab('broad')"><span class="ic">📐</span><span class="lb">宽基指数</span></button>
     <button class="nav-btn" id="nav-divcmp" onclick="showTab('divcmp')"><span class="ic">⚖️</span><span class="lb">红利对比</span></button>
     <button class="nav-btn" id="nav-fund" onclick="showTab('fund')"><span class="ic">💰</span><span class="lb">建仓节奏</span></button>
     <button class="nav-btn" id="nav-playbook" onclick="showTab('playbook')"><span class="ic">📋</span><span class="lb">操作手册</span></button>
@@ -30,14 +31,14 @@
     <button class="nav-btn" id="nav-us" onclick="showTab('us')"><span class="ic">🇺🇸</span><span class="lb">美股组合</span></button>
     <button class="nav-btn" id="nav-backtest" onclick="showTab('backtest')"><span class="ic">📈</span><span class="lb">策略回测</span></button>
     <button class="nav-btn" id="nav-report" onclick="showTab('report')"><span class="ic">📝</span><span class="lb">每日总结</span></button>
-  <button class="nav-btn" id="nav-history" onclick="showTab('history')"><span class="ic">🗂</span><span class="lb">历史留档</span></button>
-  <button class="nav-btn" id="nav-broad" onclick="showTab('broad')"><span class="ic">📐</span><span class="lb">宽基指数</span></button>
+    <button class="nav-btn" id="nav-history" onclick="showTab('history')"><span class="ic">🗂</span><span class="lb">历史留档</span></button>
 </nav>
 </header>
 
 <main class="wrap">
   <section id="tab-plan"><div id="plan-body"></div></section>
   <section id="tab-ah" style="display:none"><div id="ah-body"></div></section>
+  <section id="tab-broad" style="display:none"><div id="broad-body"></div></section>
   <section id="tab-divcmp" style="display:none"><div id="divcmp-body"></div></section>
   <section id="tab-fund" style="display:none"><div id="fund-body"></div></section>
   <section id="tab-playbook" style="display:none"><div id="playbook-body"></div></section>
@@ -58,7 +59,6 @@
     </div>
   </section>
   <section id="tab-history" style="display:none"><div id="history-body"></div></section>
-  <section id="tab-broad" style="display:none"><div id="broad-body"></div></section>
 </main>
 
 <div id="flash" class="flash"></div>

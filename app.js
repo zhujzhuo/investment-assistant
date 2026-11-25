@@ -136,7 +136,8 @@
 
   // ---------- 标签页 ----------
   // 2026-10-10 合并：市场雷达 / 好公司筛选 / 每日推荐 / 投资组合 四页并成一个「🧺 A股港股」页（版式同「美股组合」）
-  var tabs = ["plan", "divcmp", "fund", "playbook", "ah", "us", "backtest", "report", "history", "detail", "broad"];
+  // 顺序与 index.html 导航一致（2026-11-26：宽基指数移到 A股港股 之后，即第 3 位）
+  var tabs = ["plan", "ah", "broad", "divcmp", "fund", "playbook", "detail", "us", "backtest", "report", "history"];
   // 旧页面名兼容映射（页面内旧链接、历史书签与测试脚本仍可用）
   var TAB_ALIAS = { radar: "ah", screen: "ah", pick: "ah", portfolio: "ah" };
   var curTab = "plan";
