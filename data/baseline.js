@@ -1,42 +1,42 @@
 // 名单归档基线 + 与上期变动（gen-baseline.js 自动生成，每日 18:00 覆盖；请勿手改）
 window.IA_BASELINE = {
  "version": 1,
- "asOf": "2026-11-25",
- "prevAsOf": "2026-11-24",
+ "asOf": "2026-11-26",
+ "prevAsOf": "2026-11-25",
  "lists": {
   "picks": {
    "steady": [
     {
      "code": "sz000651",
      "name": "格力电器",
-     "reason": "股息率 7.3%，PE 9.2 倍，PB 1.52"
+     "reason": "股息率 7.4%，PE 9.2 倍，PB 1.51"
     },
     {
      "code": "sz000568",
      "name": "泸州老窖",
-     "reason": "股息率 7.2%，PE 20.5 倍，PB 2.50"
+     "reason": "股息率 7.4%，PE 20.0 倍，PB 2.44"
     },
     {
      "code": "sz000858",
      "name": "五粮液",
-     "reason": "股息率 7.2%，PE 22.8 倍，PB 2.35"
+     "reason": "股息率 7.2%，PE 22.7 倍，PB 2.33"
     }
    ],
    "growth": [
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 11.2 倍"
+     "reason": "2026H1 净利 +15.8% · ROE(TTM) 10.2% · PE 11.3 倍"
     },
     {
      "code": "sz300750",
      "name": "宁德时代",
-     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 11.0 倍"
+     "reason": "2026H1 净利 +42.0% · ROE(TTM) 22.4% · PE 10.8 倍"
     },
     {
      "code": "sh603259",
      "name": "药明康德",
-     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 16.4 倍"
+     "reason": "2026H1 净利 +29.4% · ROE(TTM) 26.0% · PE 16.9 倍"
     }
    ],
    "rotate": [
@@ -81,13 +81,13 @@ window.IA_BASELINE = {
     {
      "code": "hk00700",
      "name": "腾讯控股",
-     "dist": -16.1,
+     "dist": -15.2,
      "score": 8.4
     },
     {
      "code": "hk00388",
      "name": "香港交易所",
-     "dist": 22.3,
+     "dist": 23.8,
      "score": 8.2
     },
     {
@@ -105,7 +105,7 @@ window.IA_BASELINE = {
     {
      "code": "hk00941",
      "name": "中国移动",
-     "dist": 25.5,
+     "dist": 25.8,
      "score": 7.2
     }
    ],
@@ -113,7 +113,7 @@ window.IA_BASELINE = {
     {
      "code": "hk09988",
      "name": "阿里巴巴",
-     "dist": -22.9
+     "dist": -21.7
     },
     {
      "code": "sz300274",
@@ -123,7 +123,7 @@ window.IA_BASELINE = {
     {
      "code": "hk06181",
      "name": "老铺黄金",
-     "dist": -3.4
+     "dist": -2.9
     },
     {
      "code": "sh603259",
