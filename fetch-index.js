@@ -38,6 +38,11 @@ const LADDER = [
   { max: 100, level: 4, label: "高估",     mult: 0,   action: "暂停定投，只持有" }
 ];
 
+// 定投标的推荐（每指数 2 只场内 ETF + 2 只场外联接 A 类）：
+// 由 fetch-index-funds.js 季度复核生成 index-funds-src.json（费率 / 规模 / 实测跟踪误差），
+// 静态快照内联进 BROAD.funds，不随每日行情刷新；页面「宽基指数 → 定投标的推荐」读取。
+const FUNDS = JSON.parse(fs.readFileSync(path.join(DIR, "index-funds-src.json"), "utf8"));
+
 const START = "20160101";
 const MIN_SAMPLE = 750;   // ≈3 年交易日，低于此不给定投档位结论
 
@@ -177,6 +182,7 @@ function bond10y() {
     bond10y: bond,
     minSampleDays: MIN_SAMPLE,
     ladder: LADDER,
+    funds: FUNDS,
     list: list
   };
   fs.writeFileSync(OUT, "// 宽基指数估值与定投档位（自动生成，勿手改）\n" +

@@ -375,6 +375,54 @@
       '同时定投 300/500/800/50 会重复暴露同一批大盘股；科创50 与上证50 当前一个 ERP 极薄、一个 10 年分位很高，' +
       '所以默认只投「中证800（大中盘）+ 中证1000（小盘）」。想投别的用上方下拉切换。</div></div>';
 
+    // ⑤b 定投标的推荐（每指数 2 只场内 ETF + 2 只场外联接 A 类）
+    // 数据来自 BROAD.funds（fetch-index-funds.js 季度复核生成，内联进 data/index.js），不随盘中行情变化
+    var FD = BR.funds || { groups: {}, asOf: "", feeAsOf: "", method: "" };
+    if (FD.groups && Object.keys(FD.groups).length) {
+      var fgroups = [];
+      for (var fi = 0; fi < list.length; fi++) {
+        var fg0 = FD.groups[list[fi].code];
+        if (fg0) fgroups.push({ name: list[fi].name, g: fg0 });
+      }
+      var fh = '<div class="card"><h3>🎯 定投标的推荐（每指数 2 只场内 ETF + 2 只场外联接 A 类）</h3>' +
+        '<div class="muted small" style="margin-bottom:8px">规模与跟踪误差截至 <b>' + esc(FD.asOf) + '</b>，费率核于 ' + esc(FD.feeAsOf) +
+        '；数据来自基金公司/天天基金公开披露与实测，季度复核（脚本 <b>fetch-index-funds.js</b>）。' +
+        '跟踪误差 = 近 250 交易日「基金日净值增长率 − 对应全收益指数日收益」的年化标准差，越小越贴合指数。</div>';
+      for (var gi = 0; gi < fgroups.length; gi++) {
+        var fG = fgroups[gi].g;
+        fh += '<div style="margin:12px 0 6px;font-weight:600">📐 ' + esc(fgroups[gi].name) +
+          ' <span class="muted small">（场内 ETF 2 只 / 场外联接 A 类 2 只）</span></div>' +
+          '<div class="tbl-scroll"><table class="tbl"><thead><tr>' +
+          '<th>途径</th><th>基金</th><th>代码</th><th>年费率</th><th>规模(亿)</th><th>跟踪误差</th><th>近1年偏离</th><th>选择要点</th>' +
+          '</tr></thead><tbody>';
+        var fkinds = [["场内 ETF", fG.etf], ["场外联接 A", fG.otc]];
+        for (var fk = 0; fk < 2; fk++) {
+          for (var kj = 0; kj < fkinds.length; kj++) {
+            var f = fkinds[kj][1][fk];
+            if (!f) continue;
+            fh += '<tr><td><b>' + fkinds[kj][0] + '</b></td>' +
+              '<td><b>' + esc(f.name) + '</b><div class="muted small">' + esc(f.gs) + ' · ' + esc(f.channel) + '</div></td>' +
+              '<td>' + esc(f.code) + '</td>' +
+              '<td><b>' + pct(f.fee, 2) + '</b><div class="muted small">管理 ' + num(f.mgrFee, 2) + ' + 托管 ' + num(f.trusFee, 2) + '</div></td>' +
+              '<td>' + num(f.scale, 1) + '</td>' +
+              '<td><b>' + pct(f.te, 2) + '</b></td>' +
+              '<td>' + (f.dev > 0 ? "+" : "") + num(f.dev, 2) + 'pp</td>' +
+              '<td class="small">' + esc(f.tag) + '<div class="muted small">' + esc(f.costNote) + '</div></td></tr>';
+          }
+        }
+        fh += '</tbody></table></div>' +
+          '<div class="note" style="margin-top:6px">' + esc(fG.note) + '</div>';
+      }
+      fh += '<div class="verdict" style="margin-top:12px;padding:10px 12px;border-radius:8px">' +
+        '<b>怎么选：</b>①有证券账户优先 <b>场内 ETF</b>——实测跟踪误差 0.17%~0.5%，无申购费，规模越大买卖价差越小；' +
+        '②只能场外就选 <b>联接 A 类</b>，长期定投别选 C 类（另收 0.2%~0.4%/年销售服务费）；' +
+        '③主流年费率已降到 <b>0.20%</b>（管理 0.15 + 托管 0.05），避开仍收 0.60% 的老产品；' +
+        '④场外联接跟踪误差 0.9%~2.6%，是场内的 3~5 倍，属留现金应对申赎的结构性差异，不是管理能力差；' +
+        '⑤规模 &lt;2 亿的品种（尤其 <b>中证800 场外</b>）留意清盘与流动性风险。</div>' +
+        '<div class="muted small" style="margin-top:6px">' + esc(FD.method) + '　' + esc(window.DISCLAIMER || "") + '</div></div>';
+      h += fh;
+    }
+
     // ⑥ 低估定投提醒策略（微信）
     var changed = list.filter(function (o) { var t = broadTier(o); return t && t.level <= 1; });
     var sampleMsg = '宽基定投【' + (changed.length ? '加码' : '常规') + '】' + esc(String(BR.asOf).slice(5)) + '\\n' +

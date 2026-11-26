@@ -52,6 +52,20 @@ assert("分位 ≤ 当前 PE 在历史区间内", B.list.every(o => o.pe >= o.pe
 assert("每个指数都有可投场内 ETF", B.list.every(o => /^(sh|sz)\d{6}$/.test(o.etf) && o.etfName));
 assert("分位口径与生成端一致（≤ 占比）", /function pctOf\(series, v\)/.test(fs.readFileSync(path.join(DIR, "fetch-index.js"), "utf8")));
 
+// 定投标的推荐（BROAD.funds，由 fetch-index-funds.js 季度复核生成）
+const F = B.funds;
+const fAll = [];
+for (const gk of Object.keys((F && F.groups) || {})) { const g = F.groups[gk]; fAll.push.apply(fAll, g.etf); fAll.push.apply(fAll, g.otc); }
+assert("BROAD.funds 存在且覆盖 6 个宽基", !!F && Object.keys(F.groups || {}).length === 6);
+assert("每指数 2 只场内 ETF + 2 只场外联接", Object.values(F.groups).every(g => g.etf.length === 2 && g.otc.length === 2));
+assert("24 只基金字段齐全（代码/名称/费率/规模/跟踪误差/渠道）", fAll.length === 24 &&
+  fAll.every(f => f.code && f.name && f.fee > 0 && f.scale > 0 && f.te != null && f.dev != null && f.channel && f.tag));
+assert("费率与跟踪误差量级合理", fAll.every(f => f.fee > 0 && f.fee <= 1 && f.te >= 0 && f.te < 5 && f.scale > 0));
+assert("快照带数据日期与实测口径说明", !!F.asOf && !!F.feeAsOf && /标准差/.test(F.method || ""));
+assert("场外均为 A 类（避免 C 类销售服务费）", Object.values(F.groups).every(g => g.otc.every(f => /A$|LOF/.test(f.name))));
+assert("场内平均跟踪误差低于场外（结构性对比）",
+  Object.values(F.groups).filter(g => (g.etf[0].te + g.etf[1].te) < (g.otc[0].te + g.otc[1].te)).length >= 5);
+
 console.log("== 2. 接入点登记 ==");
 const IDX_HTML = fs.readFileSync(path.join(DIR, "index.html"), "utf8");
 const APP = fs.readFileSync(path.join(DIR, "app.js"), "utf8");
@@ -71,6 +85,11 @@ assert("refresh.yml 纳入 fetch-index.js", /node fetch-index\.js/.test(fs.readF
 assert("cloud-alert.js 拉取 data/index.js", /fetchTo\("data\/index\.js"/.test(fs.readFileSync(path.join(DIR, "cloud-alert.js"), "utf8")));
 assert("loadLive 纳入宽基实时行情", /BR\.list\[bq\]\.qt\) codes\.push/.test(APP));
 
+assert("index-funds-src.json 快照存在", fs.existsSync(path.join(DIR, "index-funds-src.json")));
+assert("fetch-index-funds.js 可复现脚本存在", fs.existsSync(path.join(DIR, "fetch-index-funds.js")));
+assert("fetch-index.js 内联 funds 到 BROAD", /funds: FUNDS/.test(fs.readFileSync(path.join(DIR, "fetch-index.js"), "utf8")) &&
+  /index-funds-src\.json/.test(fs.readFileSync(path.join(DIR, "fetch-index.js"), "utf8")));
+
 console.log("== 3. 页面渲染 ==");
 window.showTab("broad");
 const html = store["broad-body"].innerHTML;
@@ -85,6 +104,14 @@ assert("组合接入说明不动存量仓位", html.indexOf("不动") >= 0 && ht
 assert("成分重叠提示（中证800=300+500）", html.indexOf("中证800 = 沪深300 + 中证500") >= 0);
 assert("提醒策略含云端 10:15 与同档不重推", html.indexOf("10:15") >= 0 && html.indexOf("同档不重推") >= 0);
 assert("页脚免责声明", html.indexOf("非投资建议") >= 0 || html.indexOf("免责") >= 0 || html.indexOf(window.DISCLAIMER.slice(0, 8)) >= 0);
+
+assert("页面含「定投标的推荐」板块", html.indexOf("定投标的推荐") >= 0);
+assert("24 只基金代码全部渲染到页面", fAll.every(f => html.indexOf(">" + f.code + "<") >= 0),
+  "缺: " + fAll.filter(f => html.indexOf(">" + f.code + "<") < 0).map(f => f.code).join(","));
+assert("推荐表含年费率/规模/跟踪误差列", html.indexOf("年费率") >= 0 && html.indexOf("规模(亿)") >= 0 && html.indexOf("跟踪误差") >= 0);
+assert("含「怎么选」结论与跟踪误差口径", html.indexOf("怎么选") >= 0 && html.indexOf("年化标准差") >= 0);
+assert("标注数据日期与季度复核脚本", html.indexOf(F.asOf) >= 0 && html.indexOf("fetch-index-funds.js") >= 0);
+assert("每组有该指数的特别提示（note）", Object.values(F.groups).every(g => html.indexOf(g.note.slice(0, 12)) >= 0));
 
 console.log("== 4. 定投金额口径（数据驱动，不写死行情）==");
 let E = window._broadExpose();
