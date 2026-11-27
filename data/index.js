@@ -1,8 +1,8 @@
 // 宽基指数估值与定投档位（自动生成，勿手改）
 // 生成脚本：fetch-index.js ｜ 数据源：中证指数官网 + data/asset.js 国债锚
 window.BROAD = {
- "generatedAt": "2026-11-26",
- "asOf": "2026-11-26",
+ "generatedAt": "2026-11-27",
+ "asOf": "2026-11-27",
  "source": "中证指数官网 index-perf（每日收盘 + 滚动市盈率 peg）｜国债锚 data/asset.js bond10y",
  "bond10y": 1.75,
  "minSampleDays": 750,
@@ -468,14 +468,14 @@ window.BROAD = {
    "etf": "sh510300",
    "etfName": "沪深300ETF",
    "cat": "大盘蓝筹",
-   "asOf": "2026-11-26",
-   "close": 3900.55,
-   "chg": 0.06,
-   "pe": 12.94,
-   "pePct10y": 46.3,
-   "pePct5y": 64,
-   "pePct3y": 53,
-   "pePct1y": 5.3,
+   "asOf": "2026-11-27",
+   "close": 4063.06,
+   "chg": 4.17,
+   "pe": 13.27,
+   "pePct10y": 54,
+   "pePct5y": 71.4,
+   "pePct3y": 62.6,
+   "pePct1y": 16,
    "peStats": {
     "min": 10.1,
     "p25": 12.17,
@@ -1006,14 +1006,14 @@ window.BROAD = {
     ],
     [
      "2026-11",
-     12.94
+     13.27
     ]
    ],
-   "erp": 5.98,
-   "pos52": 0,
-   "chg1y": -13.7,
-   "chg60d": -15,
-   "sampleDays": 2648,
+   "erp": 5.79,
+   "pos52": 14,
+   "chg1y": -10,
+   "chg60d": -12.3,
+   "sampleDays": 2649,
    "sampleFrom": "20160101",
    "sampleShort": false,
    "tierIdx": 2
@@ -1025,14 +1025,14 @@ window.BROAD = {
    "etf": "sh510500",
    "etfName": "中证500ETF",
    "cat": "中盘",
-   "asOf": "2026-11-26",
-   "close": 5863.34,
-   "chg": -0.46,
-   "pe": 19.85,
-   "pePct10y": 38.6,
-   "pePct5y": 56.4,
-   "pePct3y": 27.4,
-   "pePct1y": 0.4,
+   "asOf": "2026-11-27",
+   "close": 6313.63,
+   "chg": 7.68,
+   "pe": 21.22,
+   "pePct10y": 49,
+   "pePct5y": 62.4,
+   "pePct3y": 37.4,
+   "pePct1y": 4.1,
    "peStats": {
     "min": 13.3,
     "p25": 18.3,
@@ -1563,17 +1563,17 @@ window.BROAD = {
     ],
     [
      "2026-11",
-     19.85
+     21.22
     ]
    ],
-   "erp": 3.29,
-   "pos52": 0,
-   "chg1y": -15.8,
-   "chg60d": -24.5,
-   "sampleDays": 2649,
+   "erp": 2.96,
+   "pos52": 14,
+   "chg1y": -9.2,
+   "chg60d": -20.5,
+   "sampleDays": 2650,
    "sampleFrom": "20160101",
    "sampleShort": false,
-   "tierIdx": 1
+   "tierIdx": 2
   },
   {
    "code": "000906",
@@ -1582,14 +1582,14 @@ window.BROAD = {
    "etf": "sh515800",
    "etfName": "中证800ETF",
    "cat": "大中盘",
-   "asOf": "2026-11-26",
-   "close": 4229.52,
-   "chg": -0.07,
-   "pe": 13.9,
-   "pePct10y": 38.9,
-   "pePct5y": 58.5,
-   "pePct3y": 41.3,
-   "pePct1y": 1.2,
+   "asOf": "2026-11-27",
+   "close": 4442.79,
+   "chg": 5.04,
+   "pe": 14.37,
+   "pePct10y": 51.4,
+   "pePct5y": 69.9,
+   "pePct3y": 58.2,
+   "pePct1y": 10.7,
    "peStats": {
     "min": 10.79,
     "p25": 13.26,
@@ -2120,17 +2120,17 @@ window.BROAD = {
     ],
     [
      "2026-11",
-     13.9
+     14.37
     ]
    ],
-   "erp": 5.44,
-   "pos52": 0,
-   "chg1y": -14.1,
-   "chg60d": -17.6,
-   "sampleDays": 2649,
+   "erp": 5.21,
+   "pos52": 14,
+   "chg1y": -9.7,
+   "chg60d": -14.5,
+   "sampleDays": 2650,
    "sampleFrom": "20160101",
    "sampleShort": false,
-   "tierIdx": 1
+   "tierIdx": 2
   },
   {
    "code": "000852",
@@ -2139,14 +2139,14 @@ window.BROAD = {
    "etf": "sh512100",
    "etfName": "中证1000ETF",
    "cat": "小盘",
-   "asOf": "2026-11-26",
-   "close": 5531.84,
-   "chg": -0.18,
-   "pe": 22.32,
-   "pePct10y": 18.4,
-   "pePct5y": 28.5,
-   "pePct3y": 25.2,
-   "pePct1y": 0.4,
+   "asOf": "2026-11-27",
+   "close": 5982.91,
+   "chg": 8.15,
+   "pe": 24.08,
+   "pePct10y": 33.2,
+   "pePct5y": 50.1,
+   "pePct3y": 30.8,
+   "pePct1y": 2.9,
    "peStats": {
     "min": 15.72,
     "p25": 23.17,
@@ -2677,17 +2677,17 @@ window.BROAD = {
     ],
     [
      "2026-11",
-     22.32
+     24.08
     ]
    ],
-   "erp": 2.73,
-   "pos52": 0,
-   "chg1y": -23.7,
-   "chg60d": -26.7,
-   "sampleDays": 2649,
+   "erp": 2.4,
+   "pos52": 13,
+   "chg1y": -17.6,
+   "chg60d": -22.6,
+   "sampleDays": 2650,
    "sampleFrom": "20160101",
    "sampleShort": false,
-   "tierIdx": 0
+   "tierIdx": 1
   },
   {
    "code": "000016",
@@ -2696,14 +2696,14 @@ window.BROAD = {
    "etf": "sh510050",
    "etfName": "上证50ETF",
    "cat": "超大盘价值",
-   "asOf": "2026-11-26",
-   "close": 2753.71,
-   "chg": 0.07,
-   "pe": 12.01,
-   "pePct10y": 89.2,
-   "pePct5y": 95.5,
-   "pePct3y": 92.8,
-   "pePct1y": 89.3,
+   "asOf": "2026-11-27",
+   "close": 2834.68,
+   "chg": 2.94,
+   "pe": 12.11,
+   "pePct10y": 90.3,
+   "pePct5y": 96.5,
+   "pePct3y": 94.1,
+   "pePct1y": 92.6,
    "peStats": {
     "min": 8.43,
     "p25": 9.94,
@@ -3234,14 +3234,14 @@ window.BROAD = {
     ],
     [
      "2026-11",
-     12.01
+     12.11
     ]
    ],
-   "erp": 6.58,
-   "pos52": 7,
-   "chg1y": -7.3,
-   "chg60d": -5.2,
-   "sampleDays": 2649,
+   "erp": 6.51,
+   "pos52": 25,
+   "chg1y": -4.6,
+   "chg60d": -3.3,
+   "sampleDays": 2650,
    "sampleFrom": "20160101",
    "sampleShort": false,
    "tierIdx": 4
@@ -3253,19 +3253,19 @@ window.BROAD = {
    "etf": "sh588000",
    "etfName": "科创50ETF",
    "cat": "科创成长",
-   "asOf": "2026-11-26",
-   "close": 1169.99,
-   "chg": -1.36,
-   "pe": 52.6,
-   "pePct10y": 54.2,
-   "pePct5y": 66.9,
-   "pePct3y": 49.7,
-   "pePct1y": 1.2,
+   "asOf": "2026-11-27",
+   "close": 1346.25,
+   "chg": 15.07,
+   "pe": 60.78,
+   "pePct10y": 61.9,
+   "pePct5y": 76.1,
+   "pePct3y": 61.1,
+   "pePct1y": 9.5,
    "peStats": {
     "min": 23.38,
     "p25": 35.98,
     "med": 50.14,
-    "p75": 74.15,
+    "p75": 74.09,
     "max": 105.42
    },
    "peHist": [
@@ -3575,17 +3575,17 @@ window.BROAD = {
     ],
     [
      "2026-11",
-     52.6
+     60.78
     ]
    ],
-   "erp": 0.15,
-   "pos52": 2,
-   "chg1y": -11,
-   "chg60d": -28.3,
-   "sampleDays": 1552,
+   "erp": -0.1,
+   "pos52": 18,
+   "chg1y": 2.7,
+   "chg60d": -20.5,
+   "sampleDays": 1553,
    "sampleFrom": "20200706",
    "sampleShort": false,
-   "tierIdx": 2
+   "tierIdx": 3
   }
  ]
 };
